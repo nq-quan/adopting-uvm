@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_mon.sv
@@ -14,7 +14,7 @@
 
 `ifndef __FRM_MON_SV__
    `define __FRM_MON_SV__
-   
+
 `include "frm_frame.sv"
 
 // class: mon_c
@@ -30,7 +30,7 @@ class mon_c extends uvm_monitor;
    // var: intf_name
    // The name of the frm_intf.mon_mp interface to connect to
    string intf_name = "mon_vi";
-   
+
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
 
@@ -41,18 +41,18 @@ class mon_c extends uvm_monitor;
    // var: frame_port
    // Drives monitored frames (with data) to listeners
    uvm_analysis_port#(frame_c) frame_port;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
    // var: mon_vi
    // Virtual monitor interface
    virtual frm_intf.mon_mp mon_vi;
-   
+
    // var: frame_req
    // The current frame request
    frame_c frame_req;
-   
+
    //----------------------------------------------------------------------------------------
    // Methods
    function new(string name="mon",
@@ -133,6 +133,5 @@ class mon_c extends uvm_monitor;
       end
    endtask : monitor_frames
 endclass : mon_c
-   
+
 `endif // __FRM_MON_SV__
-   

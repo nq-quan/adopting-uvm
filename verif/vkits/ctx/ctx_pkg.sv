@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_pkg.sv
@@ -36,7 +36,7 @@ package ctx_pkg;
 `include "ctx_types.sv"
 `include "ctx_seq_lib.sv"
 `include "ctx_sqr.sv"
-   
+
 endpackage : ctx_pkg
-   
+
 

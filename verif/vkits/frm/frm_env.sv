@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_env.sv
@@ -14,7 +14,7 @@
 
 `ifndef __FRM_ENV_SV__
    `define __FRM_ENV_SV__
-   
+
 `include "frm_agent.sv"
 `include "frm_frame.sv"
 
@@ -37,8 +37,8 @@ class env_c extends uvm_env;
    // var: reg_block
    // alutb register block (reference to the one in cfg)
    alu_csr_pkg::reg_block_c reg_block;
-      
-   // var: is_active   
+
+   // var: is_active
    uvm_active_passive_enum is_active = UVM_ACTIVE;
 
    //----------------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ class env_c extends uvm_env;
 
    // field: Drives the CTX traffic
    ctx_pkg::agent_c ctx_agent;
-   
+
    // var: frm_agent
    // The FRM agent
    agent_c frm_agent;
@@ -69,7 +69,7 @@ class env_c extends uvm_env;
 
       // build frm agent
       frm_agent = agent_c::type_id::create("frm_agent", this);
-      
+
       // create the ALU agent
       uvm_config_db#(int)::set(this, "alu_agent.drv",    "is_active",       UVM_ACTIVE);
       alu_agent = alu_pkg::agent_c::type_id::create("alu_agent", this);
@@ -85,6 +85,5 @@ class env_c extends uvm_env;
    endfunction : connect_phase
 
 endclass : env_c
-   
+
 `endif // __FRM_ENV_SV__
-   

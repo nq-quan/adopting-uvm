@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.0)
 // ***********************************************************************
 // File:   basic.sv
@@ -14,7 +14,7 @@
 
 `ifndef __BASIC_SV__
    `define __BASIC_SV__
-   
+
    `include "base_test.sv"
 
 // class: basic_test_c
@@ -34,8 +34,7 @@ class basic_test_c extends base_test_c;
    virtual function void build_phase(uvm_phase phase);
       super.build_phase(phase);
    endfunction : build_phase
-   
+
 endclass : basic_test_c
-   
+
 `endif // __BASIC_SV__
-      

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_cfg.sv
@@ -14,7 +14,7 @@
 
 `ifndef __FRM_CFG_SV__
    `define __FRM_CFG_SV__
-   
+
 // class: cfg_c
 // FRM Testbench Configuration Class
 class cfg_c extends uvm_object;
@@ -38,4 +38,3 @@ class cfg_c extends uvm_object;
 endclass : cfg_c
 
 `endif // __FRM_CFG_SV__
-   

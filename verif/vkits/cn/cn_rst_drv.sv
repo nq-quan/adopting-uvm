@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   cn_rst_drv.sv
@@ -12,21 +12,21 @@
 /* About:  Standard Reset Driver.
 
  Usage:
- 
+
  1. Instantiate the reset wire and interface, and make the assignment:
 
        wire tb_rst_n;
        cn_rst_intf tb_rst_i();
        assign tb_rst_n = tb_rst_i.rst_n;
-    
+
  2. Set the interface into the configuration database using the base name of the wire:
-    
+
        initial begin
           uvm_resource_db#(virtual cn_rst_intf)::set("cn_pkg::rst_intf", "tb_rst_vi", tb_rst_i);
 
  3. Instantiate the reset driver in the base_test.  Configure it in the build_phase.
     Ensure that the intf_name configuration option is the same as used in the testbench.
-    
+
        cn_pkg::rst_drv_c tb_rst_drv;
 
        virtual function void build_phase(uvm_phase phase);
@@ -42,7 +42,7 @@
     ::create, or randomize them with constraints after the call.  To
     randomize outside the set of 'sane' constraints, be sure to turn
     its constraint mode off.
-        
+
  *************************************************************************/
 
 `ifndef __CN_RST_DRV_SV__
@@ -79,7 +79,7 @@ class rst_drv_c extends uvm_driver;
    // Name in the resource database under which the vintf is stored. The scope
    // under which it is stored is "cn_pkg::rst_intf".
    string intf_name = "rst_i";
-   
+
    // var: active_low
    // When set, the reset signal will start low and go high.  When clear, it's the opposite.
    bit active_low = 1;
@@ -111,7 +111,7 @@ class rst_drv_c extends uvm_driver;
    // bist_complete + reset_time_ps. If this is not set, reset_time_ps will have to be programmed for
    // enough time for bist to finish. If it is set, reset_time_ps can be small.
    bit use_bist_complete = 0;
-   
+
    // var: dcok_time_ps
    // The length of time that dcok will be 0 when reset is not X
    rand int unsigned dcok_time_ps;
@@ -121,7 +121,7 @@ class rst_drv_c extends uvm_driver;
    rand int unsigned start_bist_time_ps;
 
    bit clocked = 0;
-   
+
    // Base constraints.  Turn these off if you wish to override them
    constraint sane_cnstr {
       x_time_ps >= 0;
@@ -140,14 +140,14 @@ class rst_drv_c extends uvm_driver;
    constraint drain_time_cnstr {
       drain_time_ps inside {[1000:50000]};
    }
-   
+
    //----------------------------------------------------------------------------------------
    // Fields
 
    // var: rst_vi
    // Reset interface
    virtual cn_rst_intf rst_vi;
-   
+
    //----------------------------------------------------------------------------------------
    // Methods
    function new(string name="rst_drv",
@@ -178,7 +178,7 @@ class rst_drv_c extends uvm_driver;
       if(drive_start_bist) begin
          `write_vi(start_bist,'b0)
       end
-      
+
       if(x_time_ps) begin
          `write_vi(rst_n,'bx)
          #(x_time_ps * 1ps);
@@ -188,14 +188,14 @@ class rst_drv_c extends uvm_driver;
       if(drive_clear_bist) begin
          `write_vi(clear_bist,!$test$plusargs("bist") || $test$plusargs("bistskip"))
       end
-      
+
       if(drive_dcok) begin
          #(dcok_time_ps * 1ps);
          `write_vi(dcok,'b1)
       end
       phase.drop_objection(this);
    endtask : pre_reset_phase
-      
+
    ////////////////////////////////////////////
    // func: reset_phase
    // Drive DCOK and reset
@@ -205,7 +205,7 @@ class rst_drv_c extends uvm_driver;
       // if reset phase has been exec more than once
       // this means testbench is doing a reset by phase.jump(reset_phase)
       // In this case, assert reset signal in reset phase.
-      
+
       if (phase.get_run_count() > 1 ) begin
          `write_vi(rst_n,~active_low)
       end
@@ -232,5 +232,5 @@ class rst_drv_c extends uvm_driver;
 endclass : rst_drv_c
 
 `undef write_vi
-   
+
 `endif // __CN_RST_DRV_SV__

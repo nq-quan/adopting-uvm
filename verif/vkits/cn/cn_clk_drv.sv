@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   cn_clk_drv.sv
@@ -48,7 +48,7 @@ sclk_drv.randomize() with {
 
 7. Functional Coverage Knobs
   coverage_enable  : When set, turns on functional coverage generation.
-    
+
  *************************************************************************/
 
 `ifndef __CN_CLK_DRV_SV__
@@ -62,7 +62,7 @@ class clk_drv_c extends uvm_driver;
 
    // enum: drift_type_e
    // Drift will bias the jitter in one direction or another
-   typedef enum { NEGATIVE, 
+   typedef enum { NEGATIVE,
                   NEUTRAL,
                   POSITIVE } drift_type_e;
 
@@ -70,7 +70,7 @@ class clk_drv_c extends uvm_driver;
                   CN_100FS,
                   CN_10FS,
                   CN_1FS } clk_precision_e;
-   
+
    `uvm_component_utils_begin(cn_pkg::clk_drv_c)
       `uvm_field_string(intf_name,     UVM_ALL_ON)
       `uvm_field_int(init_delay_ps,    UVM_ALL_ON | UVM_DEC)
@@ -97,7 +97,7 @@ class clk_drv_c extends uvm_driver;
    rand int period_ps;
 
    // var: divisor
-   // Divide period by this   
+   // Divide period by this
    rand int divisor = 1;
 
    // var: init_delay_ps
@@ -118,11 +118,11 @@ class clk_drv_c extends uvm_driver;
 
    // var: clk_precision
    clk_precision_e precision = CN_1PS;
-   
+
    // var: enable
    // Used to determine if the clock driver actually drives clocks (or instead only drives a static initial value)
    bit     enable = 1;
-   
+
    constraint sane_cnstr {
       init_delay_ps inside {[0:100000]};
       period_ps inside {[1000:3000]};
@@ -137,7 +137,7 @@ class clk_drv_c extends uvm_driver;
 
    // interface to clock
    virtual cn_clk_intf clk_vi;
-   
+
    // var: jitter_enable
    // Jitter/drift-related
    rand bit jitter_enable;
@@ -151,13 +151,13 @@ class clk_drv_c extends uvm_driver;
    rand drift_type_e drift_type;
 
    // constraints on jitter_ps
-   //  where do these numbers come from?  The answer is that they're arbitrary, but 
+   //  where do these numbers come from?  The answer is that they're arbitrary, but
    //  they should get the job done
    constraint jitter_cnstr {
       // neutral drift
       if(drift_type == NEUTRAL)
          jitter_ps dist {
-            -7        := 1,                         
+            -7        := 1,
             [-6:-4]   :/ 1,
             [-3:-1]   :/ 2,
             0         := 92,
@@ -165,7 +165,7 @@ class clk_drv_c extends uvm_driver;
             [4:6]     :/ 1,
             7         := 1
          };
-     
+
       // positive drift
       if(drift_type == POSITIVE)
          jitter_ps dist {
@@ -176,7 +176,7 @@ class clk_drv_c extends uvm_driver;
             [4:6]     :/ 2
          };
 
-      // negative drift      
+      // negative drift
       if(drift_type == NEGATIVE)
          jitter_ps dist {
             [-6:-4]   :/ 2,
@@ -216,9 +216,9 @@ class clk_drv_c extends uvm_driver;
 
       // Put into the clk_drv registry.
       uvm_config_db #(clk_drv_c)::set(null, get_full_name(), "this", this);
-      
+
    endfunction : build_phase
-   
+
    ////////////////////////////////////////////
    // func: run_phase
    // Produce the clock
@@ -239,10 +239,10 @@ class clk_drv_c extends uvm_driver;
          if(period_ps == 0)
            `cn_fatal(("Clock generator period is zero."))
       end
-      
+
       // report
       report = $sformatf("Starting %s: period_ps=%0dps divisor=%0d init_value=%0d init_delay_ps=%0d init_x=%0d precision=%s", get_name(), period_ps, divisor, init_value, init_delay_ps, init_x, precision);
-      if(jitter_enable) 
+      if(jitter_enable)
         report = {report," JITTER! drift=", drift_type.name()};
       `cn_info((report))
 
@@ -259,7 +259,7 @@ class clk_drv_c extends uvm_driver;
       end
 
       case(precision)
-        CN_1PS: begin 
+        CN_1PS: begin
            precision_mult = 1ps;
            period_mult = 1;
         end
@@ -279,7 +279,7 @@ class clk_drv_c extends uvm_driver;
       endcase
 
       `cn_assert(precision_mult > 0)
-      
+
       #(init_delay_ps*1ps);
 
       clk_vi.clk = ~init_value;
@@ -290,7 +290,7 @@ class clk_drv_c extends uvm_driver;
       short_half_period = full_period / half_period_divisor;
       long_half_period = short_half_period + 1;
       num_long_half_periods = full_period % half_period_divisor;
-      
+
       if(!jitter_enable) begin
          forever begin
             for (int p = 0; p < num_long_half_periods; p++) begin
@@ -344,12 +344,12 @@ class clk_drv_c extends uvm_driver;
          @(posedge clk_vi.clk);
       end
    endtask
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Functional Coverage
    covergroup cg;
       option.per_instance = 1;
-      
+
       coverpoint init_delay_ps {
          option.comment="The amount of time before the first transition.";
          option.weight=1;
@@ -392,7 +392,7 @@ class clk_drv_c extends uvm_driver;
          option.weight=10;
       }
    endgroup : cg
-         
+
 endclass : clk_drv_c
 
 //----------------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ class clk_passive_drv_c extends clk_drv_c;
    virtual function void end_of_elaboration_phase(uvm_phase phase);
       super.end_of_elaboration_phase(phase);
    endfunction : end_of_elaboration_phase
-   
+
    ////////////////////////////////////////////
    virtual task run_phase(uvm_phase phase);
    endtask : run_phase
@@ -450,9 +450,9 @@ class clk_passive_drv_c extends clk_drv_c;
    virtual task wait_n_clocks(int n);
       `cn_fatal(("Passive clock generators can't yet support wait_n_clocks"))
    endtask
-   
+
 endclass : clk_passive_drv_c
 
-   
+
 `endif // __CN_CLK_DRV_SV__
 

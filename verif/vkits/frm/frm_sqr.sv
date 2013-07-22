@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_sqr.sv
@@ -14,7 +14,7 @@
 
 `ifndef __FRM_SQR_SV__
    `define __FRM_SQR_SV__
-   
+
    `include "frm_frame.sv"
 
 // class: sqr_c
@@ -28,7 +28,7 @@ class sqr_c extends uvm_sequencer#(frame_c);
 
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
@@ -64,6 +64,5 @@ class sqr_c extends uvm_sequencer#(frame_c);
    endtask : run_phase
 
 endclass : sqr_c
-   
+
 `endif // __FRM_SQR_SV__
-   

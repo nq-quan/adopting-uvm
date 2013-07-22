@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   global_pkg.sv
@@ -16,7 +16,7 @@
 `include "uvm_macros.svh"
 `include "cn_macros.sv"
 `include "global_macros.sv"
-   
+
 package global_pkg;
 
    //--------------------------------------------------------------------------
@@ -32,7 +32,7 @@ package global_pkg;
 `include "global_csr_print_cbs.sv"
 `include "global_env.sv"
 `include "global_table_printer.sv"
-   
+
 endpackage : global_pkg
-   
+
 

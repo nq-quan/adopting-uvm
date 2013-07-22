@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   cn_rst_intf.sv
@@ -40,5 +40,5 @@ interface cn_rst_intf();
    endclocking : cb
 
 endinterface : cn_rst_intf
-   
+
 `endif // __CN_RST_INTF_SV__

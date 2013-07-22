@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_reg_adapter.sv
@@ -16,7 +16,7 @@
    `define __CTX_REG_ADAPTER_SV__
 
 
-   
+
 // class: reg_adapter_c
 // (Description)
 class reg_adapter_c extends uvm_reg_adapter;
@@ -43,7 +43,7 @@ class reg_adapter_c extends uvm_reg_adapter;
 
    ////////////////////////////////////////////
    // func: bus2reg
-   virtual function void bus2reg(uvm_sequence_item bus_item, 
+   virtual function void bus2reg(uvm_sequence_item bus_item,
                                  ref uvm_reg_bus_op rw);
       item_c item;
 
@@ -54,7 +54,7 @@ class reg_adapter_c extends uvm_reg_adapter;
          rw.status = UVM_IS_OK;
       end
    endfunction : bus2reg
-      
+
 endclass : reg_adapter_c
-   
+
 `endif // __CTX_REG_ADAPTER_SV__

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_agent.sv
@@ -14,7 +14,7 @@
 
 `ifndef __FRM_AGENT_SV__
    `define __FRM_AGENT_SV__
-   
+
 `include "frm_drv.sv"
 `include "frm_mon.sv"
 `include "frm_sqr.sv"
@@ -32,10 +32,10 @@ class agent_c extends uvm_agent;
    // var: is_active
    // When set to UVM_ACTIVE, the sqr and drv will be present.
    uvm_active_passive_enum is_active = UVM_ACTIVE;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
@@ -44,7 +44,7 @@ class agent_c extends uvm_agent;
    sqr_c sqr;
    drv_c drv;
    mon_c mon;
-   
+
    //----------------------------------------------------------------------------------------
    // Methods
    function new(string name="agent",
@@ -74,6 +74,5 @@ class agent_c extends uvm_agent;
    endfunction : connect_phase
 
 endclass : agent_c
-   
+
 `endif // __FRM_AGENT_SV__
-   

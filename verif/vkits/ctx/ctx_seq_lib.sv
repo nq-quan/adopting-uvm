@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_seq_lib.sv
@@ -15,7 +15,7 @@
 `ifndef __CTX_SEQ_LIB_SV__
    `define __CTX_SEQ_LIB_SV__
 
-   
+
    `include "ctx_item.sv"
    `include "ctx_types.sv"
 
@@ -36,7 +36,7 @@ class rd_seq_c extends uvm_sequence #(item_c);
 
    // field: result data
    data_t data;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
 
@@ -61,7 +61,7 @@ class rd_seq_c extends uvm_sequence #(item_c);
    endtask : body
 
 endclass : rd_seq_c
-    
+
 //****************************************************************************************
 // class: rd_seq_c
 // A write sequence
@@ -79,7 +79,7 @@ class wr_seq_c extends uvm_sequence #(item_c);
 
    // field: write data
    rand data_t data;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
 
@@ -104,7 +104,6 @@ class wr_seq_c extends uvm_sequence #(item_c);
    endtask : body
 
 endclass : wr_seq_c
-    
+
 
 `endif // __CTX_SEQ_LIB_SV__
-   

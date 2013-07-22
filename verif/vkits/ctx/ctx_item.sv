@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_mon.sv
@@ -32,7 +32,7 @@ class item_c extends uvm_sequence_item;
    // field: is_write
    // When set, this item is a write. When clear, it's a read
    rand bit is_write;
-   
+
    // field: addr
    // The address to read/write
    rand addr_t addr;
@@ -40,7 +40,7 @@ class item_c extends uvm_sequence_item;
    // field: data
    // Either write data or read data
    rand data_t data;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="item");
@@ -56,7 +56,7 @@ class item_c extends uvm_sequence_item;
       if(is_write)
          packer.pack_field_int(data, 32);
    endfunction : do_pack
-   
+
    ////////////////////////////////////////////
    // func: do_unpack
    // Data bytes will be seen for both read and write
@@ -65,7 +65,7 @@ class item_c extends uvm_sequence_item;
 
       data = packer.unpack_field_int(32);
    endfunction : do_unpack
-   
+
    ////////////////////////////////////////////
    // func: convert2string
    // Single-line printing
@@ -75,8 +75,8 @@ class item_c extends uvm_sequence_item;
       else
          return $sformatf("RD %02X <= %08X", addr, data);
    endfunction : convert2string
-   
+
 endclass : item_c
-   
+
 `endif // __CTX_ITEM_SV__
 

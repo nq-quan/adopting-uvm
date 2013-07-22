@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.4)
 // ***********************************************************************
 // File:   cn_objection.sv
@@ -14,7 +14,7 @@
 
 `ifndef __CN_OBJECTION_SV__
    `define __CN_OBJECTION_SV__
-   
+
 // class: objection_c
 // A simpler objection class that removes hierarchy-related things.
 class objection_c extends uvm_object;
@@ -31,7 +31,7 @@ class objection_c extends uvm_object;
    // var: dbg_level
    // The debug level of this objection
    int dbg_level = 500;
-   
+
    // var: count
    // The current objection count, goes up when raised and down when dropped
    local int unsigned count;
@@ -43,7 +43,7 @@ class objection_c extends uvm_object;
    // var: last_dropped_time
    // The last time this objection was dropped
    time last_dropped_time;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="objection");
@@ -55,10 +55,10 @@ class objection_c extends uvm_object;
    function int unsigned get_count();
       return count;
    endfunction : get_count
-   
+
    ////////////////////////////////////////////
    // func: raise
-   function void raise(string _descr = "", 
+   function void raise(string _descr = "",
                        int unsigned _count = 1,
                        string _filename = "",
                        int _lineno = 0);
@@ -77,10 +77,10 @@ class objection_c extends uvm_object;
 
       last_raised_time = $realtime();
    endfunction : raise
-   
+
    ////////////////////////////////////////////
    // func: drop
-   function void drop(string _descr = "", 
+   function void drop(string _descr = "",
                       int unsigned _count = 1,
                       string _filename = "",
                       int _lineno = 0);
@@ -120,7 +120,7 @@ class objection_c extends uvm_object;
 
       last_dropped_time = $realtime();
    endfunction : clear
-   
+
    ////////////////////////////////////////////
    // func: convert2string
    // Single-line printing function
@@ -131,8 +131,7 @@ class objection_c extends uvm_object;
       if(last_dropped_time)
          convert2string = $sformatf("%s last dropped: %t", convert2string, last_dropped_time);
    endfunction : convert2string
-   
+
 endclass : objection_c
-   
+
 `endif // __CN_OBJECTION_SV__
-   

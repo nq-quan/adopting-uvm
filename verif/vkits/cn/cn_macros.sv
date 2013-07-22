@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // * File        : cn_macros.sv
@@ -16,7 +16,7 @@
  `define __CN_MACROS_SV__
 
    `include "uvm_macros.svh"
-   
+
    //----------------------------------------------------------------------------------------
    // Includes
    `include "cn_msgs.sv"
@@ -74,5 +74,5 @@
         else \
         `cn_dbg(UVM_DEBUG, ("%s.CGRP will NOT collect coverage during this run.", get_full_name() )) \
       end
-         
+
 `endif // __CN_MACROS_SV__

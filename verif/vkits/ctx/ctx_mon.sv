@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_mon.sv
@@ -29,20 +29,20 @@ class mon_c extends uvm_monitor;
 
    // field: intf_name
    string intf_name = "ctx_vi";
-   
+
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
 
    // field: Analyzed transactions
    uvm_analysis_port #(item_c) item_port;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
    // field: ctx_vi
    // CTX interface
    virtual ctx_intf.mon_mp ctx_vi;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="mon",
@@ -73,12 +73,12 @@ class mon_c extends uvm_monitor;
    ////////////////////////////////////////////
    // func: monitor
    // Monitors all transactions
-   virtual task monitor();   
+   virtual task monitor();
       byte unsigned bytestream[$];
       byte unsigned bytes[];
       item_c item;
       bit  is_write;
-      
+
       forever begin
          @(posedge ctx_vi.mon_cb.val);
 
@@ -90,7 +90,7 @@ class mon_c extends uvm_monitor;
          bytestream.push_back(ctx_vi.mon_cb.in);
          is_write = ctx_vi.mon_cb.in[7] == 1;
          @(ctx_vi.mon_cb);
-         
+
          if(is_write) begin
             do begin
                bytestream.push_back(ctx_vi.mon_cb.in);
@@ -98,16 +98,16 @@ class mon_c extends uvm_monitor;
             end while(ctx_vi.mon_cb.val == 1);
          end else begin
             // 3 cycles to perceive data
-            repeat(3) 
+            repeat(3)
                @(ctx_vi.mon_cb);
-            
+
             // 4 data cycles
             repeat(4) begin
                bytestream.push_back(ctx_vi.mon_cb.out);
                @(ctx_vi.mon_cb);
             end
          end
-         
+
          // end of transaction.  unpack into it
          if(bytestream.size() > 5) // max size
             `cn_err(("A bytestream of size %0d is too large.", bytestream.size()))
@@ -121,5 +121,5 @@ class mon_c extends uvm_monitor;
    endtask : monitor
 
 endclass : mon_c
-   
+
 `endif // __CTX_MON_SV__

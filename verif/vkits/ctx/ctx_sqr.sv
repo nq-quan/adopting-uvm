@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_sqr.sv
@@ -15,7 +15,7 @@
 `ifndef __CTX_SQR_SV__
    `define __CTX_SQR_SV__
 
-   
+
 `include "ctx_item.sv"
 
 // class: sqr_c
@@ -29,7 +29,7 @@ class sqr_c extends uvm_sequencer#(item_c);
 
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
@@ -65,6 +65,5 @@ class sqr_c extends uvm_sequencer#(item_c);
    endtask : run_phase
 
 endclass : sqr_c
-   
+
 `endif // __CTX_SQR_SV__
-   

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   alutb_env.sv
@@ -37,8 +37,8 @@ class env_c extends uvm_env;
    // var: reg_block
    // alu register block (reference to the one in cfg)
    alu_csr_pkg::reg_block_c reg_block;
-      
-   // var: is_active   
+
+   // var: is_active
    uvm_active_passive_enum is_active = UVM_ACTIVE;
 
    //----------------------------------------------------------------------------------------
@@ -46,7 +46,7 @@ class env_c extends uvm_env;
 
    // field: Drives the CTX traffic
    ctx_pkg::agent_c ctx_agent;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="env",
@@ -77,5 +77,5 @@ class env_c extends uvm_env;
    endfunction : end_of_elaboration_phase
 
 endclass : env_c
-   
+
 `endif // __ALUTB_ENV_SV__

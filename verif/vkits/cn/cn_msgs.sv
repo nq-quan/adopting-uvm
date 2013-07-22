@@ -4,13 +4,13 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // ***********************************************************************
 // File:   cn_msgs.sv
 // Author: bhunter
 /* About:  CN Messaging Macros to be used in UVM code
  *************************************************************************/
-                                         
+
 `ifndef __CN_MSGS_SV__
    `define __CN_MSGS_SV__
 
@@ -212,7 +212,7 @@
 
 //----------------------------------------------------------------------------------------
 // Group: Messaging Macros for Basic Non-UVM Classes
-// Non-UVM classes have no name, so they cannot call get_full_name.  These defs are provided 
+// Non-UVM classes have no name, so they cannot call get_full_name.  These defs are provided
 // specifically for those cases.  While there is practically no reason to ever have a base
 // class, some vendor IP may do this.
 
@@ -280,7 +280,7 @@
 // Group: Messaging Macros for Interfaces
 // All interfaces should use these macros instead
 // The error macros do NOT use UVM_NONE because interfaces may be compiled before UVM is compiled
-              
+
 ////////////////////////////////////////////
 // macro: `cn_info_intf(MSG)
 // Same as <`cn_info(MSG)>, but for interfaces
@@ -357,5 +357,5 @@
 `ifdef NCV
    `define cn_stack(x) $stacktrace;
 `endif
-              
+
 `endif //  __CN_MSGS_SV__

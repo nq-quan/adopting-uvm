@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // ***********************************************************************
 // File:   cn_print_utils.sv
 // Author: bhunter
@@ -31,7 +31,7 @@
 function string print_ubyte_array(ref byte unsigned _array[],
                                           input int _num_per_line=8,
                                           input bit _separate_line=0);
-   
+
    bit separate_line;
 
    separate_line = (_separate_line || _array.size() > _num_per_line)? 1:0;
@@ -40,7 +40,7 @@ function string print_ubyte_array(ref byte unsigned _array[],
       print_ubyte_array = $sformatf("\n[%0d bytes]\n", _array.size());
    else
       print_ubyte_array = "[";
-   
+
    foreach(_array[idx]) begin
       if(((idx % _num_per_line) == 0) && separate_line)
          print_ubyte_array = $sformatf("%s.%03d  ", print_ubyte_array, idx);
@@ -65,7 +65,7 @@ endfunction : print_ubyte_array
 function string print_byte_array(ref byte _array[],
                                  input int _num_per_line=8,
                                  input bit _separate_line=0);
-   
+
    bit separate_line;
 
    separate_line = (_separate_line || _array.size() > _num_per_line)? 1:0;
@@ -74,7 +74,7 @@ function string print_byte_array(ref byte _array[],
       print_byte_array = $sformatf("\n[%0d bytes]\n", _array.size());
    else
       print_byte_array = "[";
-   
+
    foreach(_array[idx]) begin
       if(((idx % _num_per_line) == 0) && separate_line)
          print_byte_array = $sformatf("%s.%03d  ", print_byte_array, idx);
@@ -99,7 +99,7 @@ endfunction : print_byte_array
 function string print_bit8_array(ref bit[7:0] _array[],
                                  input int _num_per_line=8,
                                  input bit _separate_line=0);
-   
+
    bit separate_line;
 
    separate_line = (_separate_line || _array.size() > _num_per_line)? 1:0;
@@ -108,7 +108,7 @@ function string print_bit8_array(ref bit[7:0] _array[],
       print_bit8_array = $sformatf("\n[%0d bytes]\n", _array.size());
    else
       print_bit8_array = "[";
-   
+
    foreach(_array[idx]) begin
       if(((idx % _num_per_line) == 0) && separate_line)
          print_bit8_array = $sformatf("%s.%03d  ", print_bit8_array, idx);

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   cn_clk_intf.sv
@@ -27,5 +27,5 @@ interface cn_clk_intf();
    logic clk_ideal;
 
 endinterface : cn_clk_intf
-   
+
 `endif // __CN_CLK_INTF_SV__

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_pkg.sv
@@ -34,7 +34,7 @@ package frm_pkg;
 `include "frm_seq_lib.sv"
 `include "frm_sqr.sv"
 `include "frm_vseq_lib.sv"
-   
+
 endpackage : frm_pkg
-   
+
 

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.4)
 // ***********************************************************************
 // File:   frm_vseq_lib.sv
@@ -16,7 +16,7 @@
    `define __FRM_VSEQ_LIB_SV__
 
 
-// 
+//
 // UNCOMMENT THE FOLLOWING FOR PROBLEM 16-1:
 //
 
@@ -28,7 +28,7 @@
 class basic_vseq_c extends uvm_sequence;
    `uvm_object_utils(frm_pkg::basic_vseq_c)
    `uvm_declare_p_sequencer(vsqr_c)
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="basic_vseq");
@@ -53,11 +53,10 @@ class basic_vseq_c extends uvm_sequence;
          end
          `uvm_do_on_with(alu_exer_seq, p_sequencer.alu_sqr, { count == frame.frame_len; })
       join
-      
+
    endtask : body
 
 endclass : basic_vseq_c
  -----/\----- EXCLUDED -----/\----- */
 
 `endif // __FRM_VSEQ_LIB_SV__
-   

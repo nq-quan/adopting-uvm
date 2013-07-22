@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   global_env.sv
@@ -35,7 +35,7 @@ class env_c extends uvm_env;
    // var: run_count
    // The number of times that this simulation will loop over the run-time phases
    int run_count = 1;
-   
+
    // var: topo_depth
    // The depth of topology printing (-1 means that it was not set in config_db)
    int topo_depth = -1;
@@ -85,11 +85,11 @@ class env_c extends uvm_env;
          else
             topo_depth = 0;
       end
-      
+
       if(topo_depth)
          print_topology(uvm_top, topo_depth);
    endfunction
-   
+
    ////////////////////////////////////////////
    // funcs: Changes the current_phase field
    virtual function void phase_started(uvm_phase phase);
@@ -122,17 +122,17 @@ class env_c extends uvm_env;
          end
       end
    endfunction : phase_ready_to_end
-   
+
    ////////////////////////////////////////////
    // func: print_topology
    virtual function void print_topology(uvm_object _object,
                                         int _depth,
                                         int _name_width=-1,
                                         int _type_width=-1);
-      
+
       uvm_table_printer_c printer = new();
       string topology;
-      
+
       printer.knobs.depth = _depth;
       printer.knobs.indent = 3;
 
@@ -155,5 +155,5 @@ endclass : env_c
 // The class must be ::create'd by the base test
 static env_c env;
 
-   
+
 `endif // __GLOBAL_ENV_SV__

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   alu_csr_pkg.sv
@@ -103,7 +103,7 @@ class const_reg_c extends csr_cn_pkg::cn_reg_c;
    endfunction
 endclass
 
-//****************************************************************************************   
+//****************************************************************************************
 class result_reg_c extends csr_cn_pkg::cn_reg_c;
 
    `uvm_object_utils(alu_csr_pkg::result_reg_c)
@@ -201,7 +201,7 @@ class result_reg_c extends csr_cn_pkg::cn_reg_c;
 endclass
 
 
-//****************************************************************************************   
+//****************************************************************************************
 class reg_block_c extends csr_cn_pkg::cn_reg_block_c;
    `uvm_object_utils(alu_csr_pkg::reg_block_c)
 

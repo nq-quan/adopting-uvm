@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_drv.sv
@@ -14,7 +14,7 @@
 
 `ifndef __CTX_DRV_SV__
    `define __CTX_DRV_SV__
-   
+
 `include "ctx_item.sv"
 
 // class: drv_c
@@ -28,10 +28,10 @@ class drv_c extends uvm_driver#(item_c);
    // Group: Configuration Fields
 
    string intf_name="ctx_vi";
-   
+
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
@@ -42,7 +42,7 @@ class drv_c extends uvm_driver#(item_c);
    // field: driving
    // Set when the driver is active
    bit     driving;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="drv",
@@ -62,7 +62,7 @@ class drv_c extends uvm_driver#(item_c);
    virtual task run_phase(uvm_phase phase);
       forever begin
          ctx_vi.reset();
-         
+
          fork
             driver();
             @(negedge ctx_vi.drv_cb.rst_n);
@@ -90,7 +90,7 @@ class drv_c extends uvm_driver#(item_c);
    virtual task driver();
       forever begin
          ctx_vi.reset();
-         
+
          // get the next item to drive
          seq_item_port.try_next_item(req);
          if(!req) begin
@@ -120,7 +120,7 @@ class drv_c extends uvm_driver#(item_c);
             ////////////////////////////////////////////
             // Read Trans
             data_t data;
-            
+
             // drive addr cycle
             ctx_vi.drv_cb.val <= 1;
             ctx_vi.drv_cb.in  <= {1'b0, req.addr};
@@ -135,7 +135,7 @@ class drv_c extends uvm_driver#(item_c);
                `cn_info(("Waiting:"))
                @(ctx_vi.drv_cb);
             end
-            
+
             // collect read data
             repeat(4) begin
                data <<= 8;
@@ -150,11 +150,11 @@ class drv_c extends uvm_driver#(item_c);
          seq_item_port.item_done(req);
          seq_item_port.put_response(req);
          driving = 0;
-         
+
          // add a gap between transactions
          @(ctx_vi.drv_cb);
       end
    endtask : driver
 endclass : drv_c
-   
+
 `endif // __CTX_DRV_SV__

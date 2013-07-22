@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // *
 // ***********************************************************************
 // File:   cn_report_server.sv
@@ -14,7 +14,7 @@
 Pure UVM testbenches override the uvm report server to better model how our
 logfiles should look.  The factory override is done in tbv_common.v at time
 zero.
- 
+
  *************************************************************************/
 
 `ifndef __CN_REPORT_SERVER_SV__
@@ -27,7 +27,7 @@ class report_server_c extends uvm_report_server;
 
    //----------------------------------------------------------------------------------------
    // Fields
-   
+
    // cached versions of things
    string                               filename_cache[string];
    string                               name_cache[string];
@@ -47,7 +47,7 @@ class report_server_c extends uvm_report_server;
    // field: empty_str
    // Used for filenames that have no filename length at all
    string                               empty_str;
-   
+
    //----------------------------------------------------------------------------------------
    // Methods
    function new(string name="report_server");
@@ -65,7 +65,7 @@ class report_server_c extends uvm_report_server;
       if(!$value$plusargs("filelen=%d", max_flen))
          max_flen = 18;
       empty_str = {(max_flen){space_char}};
-      
+
       if(!$test$plusargs("fullcomphier"))
         full_comp_hier = 0;
       else
@@ -110,7 +110,7 @@ class report_server_c extends uvm_report_server;
             end else begin
                int last_slash = filename.len()-1;
                int flen;
-               
+
                while(filename[last_slash] != "/" && last_slash != 0) begin
                   last_slash--;
                end
@@ -136,12 +136,12 @@ class report_server_c extends uvm_report_server;
 
          file_tok = $sformatf("(%s:%4d)",file_str, line);
       end
-      
+
       ////////////////////////////////////////////
       // format name
       if(max_id_len == 0) begin
          //do nothing
-      end else if(name_cache.exists(name)) begin 
+      end else if(name_cache.exists(name)) begin
          name_str = name_cache[name];
          name_tok = $sformatf("[%s]",name_str);
       end else begin
@@ -162,7 +162,7 @@ class report_server_c extends uvm_report_server;
             // if the name is bigger then take the right-snamee, which is more interesting
             name_str = name.substr(name_len - max_id_len, name_len - 1);
             name_str[0] = "+";
-            
+
          end else
             name_str = name;
 
@@ -174,7 +174,7 @@ class report_server_c extends uvm_report_server;
 
 
       time_tok = $sformatf("{%11.3f}",$realtime()/real'(1ns));
-      
+
       ////////////////////////////////////////////
       // fill character and code string
       // determine fill character
@@ -205,7 +205,7 @@ class report_server_c extends uvm_report_server;
       ////////////////////////////////////////////
       // append message
       return {prefix, " ", message, full_hier_tok};
-      
+
 
    endfunction : compose_message
 
@@ -219,7 +219,7 @@ class report_server_c extends uvm_report_server;
                                 int line,
                                 uvm_report_object client
                                 );
-      
+
       // Force fatal, error, and warning reports to have verbosity NONE so they can't get
       // supressed.  The `cn_err/cn_fatal macros always set verbosity to NONE,
       // but third-party IP that calls uvm_report_error might not.
@@ -230,11 +230,11 @@ class report_server_c extends uvm_report_server;
       if(severity == UVM_FATAL) begin
          `cn_stack()
       end
-      
+
       super.report(severity, name, id, message, verbosity_level, filename, line, client);
 
    endfunction : report
-   
+
 endclass : report_server_c
-   
+
 `endif // __CN_REPORT_SERVER_SV__

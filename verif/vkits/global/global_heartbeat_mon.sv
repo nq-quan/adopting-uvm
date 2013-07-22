@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.4)
 // ***********************************************************************
 // File:   global_heartbeat_mon.sv
@@ -17,8 +17,8 @@
 
 // class: heartbeat_mon_c
 // Registered components must regularly call the heartbeat's raise() function during the main
-// phase and shutdown phases, else this will presume a deadlock and trigger a fatal error.  This 
-// heartbeat monitor will check every sample_time_ns (default:5000) to ensure that at least 1 
+// phase and shutdown phases, else this will presume a deadlock and trigger a fatal error.  This
+// heartbeat monitor will check every sample_time_ns (default:5000) to ensure that at least 1
 // registered component has seen activity.
 class heartbeat_mon_c extends uvm_component;
    //----------------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ class heartbeat_mon_c extends uvm_component;
    // type: starting_phase_e
    // The pre-phase in which the heartbeat monitor will start
    typedef enum { RESET_PHASE, CONFIG_PHASE, MAIN_PHASE } starting_phase_e;
-   
+
    `uvm_component_utils_begin(global_pkg::heartbeat_mon_c)
       `uvm_field_int(enabled,                           UVM_DEFAULT)
       `uvm_field_int(sample_time_ns,                    UVM_DEFAULT | UVM_DEC)
@@ -40,14 +40,14 @@ class heartbeat_mon_c extends uvm_component;
       `uvm_field_int(trace_mode,                        UVM_DEFAULT)
       `uvm_field_int(quiet,                             UVM_DEFAULT)
    `uvm_component_utils_end
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Configuration Fields
 
    // var: enabled
    // Set to 0 to disable the heartbeat monitor
    bit enabled = 1;
-   
+
    // var: sample_time_ns
    // The time between checking to see if at least one component has raised its objection
    sample_time_t sample_time_ns = 5000;
@@ -60,7 +60,7 @@ class heartbeat_mon_c extends uvm_component;
    // var: starting_phase
    // The heartbeat monitor will start either during pre_reset_phase, pre_config_phase, or pre_main_phase
    starting_phase_e starting_phase = CONFIG_PHASE;
-   
+
    // var: trace_mode
    // Set to one to turn on all objection trace modes
    bit trace_mode = 0;
@@ -84,11 +84,11 @@ class heartbeat_mon_c extends uvm_component;
    // var: override_times
    // A hash of times for each component that wishes to override the sample_time
    time override_times[uvm_component];
-   
+
    // var: start_monitor
    // An event that is triggered when main_phase starts
    event start_monitor;
-   
+
    // var: stop_monitor
    // An event that is triggered when all objections to the shutdown phase have ended
    event stop_monitor;
@@ -97,7 +97,7 @@ class heartbeat_mon_c extends uvm_component;
    // Set or cleared by pauser() function.  When set, the heartbeat monitor will
    // produce reports but will not produce errors.
    bit   paused;
-   
+
    // var: deadlock_occurred
    // Set to 1 on deadlock
    bit   deadlock_occurred = 0;
@@ -120,7 +120,7 @@ class heartbeat_mon_c extends uvm_component;
    // var: pause_objectors_ev
    // Emitted whenever pause_objectors changes
    event pause_objectors_ev;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="heartbeat",
@@ -134,11 +134,11 @@ class heartbeat_mon_c extends uvm_component;
       super.build_phase(phase);
 
       case(starting_phase)
-         RESET_PHASE   : 
+         RESET_PHASE   :
             start_monitor_phase = uvm_pre_reset_phase::get();
-         CONFIG_PHASE  : 
+         CONFIG_PHASE  :
             start_monitor_phase = uvm_pre_configure_phase::get();
-         MAIN_PHASE  : 
+         MAIN_PHASE  :
             start_monitor_phase = uvm_pre_main_phase::get();
       endcase
    endfunction : build_phase
@@ -165,7 +165,7 @@ class heartbeat_mon_c extends uvm_component;
          end
       end
    endfunction : start_of_simulation_phase
-   
+
    ////////////////////////////////////////////
    // func: main_phase
    virtual task run_phase(uvm_phase phase);
@@ -176,17 +176,17 @@ class heartbeat_mon_c extends uvm_component;
               `cn_info(("Heartbeat monitor disabled."))
             return;
          end
-         
+
          // do nothing if no components were added
          if(objections.size() == 0) begin
             if(!quiet)
               `cn_info(("Heartbeat monitor disabled because no components were added to it."))
             return;
          end
-         
+
          // wait for the main phase to start
          @(start_monitor);
-         
+
          // run the hb_monitor and pauser tasks until the post_shutdown_phase.
          fork
             pauser();
@@ -194,12 +194,12 @@ class heartbeat_mon_c extends uvm_component;
             @(stop_monitor);
          join_any
          disable fork;
-         
+
          if(!quiet)
            `cn_info(("Heartbeat monitor finished."))
       end
    endtask : run_phase
-   
+
    ////////////////////////////////////////////
    // func: phase_started
    // Turn the monitor on during the correct phase
@@ -217,13 +217,13 @@ class heartbeat_mon_c extends uvm_component;
       if(phase.get_imp() inside {uvm_pre_reset_phase::get(), uvm_shutdown_phase::get()})
         ->stop_monitor;
    endfunction : phase_ended
-   
+
    ////////////////////////////////////////////
    virtual function void final_phase(uvm_phase phase);
       if(deadlock_occurred)
          `cn_fatal(("Exiting due to deadlock."))
    endfunction : final_phase
-   
+
    ////////////////////////////////////////////
    // func: hb_monitor
    // All of the heartbeat monitoring happens here
@@ -233,12 +233,12 @@ class heartbeat_mon_c extends uvm_component;
 
       if(!quiet)
          `cn_info(("Heartbeat Monitor Starting."))
-      
+
       // clear out any present objections that may have been raised before the
       // shutdown phase
       foreach(objections[comp])
          objections[comp].clear("hb_monitor starting", `uvm_file, `uvm_line);
-      
+
       forever begin
          #(sample_time_ns * 1ns);
 
@@ -253,7 +253,7 @@ class heartbeat_mon_c extends uvm_component;
 
          if(!quiet)
            `cn_info(("---------------------- Heartbeat Monitor ----------------------"))
-         
+
          if(actives.size() && !quiet) begin
             `cn_info(("The following components had heartbeats in the last %0dns:", sample_time_ns))
             summarize(actives);
@@ -281,7 +281,7 @@ class heartbeat_mon_c extends uvm_component;
          ->sampled;
       end
    endtask : hb_monitor
-   
+
    ////////////////////////////////////////////
    // func: register
    // Registers a component to the list of components that will be checked for activity
@@ -289,11 +289,11 @@ class heartbeat_mon_c extends uvm_component;
                                   time _override_time=0);
       if(!enabled)
          return;
-      
+
       if(_comp) begin
          cn_pkg::objection_c obj = new({_comp.get_full_name(), ".heartbeat"});
          string extra_text;
-         
+
          if(trace_mode)
             obj.dbg_level = 1;
          objections[_comp] = obj;
@@ -303,7 +303,7 @@ class heartbeat_mon_c extends uvm_component;
          end
 
          if(!quiet)
-            `cn_info(("Component registered with heartbeat monitor: %s %s", 
+            `cn_info(("Component registered with heartbeat monitor: %s %s",
                       _comp.get_full_name(), extra_text));
       end
    endfunction : register
@@ -317,7 +317,7 @@ class heartbeat_mon_c extends uvm_component;
                                int _lineno);
       if(!enabled)
          return;
-      
+
       if(objections.exists(_comp)) begin
          objections[_comp].raise(_description, 1, _filename, _lineno);
       end else begin
@@ -344,20 +344,20 @@ class heartbeat_mon_c extends uvm_component;
       int clks_to_pause; // the number of clocks to wait
       int clks_waited;   // the actual number of clocks waited
       int junk[$];
-      
+
       forever begin
          do begin
             paused = pause_objectors.size() > 0;
-            if(!paused) 
+            if(!paused)
                @(pause_objectors_ev);
          end while(!paused);
-         
+
          // calculate how many clocks to pause
          junk = pause_objectors.max();
          clks_to_pause = junk[0];
          clks_waited = 0;
          `cn_info(("Heartbeat monitor will be paused for %0d clocks.", clks_to_pause))
-         
+
          fork
             @(pause_objectors_ev);
 
@@ -382,7 +382,7 @@ class heartbeat_mon_c extends uvm_component;
             `cn_info(("Pause completed."))
       end
    endtask : pauser
-   
+
    ////////////////////////////////////////////
    // func: get_obj_list
    // Return the list of obj as a string suitable for printing
@@ -400,12 +400,12 @@ class heartbeat_mon_c extends uvm_component;
    virtual function void summarize(uvm_component _comps[$]);
       if(_comps.size() == 0)
          $display("  <none>");
-      
+
       $display("              COMPONENT NAME                                               LAST HEARTBEAT");
       foreach(_comps[x])
          $display("  %-70s : %t", _comps[x].get_full_name(), objections[_comps[x]].last_raised_time);
    endfunction : summarize
-   
+
 endclass : heartbeat_mon_c
-   
+
 `endif // __GLOBAL_HEARTBEAT_MON_SV__

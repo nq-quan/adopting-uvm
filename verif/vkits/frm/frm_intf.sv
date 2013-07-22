@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_intf.sv
@@ -14,13 +14,13 @@
 
 `ifndef __FRM_INTF_SV__
    `define __FRM_INTF_SV__
-   
+
 // class: frm_intf
 // FRM Framer Interface
 interface frm_intf(input logic clk, input logic rst_n);
 
    import uvm_pkg::*;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Signals
 
@@ -29,7 +29,7 @@ interface frm_intf(input logic clk, input logic rst_n);
    logic        frame;
    logic [31:0] frame_data;
    logic        frame_bp;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Clocking blocks
 
@@ -67,7 +67,7 @@ interface frm_intf(input logic clk, input logic rst_n);
    // var: mon_mp
    // Modport for monitors
    modport mon_mp (clocking mon_cb);
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
 
@@ -77,7 +77,7 @@ interface frm_intf(input logic clk, input logic rst_n);
       frame_len_val = 0;
       frame_len = 5'b0;
    endfunction : reset
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Assertions
 
@@ -85,10 +85,9 @@ interface frm_intf(input logic clk, input logic rst_n);
    not_x: assert property( @(posedge clk)
                            disable iff(rst_n == 'b0)
                            !(frame && $isunknown(frame_data)))
-      else 
+      else
          `cn_err_intf(("frame_data is an X"))
-      
+
 endinterface : frm_intf
 
 `endif // __FRM_INTF_SV__
-   

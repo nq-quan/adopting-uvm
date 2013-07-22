@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // * File        : global_macros.sv
@@ -16,7 +16,7 @@
  `define __GLOBAL_MACROS_SV__
 
    `include "uvm_macros.svh"
-   
+
    //----------------------------------------------------------------------------------------
    // Includes
    `include "global_bug_registry_macros.sv"

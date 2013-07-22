@@ -1,19 +1,8 @@
 // ************************************************************************
-// *                                                                      *
-// *  CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE                            *
-// *                                                                      *
-// *  This software contains information confidential and proprietary     *
-// *  to Cavium, Inc. It shall not be reproduced in whole or in part,     *
-// *  or transferred to other documents, or disclosed to third parties,   *
-// *  or used for any purpose other than that for which it was obtained,  *
-// *  without the prior written consent of Cavium, Inc.                   *
-// *                                                                      *
-// *  Copyright 2010-2012, Cavium, Inc.  All rights reserved.             *
-// *                                                                      *
+// *
+// * legal mumbo-jumbo
+// *
 // ************************************************************************
-// * Author      : bdobbie
-// * Description : Include common to all Verilog files
-// ***********************************************************************
 
 `ifndef _CN_DEFINES_VH
  `define _CN_DEFINES_VH

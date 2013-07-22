@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_seq_lib.sv
@@ -14,11 +14,11 @@
 
 `ifndef __FRM_SEQ_LIB_SV__
    `define __FRM_SEQ_LIB_SV__
-   
+
 `include "frm_frame.sv"
 
 typedef class lib_seq_c;
-   
+
 // class: frame_seq_c
 // Send a single frame
 class frame_seq_c extends uvm_sequence #(frame_c);
@@ -43,7 +43,7 @@ class frame_seq_c extends uvm_sequence #(frame_c);
       `cn_seq_drop;
    endtask : body
 endclass : frame_seq_c
-    
+
 //****************************************************************************************
 class lib_seq_c extends uvm_sequence_library #(frame_c);
    `uvm_object_utils(frm_pkg::lib_seq_c)
@@ -57,7 +57,6 @@ class lib_seq_c extends uvm_sequence_library #(frame_c);
    endfunction : new
 
 endclass : lib_seq_c
-   
+
 
 `endif // __FRM_SEQ_LIB_SV__
-   

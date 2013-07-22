@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   cn_pkg.sv
@@ -48,6 +48,6 @@ package cn_pkg;
 `include "cn_thresh_sem.sv"
 `include "cn_string_utils.sv"
 `include "cn_uid.sv"
-   
+
 endpackage : cn_pkg
 

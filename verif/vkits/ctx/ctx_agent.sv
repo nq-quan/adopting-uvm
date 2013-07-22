@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2013, Caviu
+// * (c) 2013
 // * (utg v0.8)
 // ***********************************************************************
 // File:   ctx_agent.sv
@@ -14,7 +14,7 @@
 
 `ifndef __CTX_AGENT_SV__
    `define __CTX_AGENT_SV__
-   
+
 `include "ctx_drv.sv"
 `include "ctx_mon.sv"
 `include "ctx_sqr.sv"
@@ -33,7 +33,7 @@ class agent_c extends uvm_agent;
    // var: is_active
    // When set to UVM_ACTIVE, the sqr and drv will be present.
    uvm_active_passive_enum is_active = UVM_ACTIVE;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
 
@@ -48,7 +48,7 @@ class agent_c extends uvm_agent;
    sqr_c sqr;
    drv_c drv;
    mon_c mon;
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="agent",
@@ -82,6 +82,5 @@ class agent_c extends uvm_agent;
    endfunction : connect_phase
 
 endclass : agent_c
-   
+
 `endif // __CTX_AGENT_SV__
-   

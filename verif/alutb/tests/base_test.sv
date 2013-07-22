@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.1)
 // ***********************************************************************
 // * File        : base_test.sv
@@ -27,14 +27,14 @@ class base_test_c extends uvm_test;
    //----------------------------------------------------------------------------------------
    // Group: Configuration Fields
 
-   // var: cfg 
+   // var: cfg
    // environment configurations
    alutb_pkg::cfg_c cfg;
-      
-   // var: reg_block 
+
+   // var: reg_block
    // ALUTB register block (reference to the one in cfg)
    alu_csr_pkg::reg_block_c reg_block;
-         
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
@@ -63,7 +63,7 @@ class base_test_c extends uvm_test;
    virtual function void build_phase(uvm_phase phase);
       super.build_phase(phase);
 
-      // Create the global environment        
+      // Create the global environment
       uvm_config_db#(int)::set(this, "global_env.heartbeat_mon", "trace_mode", 1);
       global_pkg::env = global_pkg::env_c::type_id::create("global_env", this);
 
@@ -87,9 +87,9 @@ class base_test_c extends uvm_test;
       // push the register block and the configurations to all blocks that ask for it
       uvm_config_db#(uvm_object)::set(this, "*", "reg_block",    reg_block);
       uvm_config_db#(uvm_object)::set(this, "*", "cfg",          cfg);
-      
+
       alutb_env = alutb_pkg::env_c::type_id::create("alutb_env", this);
-      
+
       // Not randomized by default.  Derived tests can randomize in end_of_elaboration_phase.
       // Create the clock driver
       uvm_config_db#(string)::set(this, "tb_clk_drv", "intf_name", "tb_clk_vi");
@@ -105,7 +105,7 @@ class base_test_c extends uvm_test;
    ////////////////////////////////////////////
    // func: connect_phase
    // Set up the register block.
-   // 
+   //
    // See <reg_block>.
    virtual function void connect_phase(uvm_phase phase);
       super.connect_phase(phase);
@@ -114,7 +114,7 @@ class base_test_c extends uvm_test;
 
       if(reg_block.get_parent() == null) begin
          ctx_pkg::reg_adapter_c ctx_adapter = ctx_pkg::reg_adapter_c::type_id::create("ctx_adapter", , get_full_name());
-         
+
          reg_block.csr_map.set_sequencer(alutb_env.ctx_agent.sqr, ctx_adapter);
          reg_block.csr_map.set_auto_predict(1);
       end
@@ -133,7 +133,7 @@ class base_test_c extends uvm_test;
    virtual task configure_phase(uvm_phase phase);
       uvm_status_e status;
       uvm_reg_data_t data;
-      
+
       phase.raise_objection(this);
       `cn_info(("Performing configuration."))
       reg_block.update(status);
@@ -142,7 +142,7 @@ class base_test_c extends uvm_test;
       `cn_info(("Configuration finished with status %s", status))
       phase.drop_objection(this);
    endtask : configure_phase
-   
+
 endclass : base_test_c
-   
+
 `endif // __BASE_TEST_SV__

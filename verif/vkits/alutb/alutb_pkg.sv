@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   alutb_pkg.sv
@@ -29,5 +29,5 @@ package alutb_pkg;
 `include "alutb_env.sv"
 
 endpackage : alutb_pkg
-   
+
 

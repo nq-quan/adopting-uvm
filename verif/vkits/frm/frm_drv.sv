@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_drv.sv
@@ -16,7 +16,7 @@
    `define __FRM_DRV_SV__
 
 `include "frm_frame.sv"
-   
+
 // class: drv_c
 // Drives Frame Information
 class drv_c extends uvm_driver#(frame_c);
@@ -30,17 +30,17 @@ class drv_c extends uvm_driver#(frame_c);
    // var: intf_name
    // The name of the frm_intf.drv_mp interface to connect to
    string intf_name = "drv_vi";
-   
+
    //----------------------------------------------------------------------------------------
    // Group: TLM Ports
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
    // var: drv_vi
    // Virtual driver interface
    virtual frm_intf.drv_mp drv_vi;
-   
+
    //----------------------------------------------------------------------------------------
    // Methods
    function new(string name="drv",
@@ -62,7 +62,7 @@ class drv_c extends uvm_driver#(frame_c);
    virtual task reset_phase(uvm_phase phase);
       drv_vi.reset();
    endtask : reset_phase
-   
+
    ////////////////////////////////////////////
    // func: main_phase
    virtual task main_phase(uvm_phase phase);
@@ -79,7 +79,7 @@ class drv_c extends uvm_driver#(frame_c);
 
          // ensure we're on the right clock
          @(drv_vi.drv_cb);
-         
+
          // drive the frame request
          drv_vi.drv_cb.frame_len_val <= 'b1;
          drv_vi.drv_cb.frame_len <= req.frame_len;
@@ -87,7 +87,7 @@ class drv_c extends uvm_driver#(frame_c);
          `cn_info(("Driven"));
          drv_vi.reset();
          `cn_info(("Reset"));
-         
+
          // wait for frame
          @(posedge drv_vi.drv_cb.frame);
          req.frame_data = new[req.frame_len];
@@ -102,5 +102,5 @@ class drv_c extends uvm_driver#(frame_c);
    endtask : main_phase
 
 endclass : drv_c
-   
+
 `endif // __FRM_DRV_SV__

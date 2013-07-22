@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.6.3)
 // ***********************************************************************
 // File:   frm_frame.sv
@@ -33,7 +33,7 @@ class frame_c extends uvm_sequence_item;
    // var: frame_data
    // The collected frame data
    bit [31:0] frame_data[];
-   
+
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="frame");
@@ -46,8 +46,8 @@ class frame_c extends uvm_sequence_item;
    virtual function string convert2string();
       convert2string = $psprintf("FRAME:%0d qwords", frame_len);
    endfunction : convert2string
-   
+
 endclass : frame_c
-   
+
 `endif // __FRM_FRAME_SV__
 

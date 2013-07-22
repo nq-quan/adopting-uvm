@@ -1,4 +1,0 @@
-To create patch files, run the following from the root directory:
-
-% svn diff --old=svn+ssh://masvn/svn/o68/branches/uvmtut/verif --new=verif --depth infinity > ../common/bin/uvm_tutorial/lessons/lesson13.patch
-% svn diff --old=svn+ssh://masvn/svn/o68/branches/uvmtut/rtl --new=rtl --depth infinity >> ../common/bin/uvm_tutorial/lessons/lesson13.patch

@@ -4,7 +4,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011, Caviu
+// * (c) 2011
 // * (utg v0.3.3)
 // ***********************************************************************
 // File:   alutb_cfg.sv
@@ -55,7 +55,7 @@ class cfg_c extends uvm_object;
    // Functional coverage group (TODO)
    covergroup cg;
    endgroup : cg
-      
+
 endclass : cfg_c
-   
+
 `endif // __ALUTB_CFG_SV__
