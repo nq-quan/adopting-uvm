@@ -1,0 +1,12 @@
++incdir+../../verif/alutb
++incdir+../../verif/common
++incdir+../../verif/uvm_common
++incdir+../../verif/hdl
++incdir+../../verif/alutb/tests
++incdir+../../rtl/include
+../../verif/alutb/alutb_tb_top.sv
+../../verif/alutb/alu_wrapper.sv
+../../verif/alutb/tests/basic.sv
+../../verif/alutb/tests/base_test.sv
+-f ../../verif/alutb/rtl.flist
+

@@ -1,0 +1,3 @@
++incdir+../../verif/vkits/ctx
+../../verif/vkits/ctx/ctx_intf.sv
+../../verif/vkits/ctx/ctx_pkg.sv

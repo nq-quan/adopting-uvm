@@ -1,0 +1,5 @@
++incdir+../../rtl/include
+-y ../../verif/hdl
+-y ../../rtl/include
+-y ../../rtl/alu
+

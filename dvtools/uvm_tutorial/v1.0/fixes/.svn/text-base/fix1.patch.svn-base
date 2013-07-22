@@ -1,0 +1,44 @@
+Index: rtl/alu/alu_math.v
+===================================================================
+--- rtl/alu/alu_math.v	(revision 156811)
++++ rtl/alu/alu_math.v	(working copy)
+@@ -59,6 +59,8 @@
+    reg [31:0]    result;
+    reg           ready;
+ 
++   reg [15:0]    denom;
++   
+    // register inputs
+    always @(posedge clk) begin
+       ctl_r <= ctl;
+@@ -148,16 +150,20 @@
+          ready      <= 1'b0;
+          operation  <= 4'b0;
+       end else begin
+-         nxt_result <= (state == COMPUTE_1 && operation == ADD_A_B)?  (k_val_r * (aval+bval) + c_val_r) :
+-                       (state == COMPUTE_1 && operation == SUB_A_B)?  (k_val_r * (aval-bval) + c_val_r) :
+-                       (state == COMPUTE_1 && operation == SUB_B_A)?  (k_val_r * (bval-aval) + c_val_r) :
+-                       (state == COMPUTE_1 && operation == INC_A)?    (k_val_r * (aval+1)    + c_val_r) :
+-                       (state == COMPUTE_1 && operation == INC_B)?    (k_val_r * (bval+1)    + c_val_r) :
+-                       (state == COMPUTE_2 && operation == MUL_A_B)?  (k_val_r * (aval*bval) + c_val_r) :
+-                       (state == COMPUTE_3 && operation == DIV_A_B)?  (k_val_r * (aval/bval) + c_val_r) :
+-                       (state == COMPUTE_3 && operation == DIV_B_A)?  (k_val_r * (bval/aval) + c_val_r) :
+-                       (state == COMPUTE_1 && operation == CLR_RES)?  0                                 :
+-                       (state == COMPUTE_1 && operation == ACCUM)?    (aval + result)                   :
++         denom      <= (state == COMPUTE_1 && operation == DIV_A_B)? ((bval == 0)? 1 : bval) :
++                       (state == COMPUTE_1 && operation == DIV_B_A)? ((aval == 0)? 1 : aval) :
++                       denom;
++         
++         nxt_result <= (state == COMPUTE_1 && operation == ADD_A_B)?  (k_val_r * (aval+bval)  + c_val_r) :
++                       (state == COMPUTE_1 && operation == SUB_A_B)?  (k_val_r * (aval-bval)  + c_val_r) :
++                       (state == COMPUTE_1 && operation == SUB_B_A)?  (k_val_r * (bval-aval)  + c_val_r) :
++                       (state == COMPUTE_1 && operation == INC_A)?    (k_val_r * (aval+1)     + c_val_r) :
++                       (state == COMPUTE_1 && operation == INC_B)?    (k_val_r * (bval+1)     + c_val_r) :
++                       (state == COMPUTE_2 && operation == MUL_A_B)?  (k_val_r * (aval*bval)  + c_val_r) :
++                       (state == COMPUTE_3 && operation == DIV_A_B)?  (k_val_r * (aval/denom) + c_val_r) :
++                       (state == COMPUTE_3 && operation == DIV_B_A)?  (k_val_r * (bval/denom) + c_val_r) :
++                       (state == COMPUTE_1 && operation == CLR_RES)?  0                                  :
++                       (state == COMPUTE_1 && operation == ACCUM)?    (aval + result)                    :
+                        nxt_result;
+          result     <= nxt_result;
+          ready      <= (state == RESULT)? 1'b1 : 1'b0;

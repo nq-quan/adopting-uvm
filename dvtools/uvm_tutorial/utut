@@ -1,0 +1,416 @@
+#!/usr/bin/env python2.7
+#-*- mode: Python;-*-
+
+# **********************************************************************
+# * CAVIUM CONFIDENTIAL
+# *
+# *                         PROPRIETARY NOTE
+# *
+# * This software contains information confidential and proprietary to
+# * Cavium, Inc. It shall not be reproduced in whole or in part, or
+# * transferred to other documents, or disclosed to third parties, or
+# * used for any purpose other than that for which it was obtained,
+# * without the prior written consent of Cavium, Inc.
+# * (c) 2011, Cavium, Inc.  All rights reserved.
+# *
+# ***********************************************************************
+# File:   utut
+# Author: bhunter
+# About:  UVM Tutorial Generator
+
+
+########################################################################################
+# Imports
+import argparse
+import cn_logging
+import os
+import sys
+import re
+
+__version__     = '0.7'
+__author__      = 'Brian Hunter'
+__email__       = 'brian.hunter@cavium.com'
+
+########################################################################################
+# Constants
+
+COMMANDS    = ('create', 'code', 'cleanup', 'lesson', 'chapter', 'fix', 'get_pdf', 'mkpatch')
+UVMTUT_URL  = "svn+ssh://masvn/svn/o68/branches"
+UVMTUT_NAME = "uvmtut"
+DEFAULT_REVISION  = 'v1.0'
+UTUT_DIR    = os.path.dirname(os.path.realpath(__file__))
+
+########################################################################################
+# Global Variables
+Options = None
+Log = None
+
+#######################################################################################
+def parseArgs():
+    """
+    Parse arguments
+    """
+
+    global Options, Log
+
+    p = argparse.ArgumentParser(usage="utut <command> <options>",
+                                formatter_class=argparse.RawDescriptionHelpFormatter,
+                                description="""
+UVM Tutorial Script (v%s):
+
+    get_pdf: Fetches the Tutorial PDF for the selected revision (defaults to
+                the latest revision).
+                usage: utut get_pdf
+
+    create:  Creates the branch in SVN and checks it out in the current
+                working directory with the name <my_branch>
+                usage: utut create <MY_BRANCH>
+
+    code:    Returns 1 or more code snippets as plain text from the
+                tutorial. May specify as many code numbers as you like. Separate
+                ranges with a - character.
+                usage: utut code <N1> [<N2>-<N3> <N4> ...]
+
+    lesson:  Makes an area up-to-date with the solutions from the given lesson.
+                usage: utut lesson <LNUM>
+
+    fix:     Patches the current rtl/ directory with a fix number.
+                usage: utut fix <FNUM>
+
+    cleanup: Removes one or all SVN branches for the user.
+                usage: utut cleanup
+    """ % (__version__),
+                                        add_help=True)
+
+    p.add_argument("cmd",              action="store",      choices=COMMANDS)
+    p.add_argument("extras",           action="store",      nargs="*")
+    p.add_argument("--revision", '-r', action="store",      default=DEFAULT_REVISION, help="Use a different revision of the tutorial (default:%s)" % DEFAULT_REVISION)
+    p.add_argument("--dbg", '-d',      action='store_true', default=False,     help="Run with debug information.")
+    Options = p.parse_args()
+
+    # create Log
+    level = {True: cn_logging.logging.DEBUG,
+             False: cn_logging.logging.INFO}[Options.dbg]
+    Log = cn_logging.createLogger('utut_log', level)
+
+    # Ensure that create or lesson options have only 1 argument
+    if Options.cmd == 'create' and len(Options.extras) != 1:
+        Log.critical("usage: utut create <name_of_directory>")
+
+    # Ensure that code option has at least 1 argument
+    if Options.cmd == 'code' and len(Options.extras) == 0:
+        Log.critical("usage: utut code n0 [n1 n2 ...]")
+
+    # Ensure that cleanup command has no arguments
+    if Options.cmd == 'cleanup' and len(Options.extras) != 0:
+        Log.critical("usage: utut cleanup")
+
+    # Ensure that mkpatch has a lesson number
+    if Options.cmd == 'mkpatch' and len(Options.extras) != 1:
+        Log.critical("usage: utut mkpatch lessonNum")
+
+    # Ensure that lesson number is valid
+    if Options.cmd in ('lesson', 'chapter', 'fix'):
+        if len(Options.extras) != 1:
+            Log.critical("usage: utut [lesson|lesson|fix] <LNUM>")
+
+    # Modify revision to comply
+    rexp = re.compile("v\d\.\d+")
+    rexp_results = rexp.match(Options.revision)
+    if not rexp_results:
+        Log.critical("usage: revision must be similar to 'v0.4'")
+
+    # Ensure that specified revision is available for fixes and lessons
+    if Options.cmd != 'create':
+        availableRevisions = [it for it in os.listdir(UTUT_DIR) if it.startswith('v')]
+        if Options.revision not in availableRevisions:
+            Log.critical("Revision %s not available.\nSelect from: %s" % (Options.revision, ','.join(availableRevisions)))
+
+########################################################################################
+def createTree(dirName):
+    """
+    1. Copy a uvmtut branch entitled uvmtut_<username>
+    2. Check out the uvmtut_<username> branch into dirName
+    """
+
+    import svn_tools as svn
+    from getpass import getuser
+    svn.Log = Log
+
+    # set up variables
+    username   = getuser()
+    cwd        = os.getcwd()
+    branchName = "%s_%s_%s" % (UVMTUT_NAME, username, dirName)
+    branchUrl  = "%s/%s" % (UVMTUT_URL, branchName)
+    msg        = "CreateBranch:%s" % branchName
+
+    if Options.revision == 'v0.4':
+        # note: v0.4 is named uvmtut. All future revisions will be named uvmtut_vX.X
+        revision = ""
+    else:
+        revision = "_" + Options.revision
+
+    Log.debug("Options.revision = '%s'" % Options.revision)
+    Log.debug("Set revision = '%s'" % revision)
+    Log.debug("full url = '%s%s/%s'" % (UVMTUT_URL, revision, UVMTUT_NAME))
+
+    # create personal branch
+    cmd = 'cp -m %s %s/%s%s %s' % (msg, UVMTUT_URL, UVMTUT_NAME, revision, branchUrl)
+
+    try:
+        svn.run(cmd, cwd, waitChar='.', quiet=False, permitErrCode=False)
+    except svn.SvnError:
+        Log.critical("\nSVN copy failed")
+
+    # check out personal branch
+    cmd = 'co %s %s' % (branchUrl, dirName)
+    try:
+        svn.run(cmd, cwd, waitChar='.', quiet=False, permitErrCode=False)
+    except svn.SvnError:
+        Log.critical("\nSVN checkout failed")
+
+########################################################################################
+def getPdf():
+    """
+    Copies the <revision>/UVM_Tutorial.pdf file into the current working directory.
+    """
+
+    import shutil
+
+    pdfFile = os.path.join(UTUT_DIR, Options.revision, 'UVM_Tutorial.pdf')
+    if not os.path.exists(pdfFile):
+        Log.critical("Revision %s of the tutorial does not exist." % Options.revision)
+
+    Log.info("Copying %s to current working directory." % pdfFile)
+
+    try:
+        shutil.copy(pdfFile, os.getcwd())
+    except:
+        Log.critical("Copy failed.")
+
+########################################################################################
+def cleanupBranches():
+    """
+    Find all branches for the user and remove them from svn.
+    """
+
+    import svn_tools as svn
+    from getpass import getuser
+    svn.Log = Log
+
+    # set up variables
+    username = getuser()
+    cwd = os.getcwd()
+    cmd = "ls %s" % (UVMTUT_URL)
+
+    # get branches
+    Log.info("Looking for branches for user %s" % username)
+    try:
+        stdout = svn.run(cmd, cwd, waitChar='.', quiet=True, permitErrCode=False)
+    except svn.SvnError:
+        Log.critical("svn command failed: '%s'" % cmd)
+
+    branches = [it.rstrip() for it in stdout if '%s_%s_' % (UVMTUT_NAME, username) in it]
+
+    Log.info("Found these branches:\n")
+    for (n, br) in enumerate(branches):
+        print "%3d: %s" % (n, br)
+    print
+
+    while True:
+        try:
+            answer = raw_input("Select branches to be deleted [0-%0d or all]:  " % (len(branches)-1))
+        except KeyboardInterrupt:
+            Log.plain_info("Exiting without cleanup.")
+            sys.exit(1)
+
+        if answer == 'all':
+            break
+        try:
+            answer = int(answer)
+        except ValueError:
+            pass
+        else:
+            if answer in range(len(branches)):
+                branches = [branches[answer]]
+                break
+
+        Log.plain_info("Please answer %s or all." % (range(len(branches))))
+
+    print "Removing these branches:"
+    print branches
+
+    branches = [os.path.join(UVMTUT_URL, it) for it in branches]
+    cmd = "rm -m RemoveBranchesFor:%s %s" % (username, ' '.join(branches))
+    try:
+        svn.run(cmd, cwd, waitChar='.', permitErrCode=False)
+    except svn.SvnError:
+        Log.critical("svn command failed: '%s'" % cmd)
+
+########################################################################################
+def printCodes(codeNums):
+    """
+    Fetch the code dictionary from inserter and print out each code
+    """
+
+    import inserter
+    inserter.Log = Log
+
+    codes = inserter.fetchCode(codeNums, Options.revision)
+    for codeNum in codeNums:
+        (fName, snippet) = codes[codeNum]
+        print "###################"
+        print "# CODE:", codeNum
+        if Options.revision != DEFAULT_REVISION:
+            print "# REV:", Options.revision
+        if fName:
+            print "# FILE:", fName
+        print "###################"
+        print snippet
+        print
+
+########################################################################################
+def fetchLesson(lessonNum):
+    import fetcher
+    import area_utils
+    import svn_tools as svn
+
+    fetcher.Log, svn.Log = Log, Log
+
+    # first, ensure that this is a legal lesson number
+    if lessonNum not in fetcher.availablePatches(fetcher.LESSONS, Options.revision):
+        Log.critical("Lesson/Chapter #%0d is not an available lesson patch." % lessonNum)
+
+    # now get the root directory
+    try:
+        rootDir = area_utils.calcRootDir()
+    except area_utils.AreaError:
+        Log.critical("command must be run from within the project tree.")
+
+    # check status of given area. If it has modifications, then make sure user
+    # is ok with scrubbing them clean
+    status = svn.analyze_status(rootDir)
+    if svn.hasModifications(status):
+        Log.plain_info("The %s directory will first be scrubbed clean because it has modifications." % rootDir)
+
+        try:
+            while True:
+                answer = raw_input("Are you sure [y/n]? ")
+                if answer in ('y', 'n'):
+                    break
+                Log.plain_info("Please answer y or n.")
+
+            if answer == 'n':
+                Log.plain_info("No changes made.")
+                sys.exit(0)
+
+            # scrub area clean
+            Log.plain_info("Scrubbing area...")
+            try:
+                output = svn.scrub(rootDir)
+            except svn.SvnError:
+                Log.error("The %s scrub command raised an error.  Cannot continue." % svn.SVN_TOOL)
+                if output:
+                    print '\n'.join(output)
+                Log.critical("Exiting.")
+        except KeyboardInterrupt:
+            Log.critical("\nCTRL-C detected.  Exiting.")
+
+    # the cwd may have been removed during the scrub command, so change to the root directory
+    os.chdir(rootDir)
+
+    # apply the patch
+    fetcher.fetchPatch(fetcher.LESSONS, lessonNum, Options.revision)
+
+########################################################################################
+def fetchFix(fixNum):
+    import fetcher
+    fetcher.Log = Log
+
+    fetcher.fetchPatch(fetcher.FIXES, fixNum, Options.revision)
+
+########################################################################################
+def makeLessonPatch(patchNum):
+    """
+    Runs the svn diff utility twice from the current tree's root directory to create the
+    lesson patch file.
+    """
+
+    import area_utils
+    from getpass import getuser
+
+    if getuser() != 'bhunter':
+        Log.critical("You are not authorized to make a patch.")
+
+    rootDir = area_utils.calcRootDir()
+    patchFileName = os.path.join(UTUT_DIR, Options.revision, 'lessons/lesson%d.patch' % patchNum)
+    if os.path.exists(patchFileName):
+        Log.critical("Patchfile %s already exists.  Remove it first." % patchFileName)
+
+    Log.info("Making %s" % patchFileName)
+    os.chdir(rootDir)
+    cmd = "rs4 diff --old=svn+ssh://masvn/svn/o68/branches/uvmtut_%s/verif --new=verif --depth infinity > %s" % (Options.revision, patchFileName)
+    os.system(cmd)
+    cmd = "rs4 diff --old=svn+ssh://masvn/svn/o68/branches/uvmtut_%s/rtl --new=rtl --depth infinity >> %s" % (Options.revision, patchFileName)
+    os.system(cmd)
+
+
+#######################################################################################
+def main():
+    parseArgs()
+
+    Log.info("Working with UVM Tutorial version %s" % Options.revision)
+    if Options.cmd == 'create':
+        createTree(Options.extras[0])
+
+    elif Options.cmd == 'get_pdf':
+        getPdf()
+
+    elif Options.cmd == 'code':
+        items = []
+        try:
+            for extra in Options.extras:
+                if '-' in extra:
+                    vals = [int(it) for it in extra.split('-')]
+                    items.extend(xrange(vals[0], vals[1]+1))
+                else:
+                    items.append(int(extra))
+        except ValueError:
+            raise
+            Log.critical("Invalid code. usage: utut code <N1> [<N2> <N3> ...]")
+
+        printCodes([int(it) for it in items])
+
+    elif Options.cmd in ['lesson', 'chapter']:
+        fetchLesson(int(Options.extras[0]))
+
+    elif Options.cmd == 'fix':
+        fetchFix(int(Options.extras[0]))
+
+    elif Options.cmd == 'cleanup':
+        cleanupBranches()
+
+    elif Options.cmd == 'mkpatch':
+        makeLessonPatch(int(Options.extras[0]))
+
+#######################################################################################
+if __name__ == '__main__':
+    from cmdline import logUsage
+    from exceptions import SystemExit
+
+    logUsage('utut', __version__)
+
+    try:
+        main()
+    except SystemExit, e:
+        try:
+            exit(int(str(e)))
+        except ValueError:
+            print e
+            exit(1)
+    except:
+        import email_utils
+        email_utils.mail_traceback('webmaster@cavium.com', __email__,
+                                   'utut v%s Error Detected' % (__version__),
+                                   toolname='utut')
+        raise

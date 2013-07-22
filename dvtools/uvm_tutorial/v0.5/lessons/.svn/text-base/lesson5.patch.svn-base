@@ -1,0 +1,1020 @@
+Index: verif/vkits/alu/alu.flist
+===================================================================
+--- verif/vkits/alu/alu.flist	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu.flist	(.../verif)	(revision 0)
+@@ -0,0 +1,3 @@
+++incdir+../../verif/vkits/alu
++../../verif/vkits/alu/alu_intf.sv
++../../verif/vkits/alu/alu_pkg.sv
+Index: verif/vkits/alu/alu_mon.sv
+===================================================================
+--- verif/vkits/alu/alu_mon.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu_mon.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,75 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   alu_mon.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __ALU_MON_SV__
++   `define __ALU_MON_SV__
++   
++// (`includes go here)
++
++// class: mon_c
++// (Describe me)
++class mon_c extends uvm_monitor;
++   `uvm_component_utils_begin(alu_pkg::mon_c)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: TLM Ports
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="mon",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      super.run_phase(phase);
++   endtask : run_phase
++
++endclass : mon_c
++   
++`endif // __ALU_MON_SV__
++   
+\ No newline at end of file
+Index: verif/vkits/alu/alu_drv.sv
+===================================================================
+--- verif/vkits/alu/alu_drv.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu_drv.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,74 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   alu_drv.sv
++// Author: bhunter
++/* About:  ALU Driver Class
++ *************************************************************************/
++
++`ifndef __ALU_DRV_SV__
++   `define __ALU_DRV_SV__
++   
++`include "alu_item.sv"
++
++// class: drv_c
++// (Describe me)
++class drv_c extends uvm_driver#(item_c);
++   `uvm_component_utils_begin(alu_pkg::drv_c)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: TLM Ports
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="drv",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      super.run_phase(phase);
++   endtask : run_phase
++
++endclass : drv_c
++   
++`endif // __ALU_DRV_SV__
+Index: verif/vkits/alu/alu_item.sv
+===================================================================
+--- verif/vkits/alu/alu_item.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu_item.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,123 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   alu_item.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __ALU_ITEM_SV__
++   `define __ALU_ITEM_SV__
++
++// class: item_c
++// An ALU Transaction as a sequence item
++class item_c extends uvm_sequence_item;
++   //----------------------------------------------------------------------------------------
++   // Group: Types
++   typedef enum bit [7:0] {
++                           ADD_A_B = 0,
++                           SUB_A_B = 1,
++                           SUB_B_A = 2,
++                           MUL_A_B = 3,
++                           DIV_A_B = 4,
++                           DIV_B_A = 5,
++                           INC_A   = 6,
++                           INC_B   = 7,
++                           CLR_RES = 8,
++                           ACCUM   = 9
++                           } operation_e;
++
++   `uvm_object_utils_begin(alu_pkg::item_c)
++      `uvm_field_enum(operation_e, operation, UVM_ALL_ON)
++      `uvm_field_int (alpha,                  UVM_ALL_ON | UVM_NOPACK | UVM_NOCOMPARE)
++      `uvm_field_int (beta,                   UVM_ALL_ON | UVM_NOPACK | UVM_NOCOMPARE)
++   `uvm_object_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   // var: operation
++   rand operation_e operation;
++
++   // var: A variable
++   rand bit [15:0] alpha;
++
++   // var: B variable
++   rand bit [15:0] beta;
++
++   // ensure that all operands have legal values
++   constraint protocol_cnstr {
++      (operation == DIV_A_B) -> beta != 0;
++      (operation == DIV_B_A) -> alpha != 0;
++      (operation == SUB_A_B) -> alpha > beta;
++      (operation == SUB_B_A) -> beta > alpha;
++   }
++
++   // var: result
++   // This is the result of the operation, filled in by the driver and sent back with the response
++   result_t result;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="item");
++      super.new(name);
++   endfunction : new
++
++   //----------------------------------------------------------------------------------------
++   // func: convert2string
++   // Single-line printing
++   virtual              function string convert2string();
++      convert2string = $psprintf("%s A:%04X B:%04X", operation, alpha, beta);
++   endfunction : convert2string
++
++   ////////////////////////////////////////////
++   // func: do_pack
++   virtual              function void do_pack(uvm_packer packer);
++      super.do_pack(packer);
++
++      if(operation inside {[ADD_A_B : INC_A], ACCUM})
++        packer.pack_field_int(alpha, 16);
++      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
++        packer.pack_field_int(beta, 16);
++   endfunction : do_pack
++
++   ////////////////////////////////////////////
++   // func: do_unpack
++   virtual              function void do_unpack(uvm_packer packer);
++      super.do_unpack(packer);
++
++      if(operation inside {[ADD_A_B : INC_A], ACCUM})
++        alpha = packer.unpack_field_int(16);
++      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
++        beta = packer.unpack_field_int(16);
++   endfunction : do_unpack
++
++   ////////////////////////////////////////////
++   // func: do_compare
++   virtual              function bit do_compare(uvm_object rhs,
++                                                uvm_comparer comparer);
++      item_c _rhs;
++      $cast(_rhs, rhs);
++      do_compare = super.do_compare(rhs, comparer);
++      if(operation inside {[ADD_A_B : INC_A], ACCUM})
++        do_compare &= comparer.compare_field_int("alpha", alpha, _rhs.alpha, 16);
++      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
++        do_compare &= comparer.compare_field_int("beta", beta, _rhs.beta, 16);
++   endfunction : do_compare
++endclass : item_c
++
++
++  `endif // __ALU_ITEM_SV__
++
+Index: verif/vkits/alu/alu_agent.sv
+===================================================================
+--- verif/vkits/alu/alu_agent.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu_agent.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,98 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   alu_agent.sv
++// Author: bhunter
++/* About:  ALU Agent Class
++ *************************************************************************/
++
++`ifndef __ALU_AGENT_SV__
++   `define __ALU_AGENT_SV__
++   
++`include "alu_drv.sv"
++`include "alu_mon.sv"
++`include "alu_sqr.sv"
++`include "alu_item.sv"
++
++// class: agent_c
++// (Description)
++class agent_c extends uvm_agent;
++   `uvm_component_utils_begin(alu_pkg::agent_c)
++      `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_ALL_ON)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   // var: is_active
++   // When set to UVM_ACTIVE, the sqr and drv will be present.
++   uvm_active_passive_enum is_active = UVM_ACTIVE;
++   
++   //----------------------------------------------------------------------------------------
++   // Group: TLM Ports
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   // vars: Driver, monitor, and sequencer
++   // Driver, monitor, and sequencer found in most agents
++   sqr_c sqr;
++   drv_c drv;
++   mon_c mon;
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="agent",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++
++      mon = mon_c::type_id::create("mon", this);
++      if(is_active) begin
++         drv = drv_c::type_id::create("drv", this);
++         sqr = sqr_c::type_id::create("sqr", this);
++      end
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++
++      if(is_active)
++         drv.seq_item_port.connect(sqr.seq_item_export);
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      super.run_phase(phase);
++   endtask : run_phase
++
++endclass : agent_c
++   
++`endif // __ALU_AGENT_SV__
++   
+\ No newline at end of file
+Index: verif/vkits/alu/alu_intf.sv
+===================================================================
+--- verif/vkits/alu/alu_intf.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu_intf.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,102 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   alu_intf.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __ALU_INTF_SV__
++   `define __ALU_INTF_SV__
++   
++// class: alu_intf
++interface alu_intf(input logic clk,
++                   input logic rst_n);
++
++   //----------------------------------------------------------------------------------------
++   // Group: Signals
++
++   // var: ctl
++   // Asserted only on the first cycle of a new transaction, while dat contains the operation
++   logic        ctl;
++
++   // var: dat
++   // The input data nibble that contains the operation and operands
++   logic [7:0]  dat;
++
++   // var: ready
++   // The output of the ALU that indicates when the result data is valid
++   logic        ready;
++
++   // var: result
++   // The 32-bit result data
++   logic [31:0] result;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Clocking blocks
++
++   // var: drv_cb
++   // A clocking block that represents how the environment's driver sees the interface
++   clocking drv_cb @(posedge clk);
++      output    ctl;
++      output    dat;
++      input     ready;
++      input     result;
++      input     rst_n;
++   endclocking : drv_cb
++
++   // var: mon_cb
++   // A clocking block that represents how the environment's monitor sees the interface
++   clocking mon_cb @(posedge clk);
++      input     ctl;
++      input     dat;
++      input     ready;
++      input     result;
++      input     rst_n;
++   endclocking : mon_cb
++
++   //----------------------------------------------------------------------------------------
++   // Group: Modports
++
++   modport drv_mp(clocking drv_cb,
++                  import reset);
++   modport mon_mp(clocking mon_cb);
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++
++   // func: reset
++   // Convenience function for the driver to reset its outputs
++   function void reset();
++      ctl = 0;
++      dat = 8'b0;
++   endfunction : reset
++   //----------------------------------------------------------------------------------------
++   // Group: Assertions
++
++   // Ensure that no signals are ever an X when they shouldn't be
++   always @(posedge clk) begin
++      if(rst_n) begin
++         assert(!$isunknown(ctl)) else $cnErr("Signal ctl is an X.");
++         assert(!$isunknown(dat)) else $cnErr("Signal dat is an X.");
++         assert(!$isunknown(ready)) else $cnErr("Signal ready is an X.");
++         if(ready)
++            assert(!$isunknown(result)) else $cnErr("Signal result is an X.");
++      end
++   end
++
++endinterface : alu_intf
++
++`endif // __ALU_INTF_SV__
++   
+\ No newline at end of file
+Index: verif/vkits/alu/alu_pkg.sv
+===================================================================
+--- verif/vkits/alu/alu_pkg.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu_pkg.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,51 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   alu_pkg.sv
++// Author: bhunter
++/* About:  alu package
++ *************************************************************************/
++
++
++// (`includes of macros may go here)
++`include "uvm_macros.svh"
++
++// package: alu_pkg
++// (Describe me)
++package alu_pkg;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Imports
++   import uvm_pkg::*;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Types
++   
++   // type: result_t
++   // The output type of the ALU
++   typedef logic [31:0] result_t;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Includes
++
++`include "alu_agent.sv"
++`include "alu_drv.sv"
++`include "alu_item.sv"
++`include "alu_mon.sv"
++`include "alu_sqr.sv"
++   
++endpackage : alu_pkg
++   
++
+Index: verif/vkits/alu/alu_sqr.sv
+===================================================================
+--- verif/vkits/alu/alu_sqr.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/vkits/alu/alu_sqr.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,75 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   alu_sqr.sv
++// Author: bhunter
++/* About:  ALU Sequencer Class
++ *************************************************************************/
++
++`ifndef __ALU_SQR_SV__
++   `define __ALU_SQR_SV__
++   
++`include "alu_item.sv"
++
++// class: sqr_c
++// (Describe me)
++class sqr_c extends uvm_sequencer#(item_c);
++   `uvm_component_utils_begin(alu_pkg::sqr_c)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: TLM Ports
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="sqr",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      super.run_phase(phase);
++   endtask : run_phase
++
++endclass : sqr_c
++   
++`endif // __ALU_SQR_SV__
++   
+\ No newline at end of file
+Index: verif/vkits/alutb/alutb_env.sv
+===================================================================
+--- verif/vkits/alutb/alutb_env.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 103396)
++++ verif/vkits/alutb/alutb_env.sv	(.../verif)	(working copy)
+@@ -60,6 +60,10 @@
+    // The ncb env
+    ncb_pkg::env_c ncb_env;
+ 
++   // var: alu_agent
++   // The ALU agent
++   alu_pkg::agent_c alu_agent;
++
+    //----------------------------------------------------------------------------------------
+    // Group: Methods
+    function new(string name="env",
+@@ -86,6 +90,10 @@
+ 
+       uvm_config_db#(uvm_object)::set(this, "ncb_env", "cfg", ncb_cfg);
+       ncb_env = ncb_pkg::env_c::type_id::create("ncb_env", this);
++
++      // create the ALU agent
++      uvm_config_db#(int)::set(this, "alu_agent", "is_active", is_active);
++      alu_agent = alu_pkg::agent_c::type_id::create("alu_agent", this);
+    endfunction : build_phase
+ 
+    ////////////////////////////////////////////
+Index: verif/alutb/tests/basic.sv
+===================================================================
+--- verif/alutb/tests/basic.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 103396)
++++ verif/alutb/tests/basic.sv	(.../verif)	(working copy)
+@@ -29,19 +29,35 @@
+    `uvm_component_utils(basic_test_c)
+ 
+    //----------------------------------------------------------------------------------------
+-   // Methods
++   // Group: Methods
+    function new(string name="test",
+                 uvm_component parent=null);
+       super.new(name, parent);
+    endfunction : new
+ 
+    ////////////////////////////////////////////
+-   // func: build_phase
+-   virtual function void build_phase(uvm_phase phase);
+-      super.build_phase(phase);
+-   endfunction : build_phase
++   // func: run_phase
++   virtual task main_phase(uvm_phase phase);
++      byte unsigned stream[];
++      alu_pkg::item_c item;
++      alu_pkg::item_c unp_item = alu_pkg::item_c::type_id::create("unp_item");;
++      phase.raise_objection(this);
++
++      repeat(50) begin
++         item = alu_pkg::item_c::type_id::create("item");
++         item.randomize();
++         `cn_info(("Created ALU transaction: %s", item.convert2string()))
++         item.pack_bytes(stream);
++         `cn_info(("Bytes: %s", cn_pkg::print_ubyte_array(stream)))
++         unp_item.unpack_bytes(stream);
++         `cn_info(("Unpacked: %s", unp_item.convert2string()))
++         if(item.compare(unp_item) == 0)
++            `cn_err(("Miscompare!"))
++      end
++      phase.drop_objection(this);
++   endtask : main_phase
++
++ endclass : basic_test_c
+    
+-endclass : basic_test_c
+-   
+ `endif // __BASIC_SV__
+       
+\ No newline at end of file
+Index: verif/alutb/tests/duty_cycle.sv
+===================================================================
+--- verif/alutb/tests/duty_cycle.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/alutb/tests/duty_cycle.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,48 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   duty_cycle.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __DUTY_CYCLE_SV__
++ `define __DUTY_CYCLE_SV__
++
++ `include "base_test.sv"
++ `include "clk_duty_cycle.sv"
++
++// class: duty_cycle_test_c
++// Run using the clk_duty_cycle_c instead of cn_pkg::clk_drv_c
++class duty_cycle_test_c extends base_test_c;
++   `uvm_component_utils(duty_cycle_test_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="duty_cycle_test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      set_type_override_by_type(cn_pkg::clk_drv_c::get_type(),
++                                clk_duty_cycle_c::get_type(), .replace(1));
++      super.build_phase(phase);
++   endfunction : build_phase
++
++endclass : duty_cycle_test_c
++`endif // __DUTY_CYCLE_SV__
+Index: verif/alutb/tests/fast_clk.sv
+===================================================================
+--- verif/alutb/tests/fast_clk.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/alutb/tests/fast_clk.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,59 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   fast_clk.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __FAST_CLK_SV__
++   `define __FAST_CLK_SV__
++   
++   `include "base_test.sv"
++// (`includes go here)
++
++// class: fast_clk_test_c
++// (Describe me)
++class fast_clk_test_c extends base_test_c;
++   `uvm_component_utils_begin(fast_clk_test_c)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++      tb_clk_drv.randomize(period_ps) with {
++         period_ps inside {[1800:1999]};
++      };
++      `cn_info(("Selected a period of %0dps", tb_clk_drv.period_ps))
++   endfunction : end_of_elaboration_phase
++
++endclass : fast_clk_test_c
++   
++`endif // __FAST_CLK_SV__
++      
+\ No newline at end of file
+Index: verif/alutb/clk_duty_cycle.sv
+===================================================================
+--- verif/alutb/clk_duty_cycle.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 0)
++++ verif/alutb/clk_duty_cycle.sv	(.../verif)	(revision 0)
+@@ -0,0 +1,56 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// * CAVIUM CONFIDENTIAL                                                 
++// *                                                                     
++// *                         PROPRIETARY NOTE                            
++// *                                                                     
++// * This software contains information confidential and proprietary to  
++// * Cavium, Inc. It shall not be reproduced in whole or in part, or     
++// * transferred to other documents, or disclosed to third parties, or   
++// * used for any purpose other than that for which it was obtained,     
++// * without the prior written consent of Cavium, Inc.                   
++// * (c) 2012, Cavium, Inc.  All rights reserved.                      
++// * (utg v0.6.6)
++// ***********************************************************************
++// File:   clk_duty_cycle.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __CLK_DUTY_CYCLE_SV__
++   `define __CLK_DUTY_CYCLE_SV__
++   
++// class: clk_duty_cycle_c
++// A clock with a duty cycle of 75/25.
++class clk_duty_cycle_c extends cn_pkg::clk_drv_c;
++   `uvm_component_utils(clk_duty_cycle_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="clk_duty_cycle",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      int uptime = 3*period_ps / 4;
++      int downtime = period_ps - uptime;
++
++      // set to initial value
++      clk_vi.clk = (init_x)? 'bx : init_value;
++      #(init_delay_ps * 1ps);
++      forever begin
++         clk_vi.clk = 1;
++         #(uptime * 1ps);
++         clk_vi.clk = 0;
++         #(downtime * 1ps);
++      end
++   endtask : run_phase
++
++endclass : clk_duty_cycle_c
++   
++`endif // __CLK_DUTY_CYCLE_SV__
++   
+\ No newline at end of file
+Index: verif/alutb/alutb_tb_top.sv
+===================================================================
+--- verif/alutb/alutb_tb_top.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 103396)
++++ verif/alutb/alutb_tb_top.sv	(.../verif)	(working copy)
+@@ -37,6 +37,12 @@
+    // The <ncb_intf> instance.
+    ncb_intf ncb_i(.clk(tb_clk), .reset_n(tb_rst_n));
+ 
++   // obj: alu_i
++   // The <alu_intf> instance
++   alu_intf alu_i(.clk(tb_clk), .rst_n(tb_rst_n));
++   initial
++       alu_i.reset();
++
+    //----------------------------------------------------------------------------------------
+    // Group: DUT
+ 
+@@ -44,6 +50,7 @@
+    alu_wrapper alu_wrapper(/*AUTOINST*/
+                            // Interfaces
+                            .ncb_i               (ncb_i),
++                           .alu_i               (alu_i),
+                            // Inputs
+                            .tb_clk              (tb_clk),
+                            .tb_rst_n            (tb_rst_n));
+@@ -58,6 +65,8 @@
+       `cn_set_intf(virtual cn_clk_intf    , "cn_pkg::clk_intf" , "tb_clk_vi", tb_clk_i);
+       `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf" , "tb_rst_vi", tb_rst_i);
+       `cn_set_intf(virtual ncb_intf       , "ncb_pkg::intf"    , "ncb_vi"   , ncb_i);
++      `cn_set_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf", "drv_vi"   , alu_i.drv_mp)
++      `cn_set_intf(virtual alu_intf.mon_mp, "alu_pkg::alu_intf", "mon_vi"   , alu_i.mon_mp)
+    endfunction : pre_run_test
+ 
+    // proc: Reset Busses
+Index: verif/alutb/alutb.flist
+===================================================================
+--- verif/alutb/alutb.flist	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 103396)
++++ verif/alutb/alutb.flist	(.../verif)	(working copy)
+@@ -7,4 +7,5 @@
+ ../../verif/alutb/alu_wrapper.sv
+ ../../verif/alutb/tests/basic.sv
+ ../../verif/alutb/tests/base_test.sv
+-
++../../verif/alutb/tests/fast_clk.sv
++../../verif/alutb/tests/duty_cycle.sv
+Index: verif/alutb/alu_wrapper.sv
+===================================================================
+--- verif/alutb/alu_wrapper.sv	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 103396)
++++ verif/alutb/alu_wrapper.sv	(.../verif)	(working copy)
+@@ -1,11 +1,10 @@
+ module alu_wrapper(input logic tb_clk,
+                    tb_rst_n,
+-                   ncb_intf ncb_i);
++                   ncb_intf ncb_i,
++                   alu_intf alu_i);
+    
+    /*AUTOREGINPUT*/
+    // Beginning of automatic reg inputs (for undeclared instantiated-module inputs)
+-   reg                  alu_ctl;                // To dut of alu.v
+-   reg [7:0]            alu_dat;                // To dut of alu.v
+    reg                  erst_0a_n;              // To dut of alu.v
+    reg [4:0]            frame_len;              // To dut of alu.v
+    reg                  frame_len_val;          // To dut of alu.v
+@@ -31,8 +30,6 @@
+    // End of automatics
+    /*AUTOWIRE*/
+    // Beginning of automatic wires (for undeclared instantiated-module outputs)
+-   wire                 alu_ready;              // From dut of alu.v
+-   wire [31:0]          alu_result;             // From dut of alu.v
+    wire [16:0]          ciu__dbg_dat;           // From dut of alu.v
+    wire                 ciu__rst_sft_prst0;     // From dut of alu.v
+    wire                 ciu__rst_sft_prst1;     // From dut of alu.v
+@@ -47,6 +44,8 @@
+    // obj: alu
+    /*
+     alu AUTO_TEMPLATE (
++    .alu_\(.*\)         (alu_i.\1[]),
++
+     .ncb__busy         (ncb_i.outb.outb_bp[0]),
+ 
+     .ncb__inb_\(.*\)   (ncb_i.inb.\1[]),
+@@ -57,6 +56,7 @@
+     .sclk          (tb_clk),
+     .\(.*\) (\1[]),
+ 
++    
+     .id__model_speedup   (clear_bist),
+     .mio_fus__authentik_mode (1'b0),
+     .scan_clken           ({1'b0}),
+@@ -83,11 +83,11 @@
+            .ncb__inb_opc                (ncb_i.inb.opc[3:0]),    // Templated
+            .ncb__inb_src                (ncb_i.inb.src[7:0]),    // Templated
+            .ncb__inb_valid              (ncb_i.inb.valid),       // Templated
+-           .alu_ready                   (alu_ready),             // Templated
+-           .alu_result                  (alu_result[31:0]),      // Templated
++           .alu_ready                   (alu_i.ready),           // Templated
++           .alu_result                  (alu_i.result[31:0]),    // Templated
+            // Inputs
+-           .alu_ctl                     (alu_ctl),               // Templated
+-           .alu_dat                     (alu_dat[7:0]),          // Templated
++           .alu_ctl                     (alu_i.ctl),             // Templated
++           .alu_dat                     (alu_i.dat[7:0]),        // Templated
+            .erst_0a_n                   (erst_0a_n),             // Templated
+            .frame_len                   (frame_len[4:0]),        // Templated
+            .frame_len_val               (frame_len_val),         // Templated
+Index: verif/alutb/Makefile
+===================================================================
+--- verif/alutb/Makefile	(.../svn+ssh://masvn/svn/o68/branches/uvmtut_v0.5/verif)	(revision 103396)
++++ verif/alutb/Makefile	(.../verif)	(working copy)
+@@ -38,9 +38,10 @@
+ CSR_PKGS = $(ROOT_DIR)/verif/vkits/reg/obj/unit/regs__alu.sv
+ 
+ FLISTS= verif/vkits/cn/cn.flist \
+-   verif/vkits/global/global.flist \
++	verif/vkits/global/global.flist \
+ 	verif/vkits/reg/reg.flist \
+ 	verif/vkits/ncb/ncb.flist \
++	verif/vkits/alu/alu.flist \
+ 	verif/vkits/alutb/alutb.flist \
+ 	verif/alutb/alutb.flist \
+ 	verif/alutb/rtl.flist
