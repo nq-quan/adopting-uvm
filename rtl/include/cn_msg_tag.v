@@ -1,14 +1,10 @@
 // ************************************************************************
 // *                                                                      *
-// *  CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE                            *
+// *
+// * legal mumbo jumbo
+// *
 // *                                                                      *
-// *  This software contains information confidential and proprietary     *
-// *  to Cavium, Inc. It shall not be reproduced in whole or in part,     *
-// *  or transferred to other documents, or disclosed to third parties,   *
-// *  or used for any purpose other than that for which it was obtained,  *
-// *  without the prior written consent of Cavium, Inc.                   *
-// *                                                                      *
-// *  Copyright 2011-2012, Cavium, Inc.  All rights reserved.             *
+// *  Copyright 2011
 // *                                                                      *
 // ************************************************************************
 // * Author      : bdobbie

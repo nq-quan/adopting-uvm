@@ -20,7 +20,7 @@ end
 `endif
 
    /////////////////////////////////////////////////////////////////////////////
-   // 1. replace the UVM report server with our cavium one.
+   // 1. replace the UVM report server with ours
    //    and set the timeformat
    // 2. call pre_run_test(). testbenches MUST override this with any functionality
    //    that should occur before run_test.
@@ -29,12 +29,12 @@ end
    initial begin : start_uvm
       cn_pkg::report_server_c        report_server;
       string                         mode_value = "none";
-      int                            unsigned                   seed_value;             
-      
+      int                            unsigned                   seed_value;
+
       // all "%t" shall print out in ns format with 9 digits and 3 decimal places
       $timeformat(-9,3,"ns",13);
       report_server = cn_pkg::report_server_c::type_id::create();
-      
+
       // replace uvm_report_server with cn_report_server_c
       uvm_pkg::uvm_report_server::set_server(report_server);
 
@@ -59,10 +59,10 @@ end
 
    initial begin
       #(1ns);
-      if(global_pkg::env == null) 
+      if(global_pkg::env == null)
          `cn_fatal_hdl(("Must create global env when running UVM"));
    end
-   
+
    ////////////////////////////////////////////
    // Functional Coverage
    ////////////////////////////////////////////

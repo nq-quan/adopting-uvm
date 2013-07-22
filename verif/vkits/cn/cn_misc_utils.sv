@@ -1,20 +1,14 @@
 //-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 // ***********************************************************************
-// * CAVIUM NETWORKS CONFIDENTIAL                                        *
-// *                                                                     *
-// *                         PROPRIETARY NOTE                            *
-// *                                                                     *
-// *  This software contains information confidential and proprietary    *
-// *  to Cavium Networks.  It shall not be reproduced in whole or in     *
-// *  part, or transferred to other documents, or disclosed to third     *
-// *  parties, or used for any purpose other than that for which it was  *
-// *  obtained, without the prior written consent of Cavium Networks.    *
-// *  (c) 2010, Cavium Networks.  All rights reserved.                   *
-// *                                                                     *
+// *
+// * legal mumbo jumbo
+// *
+// * Copyright 2012,
+// * (utg v0.8.2)
 // ***********************************************************************
 // * File        : cn_misc_utils.sv
-// * Author      : 
-// * Description : cloned from the verif/common/cn_types.h    
+// * Author      :
+// * Description : cloned from the verif/common/cn_types.h
 // ***********************************************************************
 `ifndef __CN_MISC_UTILS_SV__
  `define __CN_MISC_UTILS_SV__
@@ -34,25 +28,25 @@ function  longint unsigned ffc(longint unsigned  _val);
 endfunction : ffc
 
 // func: encode
-// Encode a one hot signal    
-function longint unsigned encode(longint unsigned _oneHot); 
+// Encode a one hot signal
+function longint unsigned encode(longint unsigned _oneHot);
    longint unsigned result;
    result = 0;
    while (_oneHot) begin
-      case(_oneHot) 
-        1:       return result+0;  
-        2:       return result+1; 
-        4:       return result+2;  
-        8:       return result+3;  
-        16:      return result+4;  
-        32:      return result+5;  
-        64:      return result+6;  
-        128:     return result+7;  
+      case(_oneHot)
+        1:       return result+0;
+        2:       return result+1;
+        4:       return result+2;
+        8:       return result+3;
+        16:      return result+4;
+        32:      return result+5;
+        64:      return result+6;
+        128:     return result+7;
         default:  begin
            result += 8;
-           _oneHot >>= 8;    
+           _oneHot >>= 8;
         end
-      endcase 
+      endcase
    end
    return result;
 endfunction : encode

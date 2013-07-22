@@ -1,16 +1,10 @@
 //-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 // ***********************************************************************
-// * CAVIUM NETWORKS CONFIDENTIAL                                        *
-// *                                                                     *
-// *                         PROPRIETARY NOTE                            *
-// *                                                                     *
-// *  This software contains information confidential and proprietary    *
-// *  to Cavium Networks.  It shall not be reproduced in whole or in     *
-// *  part, or transferred to other documents, or disclosed to third     *
-// *  parties, or used for any purpose other than that for which it was  *
-// *  obtained, without the prior written consent of Cavium Networks.    *
-// *  (c) 2010, Cavium Networks.  All rights reserved.                   *
-// *                                                                     *
+// *
+// * legal mumbo jumbo
+// *
+// * Copyright 2012,
+// * (utg v0.8.2)
 // ***********************************************************************
 // * File        : cn_uid.sv
 // * Author      : perveil + jschroeder
@@ -28,12 +22,12 @@
 // uid_c and it's new() could then make the call to setup the dpi.
 class uid_pool_c extends uvm_object;
    `uvm_object_utils(cn_pkg::uid_pool_c)
-   
+
    function new(string name="");
       super.new(name);
       set_scope_cn_uid_dpi();
    endfunction
-   
+
    int uid_array[string];
 endclass
 
@@ -106,10 +100,10 @@ endclass
 //|    transmitted_request0.uid = received_request.uid.new_subid("NCB");  // Creates the new "NCB" subid and pulls the first id from the new pool
 //|    transmitted_request1.uid = received_request.uid.new_subid("NCB");  // Pulls a new id from the "NCB" subid of received_request
 //
-// Note the difference between the two examples.  
+// Note the difference between the two examples.
 //
 // In the first example, transmitted_request0.uid is assigned a new uid whose id pool is that of the combination of received_request.uid and "NCB".
-// transmitted_request1.uid uses transmitted_request0.uid.next_uid() because transmitted_request0 is already using the new combined pool (AXI:000237 NCB").  
+// transmitted_request1.uid uses transmitted_request0.uid.next_uid() because transmitted_request0 is already using the new combined pool (AXI:000237 NCB").
 // Calling transmitted_request0.new_subid("NCB") would have resulted in an id looking like "AXI:000237 NCB:000000 NCB:000000" (note the second NCB:000000).
 //
 // In the second example, both transmitted_requests' uids are created by received_request.uid.new_subid("NCB").  Since received_request.uid is pulling from
@@ -134,16 +128,16 @@ class uid_c extends uvm_object;
       `uvm_field_string(prefix, UVM_ALL_ON)
       `uvm_field_int(my_id, UVM_ALL_ON | UVM_DEC)
    `uvm_object_utils_end
-            
+
    //--------------------------------------------------------------------------
    // Group: Fields
-   
+
    // public
 
    // Field: my_id
    // ID number of this <uid_c> object, within its <prefix> group.
    int            my_id;
-   
+
    // Field: prefix
    // A name identifying the type of transaction. It is used to identify a
    // pool of ID numbers from which IDs are assigned. IDs are allocated
@@ -155,11 +149,11 @@ class uid_c extends uvm_object;
    // Top level pools from which IDs are allocated. Array of IDs, indexed by
    // prefix name.
    static uid_pool_c uid_pool = new();
-   
+
    // field: parent_id
    // If this is a sub-id, then this parent will be set to it's parent
    uid_c parent_id;
-   
+
    //--------------------------------------------------------------------------
    // Group: methods
 
@@ -185,7 +179,7 @@ class uid_c extends uvm_object;
       // If name is "" then do nothing.  Allows creation of uid copies (the tlm bridge new()s the uid and then copies it's fields over from the c-side)
       if (name.len() == 0)
         return;
-      
+
       // Set the <prefix> field.
       prefix = name;
 
@@ -208,7 +202,7 @@ class uid_c extends uvm_object;
          // ID, just assign it, and don't get an ID from the pool.
          my_id = _preset_id;
       end
-      
+
    endfunction : new
 
    ////////////////////////////////////////////
@@ -221,8 +215,8 @@ class uid_c extends uvm_object;
       new_subid.parent_id = this;
       return new_subid;
    endfunction : new_subid
-   
-   
+
+
    ////////////////////////////////////////////
    // Function: get_id
    // Returns a new id from the uid pool specified by _prefix
@@ -232,7 +226,7 @@ class uid_c extends uvm_object;
       if (! uid_pool.uid_array.exists(_prefix)) begin
          uid_pool.uid_array[_prefix] = -1;
       end
-      
+
       uid_pool.uid_array[_prefix]++;
       return uid_pool.uid_array[_prefix];
    endfunction : get_id
@@ -245,7 +239,7 @@ class uid_c extends uvm_object;
       next_uid = new(prefix);
       return next_uid;
    endfunction : next_uid;
-   
+
    ////////////////////////////////////////////
    // Function: get
    // Get the <my_id> number of the last object allocated from the same pool
@@ -256,7 +250,7 @@ class uid_c extends uvm_object;
    function int get();
       return uid_pool.uid_array[prefix];
    endfunction: get
-   
+
    ////////////////////////////////////////////
    // Function: set
    // Directly clobbers the <my_id> field. (Use with care, if at all....)
@@ -266,7 +260,7 @@ class uid_c extends uvm_object;
    function void set(int id);
       my_id = id;
    endfunction: set
-      
+
    ////////////////////////////////////////////
    // Function: set_prefix
    // Directly set the <prefix> field. (Why you would want to do this instead
@@ -277,7 +271,7 @@ class uid_c extends uvm_object;
    function void set_prefix(string my_prefix);
       prefix = my_prefix;
    endfunction
-  
+
    ////////////////////////////////////////////
    // Function: root
    // Return the root <uid_c> of this object. The root <uid_c> is the top of
@@ -287,7 +281,7 @@ class uid_c extends uvm_object;
    //   The root <uid_c> of this object.
    function uid_c root();
       root = this;
-      while (root.parent_id != null) 
+      while (root.parent_id != null)
          root = root.parent_id;
    endfunction
 
@@ -305,10 +299,10 @@ endclass
 
 import "DPI-C" function void set_scope_cn_uid_dpi();
 export "DPI-C" function cn_uid_get_id_dpi;
-   
+
 function automatic int cn_uid_get_id_dpi(string _prefix);
    return uid_c::get_id(_prefix);
 endfunction
-   
-   
+
+
 `endif // __CN_UID_SV__

@@ -1,14 +1,10 @@
 //-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 
 // **********************************************************************
-// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 // *
-// * This software contains information confidential and proprietary to
-// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-// * transferred to other documents, or disclosed to third parties, or
-// * used for any purpose other than that for which it was obtained,
-// * without the prior written consent of Cavium, Inc.
-// * Copyright 2012, Cavium, Inc.  All rights reserved.
+// * legal mumbo jumbo
+// *
+// * Copyright 2012,
 // * (utg v0.8.2)
 // ***********************************************************************
 // File:   base_test.sv
