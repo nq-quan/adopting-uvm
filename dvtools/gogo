@@ -15,58 +15,58 @@ import subprocess
 import sys
 import argparse
 
-
-########################################################################################
-# Setup Global Constants from site and tb imports
-GLBL = {'VCOMP_DIR' : None,
-        'UVM_REV'   : None,
-        'VKITS'     : None,
-        'FLISTS'    : None,
-        'PLI_FILES' : None,
-        'BUILD_TOOL': None,
-        'BUILD_OPTIONS' : None,
-        'LSF_SUBMIT_TOOL' : None,
-        'LSF_BUILD_LICS'  : None,
-        'LSF_SIM_LICS'    : None,
-        'LSF_OPTIONS'     : None,
-        }
-
-def import_lib(dict):
-    for key in GLBL:
-        if key in dict:
-            GLBL[key] = dict[key]
-
-try:
-    import gogo_site
-    import_lib(gogo_site.__dict__)
-except ImportError:
-    print "!! gogo_site.py file not found!"
-    print "!! Ensure that your PYTHONPATH variable includes '.'"
-    sys.exit(1)
-
-try:
-    import tb
-    import_lib(tb.__dict__)
-except ImportError:
-    print "!! tb.py file not found!"
-    print "!! Ensure that your PYTHONPATH variable includes '.'"
-    sys.exit(1)
-
-for key in GLBL:
-    if GLBL[key] is None:
-        print "!! %s is not defined in gogo_site.py or tb.py." % key
-        sys.exit(1)
-
-GLBL['VKITS_DIR'] = '../vkits'
-GLBL['UVM_DIR']   = os.path.join(GLBL['VKITS_DIR'], 'uvm/%s' % GLBL['UVM_REV'])
-GLBL['UVM_FLIST'] = os.path.join(GLBL['UVM_DIR'], 'uvm.flist')
-
 ########################################################################################
 # Globals
+
+GLBL = None
 Options = None
 
 ########################################################################################
-def parseArgs():
+def setup_globals():
+    """
+    Set up the GLBL dictionary with imported information from gogo_site and the local tb.py
+    """
+
+    global GLBL
+
+    keys = ('VCOMP_DIR' , 'UVM_REV', 'VKITS', 'FLISTS', 'PLI_FILES', 'BUILD_TOOL',
+            'BUILD_OPTIONS', 'LSF_SUBMIT_TOOL', 'LSF_BUILD_LICS', 'LSF_SIM_LICS',
+            'VKITS_DIR', 'UVM_DIR', 'UVM_FLIST', 'CLEAN_DIRS', 'CLEAN_FILES',
+            'SIM_GUI', )
+
+    GLBL = {it : None for it in keys}
+
+    def import_lib(mod_name):
+        try:
+            lib = __import__(mod_name)
+        except ImportError:
+            print "!! %s.py file not found!" % mod_name
+            print "!! Ensure that your PYTHONPATH variable includes '.'"
+            sys.exit(1)
+
+        lib_dict = lib.__dict__
+        for key in GLBL:
+            if key in lib_dict:
+                GLBL[key] = lib_dict[key]
+
+    import_lib("gogo_site")
+    import_lib("tb")
+
+    GLBL['VKITS_DIR'] = '../vkits'
+    GLBL['UVM_DIR']   = os.path.join(GLBL['VKITS_DIR'], 'uvm/%s' % GLBL['UVM_REV'])
+    GLBL['UVM_FLIST'] = os.path.join(GLBL['UVM_DIR'], 'uvm.flist')
+
+    for key in GLBL:
+        if GLBL[key] is None:
+            print "!! %s is not defined in gogo_site.py or tb.py." % key
+            sys.exit(1)
+
+########################################################################################
+def parse_args():
+    """
+    Parse Command-Line
+    """
+
     global Options
 
     p = argparse.ArgumentParser(
@@ -99,10 +99,14 @@ Launch SV compile and/or simulation with simulator.
         Options.verbs = [['bld', 'sim']]
 
 ########################################################################################
-def runCmd(cmdLine):
-    print "++ Running", cmdLine
+def run_cmd(cmd_line):
+    """
+    Run the given command in a sub-process, exiting on failure
+    """
 
-    proc = subprocess.Popen(args=cmdLine, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=file(os.devnull, 'r+'))
+    print "++ Running", cmd_line
+
+    proc = subprocess.Popen(args=cmd_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=file(os.devnull, 'r+'))
     while True:
         line = proc.stdout.readline()
         if not line:
@@ -119,24 +123,31 @@ def runCmd(cmdLine):
 
 ########################################################################################
 def clean():
-    print "Cleaning..."
+    """
+    Remove unwanted directories and files.
+    """
     from shutil import rmtree
-    for d in ('sim', 'csrc'):
+
+    print "Cleaning..."
+    for dname in GLBL['CLEAN_DIRS']:
         try:
-            rmtree(d)
-            print "++ Removed dir", d
+            rmtree(dname)
+            print "++ Removed dir", dname
         except:
             pass
 
-    for f in ('ucli.key', 'vc_hdrs.h'):
+    for fname in GLBL['CLEAN_FILES']:
         try:
-            os.remove(f)
-            print "++ Removed file", f
+            os.remove(fname)
+            print "++ Removed file", fname
         except:
             pass
 
 ########################################################################################
 def build():
+    """
+    Build the simulation executable
+    """
 
     # determine all of the vkits and flists
     vkits = [os.path.join(GLBL['VKITS_DIR'], it, "%s.flist" % it) for it in GLBL['VKITS']]
@@ -146,7 +157,7 @@ def build():
         os.makedirs(GLBL['VCOMP_DIR'], 0777)
 
     build_cmd = GLBL['BUILD_TOOL']
-    build_cmd += ' -o %s -Mupdate' % (os.path.join(GLBL['VCOMP_DIR'], 'simv'))
+    build_cmd += ' -o %s -Mupdate' % (os.path.join(GLBL['VCOMP_DIR'], 'sim.exe'))
     build_cmd += " %s/src/dpi/uvm_dpi.cc" % GLBL['UVM_DIR']
     build_cmd += ' -f ' + ' -f '.join(flists)
     build_cmd += " %s" % GLBL['BUILD_OPTIONS']
@@ -158,51 +169,56 @@ def build():
     if Options.comp:
         build_cmd += " " + Options.comp
 
-    cmdLine = 'qrsh -l lic_cmp_vcs=1 -N test "%s"' % build_cmd
-    runCmd(cmdLine)
+    cmd_line = '%s %s=1 -N build "%s"' % (GLBL['LSF_SUBMIT_TOOL'], GLBL['LSF_BUILD_LICS'], build_cmd)
+    run_cmd(cmd_line)
 
 ########################################################################################
-def simulate(testName):
+def simulate(test_name):
+    """
+    Run the simulation
+    """
 
-    vcs_cmd = os.path.join(GLBL['VCOMP_DIR'], 'simv')
-    vcs_cmd += " +UVM_TESTNAME=%s_test_c" % testName
+    sim_cmd = os.path.join(GLBL['VCOMP_DIR'], 'sim.exe')
+    sim_cmd += " +UVM_TESTNAME=%s_test_c" % test_name
 
-    simDir = os.path.join('sim', (Options.dir if Options.dir else testName))
-    vcs_cmd += " -l %s/logfile" % simDir
+    sim_dir = os.path.join('sim', (Options.dir if Options.dir else test_name))
+    sim_cmd += " -l %s/logfile" % sim_dir
 
-    if not os.path.exists(simDir):
-        os.makedirs(simDir)
+    if not os.path.exists(sim_dir):
+        os.makedirs(sim_dir)
 
     # OPTIONS
     if Options.verb:
-        vcs_cmd += " +UVM_VERBOSITY=%s" % Options.verb
+        sim_cmd += " +UVM_VERBOSITY=%s" % Options.verb
 
     if Options.topo:
-        vcs_cmd += " +UVM_TOPO_DEPTH=%d" % Options.topo
+        sim_cmd += " +UVM_TOPO_DEPTH=%d" % Options.topo
 
     if Options.wdog:
-        vcs_cmd += " +wdog=%d" % Options.wdog
+        sim_cmd += " +wdog=%d" % Options.wdog
 
     if Options.gui:
-        vcs_cmd += " -gui"
+        sim_cmd += GLBL['SIM_GUI']
+
     elif Options.fsdb:
         # make .signal_list file
-        sigList = os.path.join(simDir, '.signal_list')
+        sigList = os.path.join(sim_dir, '.signal_list')
         with open(sigList, 'w') as f:
-            print >>f, "0 alutb_tb_top"
+            print >>f, "0 %s" % GLBL['TB_TOP']
 
-        vcs_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(simDir, "waves.fsdb", sigList))
+        sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb", sigList))
 
     # add simulation command-line options
     if Options.sim:
-        vcs_cmd += " " + Options.sim
+        sim_cmd += " " + Options.sim
 
-    cmdLine = 'qrsh -l lic_sim_vcs=1 -N %s "%s"' % (testName, vcs_cmd)
-    runCmd(cmdLine)
+    cmd_line = '%s %s=1 -N %s "%s"' % (GLBL['LSF_SUBMIT_TOOL'], GLBL['LSF_SIM_LICS'], test_name, sim_cmd)
+    run_cmd(cmd_line)
 
 ########################################################################################
 if __name__ == '__main__':
-    parseArgs()
+    setup_globals()
+    parse_args()
 
     verbs = Options.verbs[0]
 
@@ -216,3 +232,4 @@ if __name__ == '__main__':
         simulate(Options.test)
 
     # if we get here, we must have passed
+    sys.exit(0)
