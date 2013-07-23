@@ -1,0 +1,6 @@
+*.pyc
+sim
+csrc
+*.sublime-*
+ucli.key
+vc_hdrs.h

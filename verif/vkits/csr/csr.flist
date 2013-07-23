@@ -1,0 +1,2 @@
++incdir+../../verif/vkits/csr
+../../verif/vkits/csr/alu_csr_pkg.sv
