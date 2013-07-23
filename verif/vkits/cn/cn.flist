@@ -1,5 +1,5 @@
-+incdir+project/verif/vkits/cn
-project/verif/vkits/cn/cn_pkg.sv
-project/verif/vkits/cn/cn_clk_intf.sv
-project/verif/vkits/cn/cn_rst_intf.sv
++incdir+../../verif/vkits/cn
+../../verif/vkits/cn/cn_pkg.sv
+../../verif/vkits/cn/cn_clk_intf.sv
+../../verif/vkits/cn/cn_rst_intf.sv
 

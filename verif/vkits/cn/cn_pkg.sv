@@ -26,28 +26,13 @@ package cn_pkg;
    //----------------------------------------------------------------------------------------
    // Includes
 
-`include "cn_8b10b_enc.sv"
-`include "cn_assert_macros.sv"
-`include "cn_bag.sv"
-`include "cn_base_test.sv"
 `include "cn_clk_drv.sv"
-`include "cn_clk_mon.sv"
-`include "cn_dep_node.sv"
-`include "cn_fsdb_builtin_logger.sv"
-`include "cn_fsdb_logger.sv"
-`include "cn_hybrid_report_server.sv"
-`include "cn_math_utils.sv"
-`include "cn_misc_utils.sv"
 `include "cn_msg_vlog.sv"
+`include "cn_msgs.sv"
 `include "cn_objection.sv"
 `include "cn_print_utils.sv"
-`include "cn_reg_bag.sv"
-`include "cn_reg_field.sv"
 `include "cn_report_server.sv"
 `include "cn_rst_drv.sv"
-`include "cn_thresh_sem.sv"
-`include "cn_string_utils.sv"
-`include "cn_uid.sv"
 
 endpackage : cn_pkg
 

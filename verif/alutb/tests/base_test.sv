@@ -110,8 +110,6 @@ class base_test_c extends uvm_test;
    virtual function void connect_phase(uvm_phase phase);
       super.connect_phase(phase);
 
-      global_pkg::env.set_stats_clk(tb_clk_drv);
-
       if(reg_block.get_parent() == null) begin
          ctx_pkg::reg_adapter_c ctx_adapter = ctx_pkg::reg_adapter_c::type_id::create("ctx_adapter", , get_full_name());
 

@@ -232,7 +232,7 @@ static int uvm_hdl_set_vlog(char *path, p_vpi_vecval value, PLI_INT32 flag)
     }
   }
 #ifndef VCS
-  vpi_release_handle(r);
+  //vpi_release_handle(r);
 #endif
   return 1;
 }
@@ -292,7 +292,7 @@ static int uvm_hdl_get_vlog(char *path, p_vpi_vecval value, PLI_INT32 flag)
         vpi_printf((PLI_BYTE8*) " via a compile-time flag: +define+UVM_HDL_MAX_WIDTH=<value>\n");
       //tf_dofinish();
 #ifndef VCS
-      vpi_release_handle(r);
+        //vpi_release_handle(r);
 #endif
       return 0;
     }
@@ -309,7 +309,7 @@ static int uvm_hdl_get_vlog(char *path, p_vpi_vecval value, PLI_INT32 flag)
   }
   //vpi_printf("uvm_hdl_get_vlog(%s,%0x)\n",path,value[0].aval);
 #ifndef VCS
-  vpi_release_handle(r);
+  //vpi_release_handle(r);
 #endif
   return 1;
 }

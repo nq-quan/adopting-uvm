@@ -15,173 +15,204 @@ import subprocess
 import sys
 import argparse
 
-try:
-   import tb
-except ImportError:
-   print "!! tb.py file not found!"
-   print "!! Ensure that your PYTHONPATH variable includes '.'"
-   sys.exit(1)
 
-VKITS_DIR = '../vkits'
-VCOMP_DIR = 'sim/.vcomp'
-UVM_FLIST = os.path.join(VKITS_DIR, 'uvm/%s/uvm.flist' % tb.UVM_REV)
+########################################################################################
+# Setup Global Constants from site and tb imports
+GLBL = {'VCOMP_DIR' : None,
+        'UVM_REV'   : None,
+        'VKITS'     : None,
+        'FLISTS'    : None,
+        'PLI_FILES' : None,
+        'BUILD_TOOL': None,
+        'BUILD_OPTIONS' : None,
+        'LSF_SUBMIT_TOOL' : None,
+        'LSF_BUILD_LICS'  : None,
+        'LSF_SIM_LICS'    : None,
+        'LSF_OPTIONS'     : None,
+        }
+
+def import_lib(dict):
+    for key in GLBL:
+        if key in dict:
+            GLBL[key] = dict[key]
+
+try:
+    import gogo_site
+    import_lib(gogo_site.__dict__)
+except ImportError:
+    print "!! gogo_site.py file not found!"
+    print "!! Ensure that your PYTHONPATH variable includes '.'"
+    sys.exit(1)
+
+try:
+    import tb
+    import_lib(tb.__dict__)
+except ImportError:
+    print "!! tb.py file not found!"
+    print "!! Ensure that your PYTHONPATH variable includes '.'"
+    sys.exit(1)
+
+for key in GLBL:
+    if GLBL[key] is None:
+        print "!! %s is not defined in gogo_site.py or tb.py." % key
+        sys.exit(1)
+
+GLBL['VKITS_DIR'] = '../vkits'
+GLBL['UVM_DIR']   = os.path.join(GLBL['VKITS_DIR'], 'uvm/%s' % GLBL['UVM_REV'])
+GLBL['UVM_FLIST'] = os.path.join(GLBL['UVM_DIR'], 'uvm.flist')
+
+########################################################################################
+# Globals
+Options = None
 
 ########################################################################################
 def parseArgs():
-   global Options
-   
-   p = argparse.ArgumentParser(
-      prog='gogo',
-      formatter_class=argparse.RawDescriptionHelpFormatter,
-      usage="%(prog)s [verbs] [options]",
-      version=("%(prog)s v"+__version__),
-      description="""
- Launch SV compile and/or simulation with VCS.
-      """)
+    global Options
 
-   verb_choices = ['bld','sim','cln','b','s','c']
-   p.add_argument('verbs',          action='append', nargs=argparse.REMAINDER, choices=verb_choices)
+    p = argparse.ArgumentParser(
+        prog='gogo',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        usage="%(prog)s [verbs] [options]",
+        version=("%(prog)s v"+__version__),
+        description="""
+Launch SV compile and/or simulation with simulator.
+        """)
 
+    verb_choices = ['bld', 'sim', 'cln', 'b', 's', 'c']
+    p.add_argument('verbs',          action='append', nargs=argparse.REMAINDER, choices=verb_choices)
 
-   p.add_argument('--test', '-t',   action='store',             default='basic', help="Specify UVM test name [default:basic]")
-   p.add_argument('--dir',  '-d',   action='store',             default=None,    help="Specify alternate directory for results.")
-   p.add_argument('--verb', '-V',   action='store',             default=None,    help="Specify UVM Verbosity.")
+    p.add_argument('--test', '-t',   action='store',             default='basic', help="Specify UVM test name [default:basic]")
+    p.add_argument('--dir',  '-d',   action='store',             default=None,    help="Specify alternate directory for results.")
+    p.add_argument('--verb', '-V',   action='store',             default=None,    help="Specify UVM Verbosity.")
 
-   p.add_argument('--sim',  '-s',   action='store',             default=None,    help="Add simulation opts as a string to simv command-line.")
-   p.add_argument('--comp', '-c',   action='store',             default=None,    help="Add compilation opts as a string to vcs command-line.")
+    p.add_argument('--sim',  '-s',   action='store',             default=None,    help="Add simulation opts as a string to simulator command-line.")
+    p.add_argument('--comp', '-c',   action='store',             default=None,    help="Add compilation opts as a string to compiler command-line.")
 
-   p.add_argument('--topo',         action='store', type=int,   default=None,    help="Print UVM topology at this depth.")
-   p.add_argument('--wdog', '-w',   action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
-   p.add_argument('--gui',  '-g',   action='store_true',        default=False,   help="Run DVE in GUI mode.")
-   p.add_argument('--fsdb', '-f',   action='store_true',        default=False,   help="Run with Verdi wave dumping.")
-   
-   Options=p.parse_args()
+    p.add_argument('--topo',         action='store', type=int,   default=None,    help="Print UVM topology at this depth.")
+    p.add_argument('--wdog', '-w',   action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
+    p.add_argument('--gui',  '-g',   action='store_true',        default=False,   help="Run DVE in GUI mode.")
+    p.add_argument('--fsdb', '-f',   action='store_true',        default=False,   help="Run with Verdi wave dumping.")
 
-   if Options.verbs == [[]]:
-      Options.verbs = [['bld','sim']]
+    Options = p.parse_args()
 
-   
+    if Options.verbs == [[]]:
+        Options.verbs = [['bld', 'sim']]
+
 ########################################################################################
 def runCmd(cmdLine):
-   print "++ Running", cmdLine
+    print "++ Running", cmdLine
 
-   proc = subprocess.Popen(args=cmdLine, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=file(os.devnull, 'r+'))
-   while True:
-      line = proc.stdout.readline()
-      if not line:
-         break
-      print line.rstrip()
+    proc = subprocess.Popen(args=cmdLine, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=file(os.devnull, 'r+'))
+    while True:
+        line = proc.stdout.readline()
+        if not line:
+            break
+        print line.rstrip()
 
-   returnCode = proc.poll()
-   if returnCode != 0:
-      print 
-      print '*'*40
-      print ' '*15 + "FAILED"
-      print '*'*40
-      sys.exit(returnCode)
-      
+    returnCode = proc.poll()
+    if returnCode != 0:
+        print
+        print '*'*40
+        print ' '*15 + "FAILED"
+        print '*'*40
+        sys.exit(returnCode)
+
 ########################################################################################
 def clean():
+    print "Cleaning..."
+    from shutil import rmtree
+    for d in ('sim', 'csrc'):
+        try:
+            rmtree(d)
+            print "++ Removed dir", d
+        except:
+            pass
 
-   from shutil import rmtree
-   for d in ('sim','csrc'):
-      try:
-         rmtree(d)
-         print "++ Removed dir", d
-      except:
-         pass
+    for f in ('ucli.key', 'vc_hdrs.h'):
+        try:
+            os.remove(f)
+            print "++ Removed file", f
+        except:
+            pass
 
-   for f in ('ucli.key','vc_hdrs.h'):
-      try:
-         os.remove(f)
-         print "++ Removed file", f
-      except:
-         pass
-   
 ########################################################################################
 def build():
 
-   # determine all of the vkits and flists
-   vkits = [os.path.join(VKITS_DIR, it, "%s.flist" % it) for it in tb.VKITS]
-   flists = [UVM_FLIST] + vkits + tb.FLISTS
-   
+    # determine all of the vkits and flists
+    vkits = [os.path.join(GLBL['VKITS_DIR'], it, "%s.flist" % it) for it in GLBL['VKITS']]
+    flists = [GLBL['UVM_FLIST']] + vkits + GLBL['FLISTS']
 
-   if not os.path.exists(VCOMP_DIR):
-      os.makedirs(VCOMP_DIR, 0777)
-   cwd = os.getcwd()
+    if not os.path.exists(GLBL['VCOMP_DIR']):
+        os.makedirs(GLBL['VCOMP_DIR'], 0777)
 
-   vcs_cmd = 'vcs'
-   vcs_cmd += ' -o %s -Mupdate' % (os.path.join(VCOMP_DIR, 'simv'))
-   vcs_cmd += ' -f ' + ' -f '.join(flists)
-   vcs_cmd += ' +warn=noISALS,noULSU +vpi -q -debug_pp -notice -timescale=1ns/1ps'
-   vcs_cmd += " -LDFLAGS %s" % (os.path.join(cwd, 'libVkit.so'))
-   vcs_cmd += ' -sverilog +libext+.v+.sv +v2k -k off +notimingcheck -debug -covg_disable_cg'
-   vcs_cmd += " +define+UVM_NO_DEPRECATED+UVM_OBJECT_MUST_HAVE_CONSTRUCTOR"
-   
-   if tb.PLI_FILES:
-      vcs_cmd += ' -P ' + ' '.join(tb.PLI_FILES)
+    build_cmd = GLBL['BUILD_TOOL']
+    build_cmd += ' -o %s -Mupdate' % (os.path.join(GLBL['VCOMP_DIR'], 'simv'))
+    build_cmd += " %s/src/dpi/uvm_dpi.cc" % GLBL['UVM_DIR']
+    build_cmd += ' -f ' + ' -f '.join(flists)
+    build_cmd += " %s" % GLBL['BUILD_OPTIONS']
 
-   # compile-time options specified on command-line
-   if Options.comp:
-      vcs_cmd += " " + Options.comp
+    if GLBL['PLI_FILES']:
+        build_cmd += ' -P ' + ' '.join(GLBL['PLI_FILES'])
 
-   cmdLine = 'qrsh -l lic_cmp_vcs=1 -N test "%s"' % vcs_cmd
-   runCmd(cmdLine)
-   
+    # compile-time options specified on command-line
+    if Options.comp:
+        build_cmd += " " + Options.comp
+
+    cmdLine = 'qrsh -l lic_cmp_vcs=1 -N test "%s"' % build_cmd
+    runCmd(cmdLine)
+
 ########################################################################################
 def simulate(testName):
 
-   vcs_cmd = os.path.join(VCOMP_DIR, 'simv')
-   vcs_cmd += " +UVM_TESTNAME=%s_test_c" % testName
+    vcs_cmd = os.path.join(GLBL['VCOMP_DIR'], 'simv')
+    vcs_cmd += " +UVM_TESTNAME=%s_test_c" % testName
 
-   simDir = os.path.join('sim', (Options.dir if Options.dir else testName))
-   vcs_cmd += " -l %s/logfile" % simDir
+    simDir = os.path.join('sim', (Options.dir if Options.dir else testName))
+    vcs_cmd += " -l %s/logfile" % simDir
 
-   if not os.path.exists(simDir):
-      os.makedirs(simDir)
+    if not os.path.exists(simDir):
+        os.makedirs(simDir)
 
-   # OPTIONS
-   if Options.verb:
-      vcs_cmd += " +UVM_VERBOSITY=%s" % Options.verb
+    # OPTIONS
+    if Options.verb:
+        vcs_cmd += " +UVM_VERBOSITY=%s" % Options.verb
 
-   if Options.topo:
-      vcs_cmd += " +UVM_TOPO_DEPTH=%d" % Options.topo
+    if Options.topo:
+        vcs_cmd += " +UVM_TOPO_DEPTH=%d" % Options.topo
 
-   if Options.wdog:
-      vcs_cmd += " +wdog=%d" % Options.wdog
+    if Options.wdog:
+        vcs_cmd += " +wdog=%d" % Options.wdog
 
-   if Options.gui:
-      vcs_cmd += " -gui"
-   elif Options.fsdb:
-      # make .signal_list file
-      sigList = os.path.join(simDir, '.signal_list')
-      with open(sigList, 'w') as f:
-         print >>f, "0 alutb_tb_top"
-         
-      vcs_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(simDir, "waves.fsdb", sigList))
-   
-   # add simulation command-line options
-   if Options.sim:
-      vcs_cmd += " " + Options.sim
+    if Options.gui:
+        vcs_cmd += " -gui"
+    elif Options.fsdb:
+        # make .signal_list file
+        sigList = os.path.join(simDir, '.signal_list')
+        with open(sigList, 'w') as f:
+            print >>f, "0 alutb_tb_top"
 
-   cmdLine = 'qrsh -l lic_sim_vcs=1 -N %s "%s"' % (testName, vcs_cmd)
-   runCmd(cmdLine)
+        vcs_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(simDir, "waves.fsdb", sigList))
+
+    # add simulation command-line options
+    if Options.sim:
+        vcs_cmd += " " + Options.sim
+
+    cmdLine = 'qrsh -l lic_sim_vcs=1 -N %s "%s"' % (testName, vcs_cmd)
+    runCmd(cmdLine)
 
 ########################################################################################
 if __name__ == '__main__':
-   parseArgs()
+    parseArgs()
 
-   verbs = Options.verbs[0]
+    verbs = Options.verbs[0]
 
-   if 'cln' in verbs or 'c' in verbs:
-      clean()
-      
-   if 'bld' in verbs or 'b' in verbs:
-      build()
+    if 'cln' in verbs or 'c' in verbs:
+        clean()
 
-   if 'sim' in verbs or 's' in verbs:
-      simulate(Options.test)
+    if 'bld' in verbs or 'b' in verbs:
+        build()
 
+    if 'sim' in verbs or 's' in verbs:
+        simulate(Options.test)
 
-   # if we get here, we must have passed
-   
+    # if we get here, we must have passed

@@ -130,7 +130,7 @@ class env_c extends uvm_env;
                                         int _name_width=-1,
                                         int _type_width=-1);
 
-      uvm_table_printer_c printer = new();
+      uvm_table_printer printer = new();
       string topology;
 
       printer.knobs.depth = _depth;

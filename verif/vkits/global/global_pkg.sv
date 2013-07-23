@@ -25,13 +25,9 @@ package global_pkg;
 
    //--------------------------------------------------------------------------
    // Group: Includes
-`include "global_bug_entry.sv"
 `include "global_heartbeat_mon.sv"
 `include "global_watchdog.sv"
-`include "global_misc_dpi.sv"
-`include "global_csr_print_cbs.sv"
 `include "global_env.sv"
-`include "global_table_printer.sv"
 
 endpackage : global_pkg
 
