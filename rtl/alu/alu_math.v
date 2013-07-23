@@ -88,7 +88,7 @@ module alu_math
                   CLR_RES:
                      nxt_state = COMPUTE_1;
                   default:
-                     `cn_err_hdl(("Illegal operation %0x detected. Ignoring it.", dat_r));
+                     `cn_err_hdl(("Illegal operation %0x detected. Ignoring it.", dat_r))
                endcase
             end
          end
@@ -135,7 +135,7 @@ module alu_math
 
          default: begin
             if(rst_n)
-               `cn_err_hdl(("Illegal state %0d", state));
+               `cn_err_hdl(("Illegal state %0d", state))
             nxt_state = IDLE;
          end
       endcase

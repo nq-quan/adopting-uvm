@@ -110,12 +110,12 @@ module alu_framer(/*AUTOARG*/
    assert property(@(posedge clk)
                    !(fifo_cnt == 'd31 && alu_ready_r)
                    ) else
-      `cn_fatal_hdl(("FIFO Overflow."));
+      `cn_fatal_hdl(("FIFO Overflow."))
 
    assert property(@(posedge clk)
                    !(fifo_cnt == 'd0 && state == FRAMING && frame_length)
                    ) else
-      `cn_fatal_hdl(("FIFO Underflow."));
+      `cn_fatal_hdl(("FIFO Underflow."))
 `endif
 
 endmodule

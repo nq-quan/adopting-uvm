@@ -121,6 +121,8 @@ Launch SV compile and/or simulation with simulator.
     p.add_argument('--gui',  '-g',   action='store_true',        default=False,   help="Run DVE in GUI mode.")
     p.add_argument('--fsdb', '-f',   action='store_true',        default=False,   help="Run with Verdi wave dumping.")
 
+    p.add_argument('--seed',         action='store', type=int,   default=1,       help="Run with the given seed.")
+
     Options = p.parse_args()
 
     if Options.verbs == [[]]:
@@ -211,6 +213,7 @@ def simulate(test_name):
 
     sim_dir = os.path.join('sim', (Options.dir if Options.dir else test_name))
     sim_cmd += " -l %s/logfile" % sim_dir
+    sim_cmd += " +seed=%d" % Options.seed
 
     if not os.path.exists(sim_dir):
         os.makedirs(sim_dir)
@@ -250,14 +253,18 @@ if __name__ == '__main__':
 
     verbs = Options.verbs[0]
 
-    if 'cln' in verbs or 'c' in verbs:
-        clean()
+    try:
+        if 'cln' in verbs or 'c' in verbs:
+            clean()
 
-    if 'bld' in verbs or 'b' in verbs:
-        build()
+        if 'bld' in verbs or 'b' in verbs:
+            build()
 
-    if 'sim' in verbs or 's' in verbs:
-        simulate(Options.test)
+        if 'sim' in verbs or 's' in verbs:
+            simulate(Options.test)
+    except KeyboardInterrupt:
+        print "++ Exiting due to Ctrl-C."
+        sys.exit(255)
 
     # if we get here, we must have passed
     sys.exit(0)

@@ -27,7 +27,6 @@ package cn_pkg;
    // Includes
 
 `include "cn_clk_drv.sv"
-`include "cn_msg_vlog.sv"
 `include "cn_msgs.sv"
 `include "cn_objection.sv"
 `include "cn_print_utils.sv"

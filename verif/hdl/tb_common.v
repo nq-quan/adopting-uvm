@@ -77,5 +77,6 @@ end
    end
 
    // Root message tag instance
-   `cn_msg_tag("vlog");
+   msg_hdl msg_hdl ();
+
 

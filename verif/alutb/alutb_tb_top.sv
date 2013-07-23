@@ -14,7 +14,7 @@
 
 import uvm_pkg::*;
 
-`include "cn_defines.vh"
+`include "cn_msg_hdl.vh"
 
 module alutb_tb_top;
    //----------------------------------------------------------------------------------------
