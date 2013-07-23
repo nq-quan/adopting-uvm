@@ -2,7 +2,7 @@
 #-*- mode: Python;-*-
 
 """
-A lightweight compile and simulate script for VCS.
+A lightweight compile and simulate script
 Includes some support for Verdi, too.
 """
 
@@ -18,23 +18,52 @@ import argparse
 ########################################################################################
 # Globals
 
-GLBL = None
+# The names of all the library files that will be imported
+Libraries = ('project', 'tb')
+
+# A dictionary of all the global variables imported from the libraries
+GVars = None
+
+# All of the global variables in the GVars dictionary
+Keys = (
+        # Global variables
+        'UVM_REV',           # (string) UVM Revision to use
+
+        # Testbench-related variables
+        'VKITS',             # (list of strings) Vkits that this testbench relies upon, in order
+        'FLISTS',            # (list of strings) Testbench FLISTs to include
+
+        # Build-related
+        'BUILD_TOOL',        # (string) Command needed to run a build
+        'BUILD_OPTIONS',     # (string) Additional build options
+        'PLI_FILES',         # (list of strings) PLI files that should also be added to the build command-line
+        'VCOMP_DIR',         # (string) The name of the compile directory
+
+        # Simulation-related
+        'SIM_GUI',           # (string) Add this to simulation command-line when you want to run in GUI mode
+
+        # LSF-related
+        'LSF_SUBMIT_TOOL',   # (string) The LSF tool to call
+        'LSF_BUILD_LICS',    # (string) Additional licenses used for building
+        'LSF_SIM_LICS',      # (string) Additional licences used for simulation
+
+        # Cleaning-related
+        'CLEAN_DIRS',        # (list of strings) Names of directories to delete
+        'CLEAN_FILES',       # (list of strings) Names of files to delete
+)
+
+# Command-line Options
 Options = None
 
 ########################################################################################
 def setup_globals():
     """
-    Set up the GLBL dictionary with imported information from gogo_site and the local tb.py
+    Set up the GVars dictionary with imported information from project and the local tb.py
     """
 
-    global GLBL
+    global GVars
 
-    keys = ('VCOMP_DIR' , 'UVM_REV', 'VKITS', 'FLISTS', 'PLI_FILES', 'BUILD_TOOL',
-            'BUILD_OPTIONS', 'LSF_SUBMIT_TOOL', 'LSF_BUILD_LICS', 'LSF_SIM_LICS',
-            'VKITS_DIR', 'UVM_DIR', 'UVM_FLIST', 'CLEAN_DIRS', 'CLEAN_FILES',
-            'SIM_GUI', )
-
-    GLBL = {it : None for it in keys}
+    GVars = {it : None for it in Keys}
 
     def import_lib(mod_name):
         try:
@@ -45,20 +74,19 @@ def setup_globals():
             sys.exit(1)
 
         lib_dict = lib.__dict__
-        for key in GLBL:
+        for key in GVars:
             if key in lib_dict:
-                GLBL[key] = lib_dict[key]
+                GVars[key] = lib_dict[key]
 
-    import_lib("gogo_site")
-    import_lib("tb")
+    map(import_lib, Libraries)
 
-    GLBL['VKITS_DIR'] = '../vkits'
-    GLBL['UVM_DIR']   = os.path.join(GLBL['VKITS_DIR'], 'uvm/%s' % GLBL['UVM_REV'])
-    GLBL['UVM_FLIST'] = os.path.join(GLBL['UVM_DIR'], 'uvm.flist')
+    GVars['VKITS_DIR'] = '../vkits'
+    GVars['UVM_DIR']   = os.path.join(GVars['VKITS_DIR'], 'uvm/%s' % GVars['UVM_REV'])
+    GVars['UVM_FLIST'] = os.path.join(GVars['UVM_DIR'], 'uvm.flist')
 
-    for key in GLBL:
-        if GLBL[key] is None:
-            print "!! %s is not defined in gogo_site.py or tb.py." % key
+    for key in GVars:
+        if GVars[key] is None:
+            print "!! %s is not defined in any of %s." % (key, ','.join(["%s.py" % it for it in Libraries]))
             sys.exit(1)
 
 ########################################################################################
@@ -129,14 +157,14 @@ def clean():
     from shutil import rmtree
 
     print "Cleaning..."
-    for dname in GLBL['CLEAN_DIRS']:
+    for dname in GVars['CLEAN_DIRS']:
         try:
             rmtree(dname)
             print "++ Removed dir", dname
         except:
             pass
 
-    for fname in GLBL['CLEAN_FILES']:
+    for fname in GVars['CLEAN_FILES']:
         try:
             os.remove(fname)
             print "++ Removed file", fname
@@ -150,26 +178,26 @@ def build():
     """
 
     # determine all of the vkits and flists
-    vkits = [os.path.join(GLBL['VKITS_DIR'], it, "%s.flist" % it) for it in GLBL['VKITS']]
-    flists = [GLBL['UVM_FLIST']] + vkits + GLBL['FLISTS']
+    vkits = [os.path.join(GVars['VKITS_DIR'], it, "%s.flist" % it) for it in GVars['VKITS']]
+    flists = [GVars['UVM_FLIST']] + vkits + GVars['FLISTS']
 
-    if not os.path.exists(GLBL['VCOMP_DIR']):
-        os.makedirs(GLBL['VCOMP_DIR'], 0777)
+    if not os.path.exists(GVars['VCOMP_DIR']):
+        os.makedirs(GVars['VCOMP_DIR'], 0777)
 
-    build_cmd = GLBL['BUILD_TOOL']
-    build_cmd += ' -o %s -Mupdate' % (os.path.join(GLBL['VCOMP_DIR'], 'sim.exe'))
-    build_cmd += " %s/src/dpi/uvm_dpi.cc" % GLBL['UVM_DIR']
+    build_cmd = GVars['BUILD_TOOL']
+    build_cmd += ' -o %s -Mupdate' % (os.path.join(GVars['VCOMP_DIR'], 'sim.exe'))
+    build_cmd += " %s/src/dpi/uvm_dpi.cc" % GVars['UVM_DIR']
     build_cmd += ' -f ' + ' -f '.join(flists)
-    build_cmd += " %s" % GLBL['BUILD_OPTIONS']
+    build_cmd += " %s" % GVars['BUILD_OPTIONS']
 
-    if GLBL['PLI_FILES']:
-        build_cmd += ' -P ' + ' '.join(GLBL['PLI_FILES'])
+    if GVars['PLI_FILES']:
+        build_cmd += ' -P ' + ' '.join(GVars['PLI_FILES'])
 
     # compile-time options specified on command-line
     if Options.comp:
         build_cmd += " " + Options.comp
 
-    cmd_line = '%s %s=1 -N build "%s"' % (GLBL['LSF_SUBMIT_TOOL'], GLBL['LSF_BUILD_LICS'], build_cmd)
+    cmd_line = '%s %s=1 -N build "%s"' % (GVars['LSF_SUBMIT_TOOL'], GVars['LSF_BUILD_LICS'], build_cmd)
     run_cmd(cmd_line)
 
 ########################################################################################
@@ -178,7 +206,7 @@ def simulate(test_name):
     Run the simulation
     """
 
-    sim_cmd = os.path.join(GLBL['VCOMP_DIR'], 'sim.exe')
+    sim_cmd = os.path.join(GVars['VCOMP_DIR'], 'sim.exe')
     sim_cmd += " +UVM_TESTNAME=%s_test_c" % test_name
 
     sim_dir = os.path.join('sim', (Options.dir if Options.dir else test_name))
@@ -198,13 +226,13 @@ def simulate(test_name):
         sim_cmd += " +wdog=%d" % Options.wdog
 
     if Options.gui:
-        sim_cmd += GLBL['SIM_GUI']
+        sim_cmd += GVars['SIM_GUI']
 
     elif Options.fsdb:
         # make .signal_list file
         sigList = os.path.join(sim_dir, '.signal_list')
         with open(sigList, 'w') as f:
-            print >>f, "0 %s" % GLBL['TB_TOP']
+            print >>f, "0 %s" % GVars['TB_TOP']
 
         sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb", sigList))
 
@@ -212,7 +240,7 @@ def simulate(test_name):
     if Options.sim:
         sim_cmd += " " + Options.sim
 
-    cmd_line = '%s %s=1 -N %s "%s"' % (GLBL['LSF_SUBMIT_TOOL'], GLBL['LSF_SIM_LICS'], test_name, sim_cmd)
+    cmd_line = '%s %s=1 -N %s "%s"' % (GVars['LSF_SUBMIT_TOOL'], GVars['LSF_SIM_LICS'], test_name, sim_cmd)
     run_cmd(cmd_line)
 
 ########################################################################################

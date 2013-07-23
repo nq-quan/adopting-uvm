@@ -1,15 +1,9 @@
 //-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 // ***********************************************************************
-// * CAVIUM NETWORKS CONFIDENTIAL                                        *
-// *                                                                     *
-// *                         PROPRIETARY NOTE                            *
-// *                                                                     *
-// *  This software contains information confidential and proprietary    *
-// *  to Cavium Networks.  It shall not be reproduced in whole or in     *
-// *  part, or transferred to other documents, or disclosed to third     *
-// *  parties, or used for any purpose other than that for which it was  *
-// *  obtained, without the prior written consent of Cavium Networks.    *
-// *  (c) 2012, Cavium Networks.  All rights reserved.                   *
+// *
+// * legal mumbo jumbo
+// *
+// *  (c) 2012, Cavi
 // *                                                                     *
 // ***********************************************************************
 // * File        : cn_string_utils.sv
