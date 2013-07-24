@@ -1,4 +1,9 @@
-//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+// ************************************************************************
+// *
+// * legal mumbo jumbo
+// *
+// *  Copyright 2013
+// ************************************************************************
 
 module alu_csr(/*AUTOARG*/
                // Outputs
@@ -109,7 +114,7 @@ module alu_csr(/*AUTOARG*/
    assign addr20 = addr == 'h20;
    assign addr24 = addr == 'h24;
    assign sor_rd_clr = ((state == RD_DATA3) & addr24);
-   
+
    // Read Transactions
    always @(posedge clk or negedge rst_n) begin
       if(~rst_n)

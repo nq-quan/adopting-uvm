@@ -2,22 +2,15 @@
 
 import uvm_pkg::*;
 
-//FSDB Tracing
-`ifdef HAVE_VERDI_WAVE_PLI
-reg [1000:0] fsdb_string;
-initial begin
-   if($test$plusargs("fsdb_trace")) begin
-      static sps_pkg::sps_tr_recorder my_recorder = new();
-      uvm_default_recorder = my_recorder;
-      uvm_config_db#(int)::set(uvm_top, "*", "recording_detail", UVM_FULL);
-      `cn_info_hdl(("REPORT FILTER ON /\\*Verdi3\\* FSDB WARNING: The FSDB file already exists/"));
-      if ($value$plusargs("fsdb_outfile=%s", fsdb_string))
-         $fsdbDumpfile(fsdb_string);
-      if($value$plusargs("fsdb_siglist=%s", fsdb_string))
-         $fsdbDumpvars("+all");
+   initial begin
+      reg [1000:0] fsdb_string;
+      if($test$plusargs("fsdb_trace")) begin
+         if ($value$plusargs("fsdb_outfile=%s", fsdb_string))
+            $fsdbDumpfile(fsdb_string);
+         if($value$plusargs("fsdb_siglist=%s", fsdb_string))
+            $fsdbDumpvars("+all");
+      end
    end
-end
-`endif
 
    /////////////////////////////////////////////////////////////////////////////
    // 1. replace the UVM report server with ours
@@ -28,8 +21,7 @@ end
    /////////////////////////////////////////////////////////////////////////////
    initial begin : start_uvm
       cn_pkg::report_server_c        report_server;
-      string                         mode_value = "none";
-      int                            unsigned                   seed_value;
+      int unsigned                   seed_value;
 
       // all "%t" shall print out in ns format with 9 digits and 3 decimal places
       $timeformat(-9,3,"ns",13);
@@ -40,7 +32,7 @@ end
 
       if(!$value$plusargs("seed=%d", seed_value))
          `cn_err_hdl(("Error parsing command-line arg: +seed"));
-      `cn_info_hdl(("Running simulation with seed: %0d",seed_value));
+      `cn_info_hdl(("Running simulation with seed: %0d", seed_value));
 
       // testbenches must create this zero-time function
       pre_run_test();

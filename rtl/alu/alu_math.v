@@ -1,5 +1,12 @@
 //-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 
+// ************************************************************************
+// *
+// * legal mumbo jumbo
+// *
+// *  Copyright 2013
+// ************************************************************************
+
 module alu_math
    (/*AUTOARG*/
    // Outputs

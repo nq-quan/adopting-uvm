@@ -32,6 +32,7 @@ Keys = (
         # Testbench-related variables
         'VKITS',             # (list of strings) Vkits that this testbench relies upon, in order
         'FLISTS',            # (list of strings) Testbench FLISTs to include
+        'TB_TOP',            # (string) The module name of the top-level of the testbench
 
         # Build-related
         'BUILD_TOOL',        # (string) Command needed to run a build
@@ -107,7 +108,7 @@ Launch SV compile and/or simulation with simulator.
         """)
 
     verb_choices = ['bld', 'sim', 'cln', 'b', 's', 'c']
-    p.add_argument('verbs',          action='append', nargs=argparse.REMAINDER, choices=verb_choices)
+    p.add_argument('verbs',          action='append', nargs='*', choices=verb_choices)
 
     p.add_argument('--test', '-t',   action='store',             default='basic', help="Specify UVM test name [default:basic]")
     p.add_argument('--dir',  '-d',   action='store',             default=None,    help="Specify alternate directory for results.")
@@ -115,13 +116,12 @@ Launch SV compile and/or simulation with simulator.
 
     p.add_argument('--sim',  '-s',   action='store',             default=None,    help="Add simulation opts as a string to simulator command-line.")
     p.add_argument('--comp', '-c',   action='store',             default=None,    help="Add compilation opts as a string to compiler command-line.")
+    p.add_argument('--seed',         action='store', type=int,   default=1,       help="Run with the given seed.")
 
     p.add_argument('--topo',         action='store', type=int,   default=None,    help="Print UVM topology at this depth.")
     p.add_argument('--wdog', '-w',   action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
     p.add_argument('--gui',  '-g',   action='store_true',        default=False,   help="Run DVE in GUI mode.")
     p.add_argument('--fsdb', '-f',   action='store_true',        default=False,   help="Run with Verdi wave dumping.")
-
-    p.add_argument('--seed',         action='store', type=int,   default=1,       help="Run with the given seed.")
 
     Options = p.parse_args()
 
@@ -233,11 +233,11 @@ def simulate(test_name):
 
     elif Options.fsdb:
         # make .signal_list file
-        sigList = os.path.join(sim_dir, '.signal_list')
-        with open(sigList, 'w') as f:
+        sig_list = os.path.join(sim_dir, '.signal_list')
+        with open(sig_list, 'w') as f:
             print >>f, "0 %s" % GVars['TB_TOP']
 
-        sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb", sigList))
+        sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb"), sig_list)
 
     # add simulation command-line options
     if Options.sim:

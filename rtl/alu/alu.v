@@ -1,3 +1,12 @@
+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+
+// ************************************************************************
+// *
+// * legal mumbo jumbo
+// *
+// *  Copyright 2013
+// ************************************************************************
+
 module alu(/*AUTOARG*/
    // Outputs
    frame_data, frame_bp, frame, ctx_out, alu_ready, alu_result,
@@ -94,5 +103,5 @@ module alu(/*AUTOARG*/
 endmodule
 
 // Local Variables:
-// verilog-library-directories:("." "../../rtl/mio" "../../rtl/fus" "../../rtl/common" "../../rtl/include")
+// verilog-library-directories:("." "../../rtl/include")
 // End:
