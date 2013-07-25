@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 def fix_file(filename):
     with open(filename, 'r') as f:
@@ -7,7 +7,7 @@ def fix_file(filename):
     start, end = (0, 0)
     for (num, line) in enumerate(lines):
         if (line.find("CAVIUM CONFIDENTIAL") != -1 or
-z            line.find("CAVIUM NETWORKS CONFIDENTIAL") != -1):
+            line.find("CAVIUM NETWORKS CONFIDENTIAL") != -1):
             start = num
         elif line.find("without the prior written consent") != -1:
             end = num
