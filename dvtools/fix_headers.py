@@ -13,7 +13,7 @@ def fix_file(filename):
             end = num
         elif (line.find("All rights reserved") != -1 or
               line.find("without the prior written consent") != -1):
-            lines[num] = line[0:20] + '\n'
+            lines[num] = line[0:19] + '\n'
 
     if start and end:
         new_lines = lines[0:start] + lines[end+1:]
@@ -34,4 +34,5 @@ if __name__ == '__main__':
         files = glob.glob('%s/*.*v' % mydir)
         files += glob.glob('%s/*.py' % mydir)
         for fname in files:
-            fix_file(fname)
+            if not fname.endswith('fix_headers.py'):
+                fix_file(fname)
