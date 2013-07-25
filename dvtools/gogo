@@ -55,14 +55,27 @@ Keys = (
 
 # Command-line Options
 Options = None
+Actions = None
 
 ########################################################################################
 def setup_globals():
     """
     Set up the GVars dictionary with imported information from project and the local tb.py
+    Set up the Actions dictionary
     """
 
-    global GVars
+    global GVars, Actions
+
+    Actions = {'b'       : build,
+               'build'   : build,
+               'bld'     : build,
+               'c'       : clean,
+               'cln'     : clean,
+               'clean'   : clean,
+               's'       : simulate,
+               'sim'     : simulate,
+               'simu'    : simulate,
+               'simulate': simulate}
 
     GVars = {it : None for it in Keys}
 
@@ -101,22 +114,21 @@ def parse_args():
     p = argparse.ArgumentParser(
         prog='gogo',
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        usage="%(prog)s [verbs] [options]",
+        usage="%(prog)s [actions] [options]",
         version=("%(prog)s v"+__version__),
         description="""
 Launch SV compile and/or simulation with simulator.
         """)
 
-    verb_choices = ['bld', 'sim', 'cln', 'b', 's', 'c']
-    p.add_argument('verbs',          action='append', nargs='*', choices=verb_choices)
+    p.add_argument('actions',        action='store', nargs='*')
 
     p.add_argument('--test', '-t',   action='store',             default='basic', help="Specify UVM test name [default:basic]")
     p.add_argument('--dir',  '-d',   action='store',             default=None,    help="Specify alternate directory for results.")
     p.add_argument('--verb', '-V',   action='store',             default=None,    help="Specify UVM Verbosity.")
 
-    p.add_argument('--sim',  '-s',   action='store',             default=None,    help="Add simulation opts as a string to simulator command-line.")
+    p.add_argument('--simopts',      action='store',             default=None,    help="Add simulation opts as a string to simulator command-line.")
     p.add_argument('--comp', '-c',   action='store',             default=None,    help="Add compilation opts as a string to compiler command-line.")
-    p.add_argument('--seed',         action='store', type=int,   default=1,       help="Run with the given seed.")
+    p.add_argument('--seed', '-s',   action='store', type=int,   default=1,       help="Run with the given seed (0 for a random seed).")
 
     p.add_argument('--topo',         action='store', type=int,   default=None,    help="Print UVM topology at this depth.")
     p.add_argument('--wdog', '-w',   action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
@@ -125,8 +137,12 @@ Launch SV compile and/or simulation with simulator.
 
     Options = p.parse_args()
 
-    if Options.verbs == [[]]:
-        Options.verbs = [['bld', 'sim']]
+    for action in Options.actions:
+        if action not in Actions.keys():
+            print "Unknown action: %s" % action
+
+    if Options.actions == []:
+        Options.actions = ['bld', 'sim']
 
 ########################################################################################
 def run_cmd(cmd_line):
@@ -213,6 +229,10 @@ def simulate(test_name):
 
     sim_dir = os.path.join('sim', (Options.dir if Options.dir else test_name))
     sim_cmd += " -l %s/logfile" % sim_dir
+
+    if Options.seed == 0:
+        import random
+        Options.seed = random.getrandbits(32)
     sim_cmd += " +seed=%d" % Options.seed
 
     if not os.path.exists(sim_dir):
@@ -240,8 +260,8 @@ def simulate(test_name):
         sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb"), sig_list)
 
     # add simulation command-line options
-    if Options.sim:
-        sim_cmd += " " + Options.sim
+    if Options.simopts:
+        sim_cmd += " " + Options.simopts
 
     cmd_line = '%s %s=1 -N %s "%s"' % (GVars['LSF_SUBMIT_TOOL'], GVars['LSF_SIM_LICS'], test_name, sim_cmd)
     run_cmd(cmd_line)
@@ -251,16 +271,16 @@ if __name__ == '__main__':
     setup_globals()
     parse_args()
 
-    verbs = Options.verbs[0]
-
+    acts = []
     try:
-        if 'cln' in verbs or 'c' in verbs:
+        for action in Options.actions:
+            acts.append(Actions[action])
+
+        if clean in acts:
             clean()
-
-        if 'bld' in verbs or 'b' in verbs:
+        if build in acts:
             build()
-
-        if 'sim' in verbs or 's' in verbs:
+        if simulate in acts:
             simulate(Options.test)
     except KeyboardInterrupt:
         print "++ Exiting due to Ctrl-C."
