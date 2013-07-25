@@ -1,15 +1,18 @@
 #!/usr/bin/env python2.7
-#-*- mode: Python;-*-
 
-# ***********************************************************************
-# * File        : utg
-# * Author      : bhunter
-# * Description : UVM Template Generator
-# ***********************************************************************
+########################################################################################
+# Constants
 
 __version__ = '0.10'
 __author__  = "Brian Hunter"
 __email__   = "brian.hunter@cavium.com"
+
+# These templates are named whatever the name was specified as
+DIRECTLY_NAMED = ('test', 'object', 'component', 'empty_file')
+
+# These templates are included within other templates and are not available for usage
+# on the command line
+EXCLUDED_TEMPLATES = ('class_border', 'endif', 'ifndef', 'method_border', 'section_border', )
 
 ########################################################################################
 # Imports
@@ -21,18 +24,6 @@ import re
 import logging
 import cn_logging
 import textwrap
-
-########################################################################################
-# Constants
-
-# These templates are named whatever the name was specified as
-DIRECTLY_NAMED = ('test', 'object', 'component', 'empty_file')
-
-# These templates are included within other templates and are not available for usage
-# on the command line
-EXCLUDED_TEMPLATES = ('class_border', 'endif', 'ifndef', 'method_border', 'section_border', )
-
-UVM_DEFAULT_REVISION = '1_1a'
 
 ########################################################################################
 # Exceptions
@@ -264,9 +255,8 @@ def determineFilename(tempName):
     else:
         filename = tempName if not Options.name else ("%s_%s" % (Options.name, tempName))
 
-    # else:
-    #     if "<name>" not in Substitutions:
-    #         fetchAnswer(tempName, "<name>")
+    if "<name>" not in Substitutions:
+        fetchAnswer(tempName, "<name>")
     name = Substitutions["<name>"]
     if not name.endswith("_%s" % tempName):
         filename = "%s_%s" % (name, tempName)
@@ -378,10 +368,6 @@ def templateIt(tempName):
             Log.debug("Removing %s" % sub)
             del Substitutions[sub]
 
-    # create the self-test script if needed
-    if Options.selftest:
-        createSelfTestScript(filename)
-
 ########################################################################################
 def checkOptions(lines):
     """
@@ -480,7 +466,6 @@ Prints out the standard component phases to the screen.
     p.add_argument('--filename',          action='store',                   default=None,     help="The filename to use (only legal when there is one template given).")
     p.add_argument('-c', '--classonly',   action='store_true',              default=False,    help="When set, only create the class or interface and skip the header")
     p.add_argument('-q', '--quiet',       action='store_true',              default=False,    help="When set, do not prompt for unknown variables, just leave them in <template> format")
-    p.add_argument('-s', '--selftest',    action='store_true',              default=False,    help="When set, add SELF_TEST code to the generated file.")
     p.add_argument('--dbg',               action='store_true',              default=False,    help="Turns on debug-level information.")
 
     try:
@@ -501,80 +486,11 @@ Prints out the standard component phases to the screen.
     if Options.filename:
         Options.file = True
 
-    if Options.classonly and Options.selftest:
-        Log.critical("--classonly and --selftest may not be used at the same time.")
+    if Options.classonly:
+        Log.critical("--classonly may not be used at the same time.")
 
     # create all of the substitution variables
     createSubstitutions()
-
-########################################################################################
-def createSelfTestScript(origFilename):
-    """
-    Create a script that the user can use to run self-test on the given template.
-    The origFilename is used to derive the name of the self-test script
-    """
-
-    # find where everything is
-    import area_utils
-    import cn_relpath
-
-    # get requested uvm version:
-    while True:
-        uvm_version = raw_input("Enter UVM revision [%s]: " % UVM_DEFAULT_REVISION)
-        if not uvm_version:
-            uvm_version = UVM_DEFAULT_REVISION
-
-        cwd = os.getcwd()
-        rootDir = area_utils.calcRootDir()
-        uvmSrcDir = cn_relpath.relpath(cwd, os.path.join(rootDir, "verif/vkits/uvm/%s/src" % uvm_version))
-        cnVkitDir = cn_relpath.relpath(cwd, os.path.join(rootDir, "verif/vkits/cn"))
-        libDir    = cn_relpath.relpath(cwd, os.path.join(rootDir, "verif/lib"))
-
-        # ensure that uvmSrcDir exists (that UVM revision was legal
-        if(os.path.exists(uvmSrcDir)):
-            break
-        else:
-            Log.error("UVM Revision '%s' does not exist." % uvm_version)
-
-    # now find the relative paths from here
-
-    filename = origFilename.replace('.sv', '') + '__selftest.csh'
-
-    file = open(filename, 'w')
-    print >>file, r"""#!/bin/csh
-
-if ($#argv != 1) then
-    echo "usage: %(filename)s <test_class_c>"
-    echo "Will use self_test_c by default."
-    set testname = 'self_test_c'
-else
-    set testname = $1
-endif
-
-if (! -f %(libDir)s/uvm_dpiVcs.a) then
-    echo "%(libDir)s/uvm_dpiVcs.a is not present.  Run 'cnmake vlog' from any UVM testbench directory, then try again!"
-    exit
-endif
-
-qrsh -V -l vcs=1 -l urg_plus20 -l lic_cmp_vcs=1 -l lic_sim_vcs=1 -q verilog "runmod -t vcs vcs -R -sverilog -timescale=1ns/1ns +incdir+%(uvmSrcDir)s+%(cnVkitDir)s +UVM_TESTNAME=$testname +define+__SELF_TEST__ +define+UVM_NO_DEPRECATED -debug_all %(uvmSrcDir)s/uvm_pkg.sv %(cnVkitDir)s/cn_self_test.sv %(libDir)s/uvm_dpiVcs.a %(origFilename)s"
-
-""" % (locals())
-
-# This was close, but no cigar:
-#   pushd %(uvmSrcDir)s/uvm_dpi
-#   make
-#   popd
-#   mkdir -p %(libDir)s
-#   pushd %(uvmDpiDir)s
-#   make -r dep_files NOTWH=1 NODEP=2 NOINC=2 LIB=VCS
-#   ccache g++ -Wall -Werror -gstabs+ -fPIC -O2 -c -DTBV_1_3 -I. -I./obj -I/nfs/cacadtools/synopsys/vcs/F-2011.12/include -Iobj/unitVcs -DVCS -DUVM_DPI_TB -DUVM_DPI_VCS -m32 -o obj/unitVcs/uvm_dpi.o uvm_dpi.cc
-#   ar cru %(libRelDpiDir)s/uvm_dpiVcs.a obj/unitVcs/uvm_dpi.o
-#   popd
-
-    file.close()
-
-    os.chmod(filename, 0777)
-    Log.info("Wrote selftest script to %s" % filename)
 
 ########################################################################################
 def main(argv=None):

@@ -1,11 +1,7 @@
 #!/usr/bin/env python2.7
-#-*- mode: Python;-*-
 
-# ***********************************************************************
-# File:   extractor
-# Author: bhunter
-# About:  Extracts code snippets from UVM Tutorial RTF file
-# ***********************************************************************
+__author__ = "Brian Hunter"
+__email__  = "brian.hunter@cavium.com"
 
 import sys
 import cPickle

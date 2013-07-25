@@ -1,15 +1,9 @@
 #!/usr/bin/env python
-#-*- mode: Python;-*-
-
-# ***********************************************************************
-# * File        : untb
-# * Author      : bhunter
-# * Description : UVM New Testbench
-# ***********************************************************************
 
 __version__ = '0.3.0'
 __author__  = "Brian Hunter"
 __email__   = "brian.hunter@cavium.com"
+__description__ = "UVM New Testbench Generator, v%s" % __version__
 
 ########################################################################################
 # Imports
@@ -43,7 +37,7 @@ def setup():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         usage="untb <tb_name>",
         version="%(prog)s v"+str(__version__),
-        description="""UVM New Testbench Generator, v%s""" % __version__)
+        description=__description__)
 
     p.add_argument('tbname',            action='append',     nargs='+',   default=None)
     p.add_argument('-f', '--force',     action='store_true',              default=False,   help="Force creation of new testbench even if it already exists.")

@@ -1,11 +1,7 @@
 #!/usr/bin/env python2.7
-#-*- mode: Python;-*-
 
-# ***********************************************************************
-# File:   fetcher
-# Author: bhunter
-# About:  Fetches Lesson Patches and Applies them to the current working area
-# ***********************************************************************
+__author__ = "Brian Hunter"
+__email__  = "brian.hunter@cavium.com"
 
 import area_utils
 import os
