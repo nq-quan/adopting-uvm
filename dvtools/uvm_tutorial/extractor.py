@@ -1,22 +1,11 @@
 #!/usr/bin/env python2.7
 #-*- mode: Python;-*-
 
-# **********************************************************************
-# * CAVIUM CONFIDENTIAL
-# *
-# *                         PROPRIETARY NOTE
-# *
-# * This software contains information confidential and proprietary to
-# * Cavium, Inc. It shall not be reproduced in whole or in part, or
-# * transferred to other documents, or disclosed to third parties, or
-# * used for any purpose other than that for which it was obtained,
-# * without the prior written consent of Cavium, Inc.
-# * (c) 2011, Cavium, Inc.  All rights reserved.
-# *
 # ***********************************************************************
 # File:   extractor
 # Author: bhunter
 # About:  Extracts code snippets from UVM Tutorial RTF file
+# ***********************************************************************
 
 import sys
 import cPickle

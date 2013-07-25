@@ -1,0 +1,9 @@
++incdir+../../verif/<TB>
++incdir+../../verif/common
++incdir+../../verif/uvm_common
++incdir+../../verif/hdl
++incdir+../../verif/<TB>/tests
+../../verif/<TB>/<TB>_tb_top.sv
+../../verif/<TB>/tests/basic.sv
+../../verif/<TB>/tests/base_test.sv
+

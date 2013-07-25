@@ -32,5 +32,6 @@ if __name__ == '__main__':
     for it in os.walk(os.getcwd()):
         mydir = it[0]
         files = glob.glob('%s/*.*v' % mydir)
+        files += glob.glob('%s/*.py' % mydir)
         for fname in files:
             fix_file(fname)
