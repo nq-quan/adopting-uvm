@@ -4,3 +4,5 @@ csrc
 *.sublime-*
 ucli.key
 vc_hdrs.h
+novas.*
+verdiLog
