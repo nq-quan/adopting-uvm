@@ -2,8 +2,7 @@
 #-*- mode: Python;-*-
 
 """
-A lightweight compile and simulate script
-Includes some support for Verdi, too.
+A lightweight compile and simulate script.
 """
 
 __version__       = '0.0'
@@ -64,18 +63,7 @@ def setup_globals():
     Set up the Actions dictionary
     """
 
-    global GVars, Actions
-
-    Actions = {'b'       : build,
-               'build'   : build,
-               'bld'     : build,
-               'c'       : clean,
-               'cln'     : clean,
-               'clean'   : clean,
-               's'       : simulate,
-               'sim'     : simulate,
-               'simu'    : simulate,
-               'simulate': simulate}
+    global GVars
 
     GVars = {it : None for it in Keys}
 
@@ -109,16 +97,25 @@ def parse_args():
     Parse Command-Line
     """
 
-    global Options
+    global Options, Actions
+
+    Actions = {'b'       : build,
+               'build'   : build,
+               'bld'     : build,
+               'c'       : clean,
+               'cln'     : clean,
+               'clean'   : clean,
+               's'       : simulate,
+               'sim'     : simulate,
+               'simu'    : simulate,
+               'simulate': simulate}
 
     p = argparse.ArgumentParser(
         prog='gogo',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         usage="%(prog)s [actions] [options]",
         version=("%(prog)s v"+__version__),
-        description="""
-Launch SV compile and/or simulation with simulator.
-        """)
+        description=__doc__)
 
     p.add_argument('actions',        action='store', nargs='*')
 
@@ -139,7 +136,7 @@ Launch SV compile and/or simulation with simulator.
 
     for action in Options.actions:
         if action not in Actions.keys():
-            print "Unknown action: %s" % action
+            print "!! Unknown action: %s" % action
 
     if Options.actions == []:
         Options.actions = ['bld', 'sim']
@@ -174,7 +171,7 @@ def clean():
     """
     from shutil import rmtree
 
-    print "Cleaning..."
+    print "> Cleaning..."
     for dname in GVars['CLEAN_DIRS']:
         try:
             rmtree(dname)
@@ -194,6 +191,8 @@ def build():
     """
     Build the simulation executable
     """
+
+    print "> Building..."
 
     # determine all of the vkits and flists
     vkits = [os.path.join(GVars['VKITS_DIR'], it, "%s.flist" % it) for it in GVars['VKITS']]
@@ -223,6 +222,8 @@ def simulate(test_name):
     """
     Run the simulation
     """
+
+    print "> Simulating..."
 
     sim_cmd = os.path.join(GVars['VCOMP_DIR'], 'sim.exe')
     sim_cmd += " +UVM_TESTNAME=%s_test_c" % test_name
@@ -268,13 +269,11 @@ def simulate(test_name):
 
 ########################################################################################
 if __name__ == '__main__':
-    setup_globals()
     parse_args()
+    setup_globals()
 
-    acts = []
     try:
-        for action in Options.actions:
-            acts.append(Actions[action])
+        acts = [Actions[action] for action in Options.actions]
 
         if clean in acts:
             clean()
@@ -283,7 +282,7 @@ if __name__ == '__main__':
         if simulate in acts:
             simulate(Options.test)
     except KeyboardInterrupt:
-        print "++ Exiting due to Ctrl-C."
+        print "!! Exiting due to Ctrl-C."
         sys.exit(255)
 
     # if we get here, we must have passed
