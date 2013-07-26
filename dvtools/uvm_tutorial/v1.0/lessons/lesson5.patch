@@ -1,26 +1,282 @@
-Index: verif/vkits/alu/alu.flist
-===================================================================
---- verif/vkits/alu/alu.flist	(revision 0)
-+++ verif/vkits/alu/alu.flist	(revision 0)
-@@ -0,0 +1,2 @@
-++incdir+../../verif/vkits/alu
-+../../verif/vkits/alu/alu_pkg.sv
-Index: verif/vkits/alu/alu_item.sv
-===================================================================
---- verif/vkits/alu/alu_item.sv	(revision 0)
-+++ verif/vkits/alu/alu_item.sv	(revision 0)
-@@ -0,0 +1,123 @@
+diff --git a/verif/alutb/alutb.flist b/verif/alutb/alutb.flist
+index 59fb1e8..9d89e57 100755
+--- a/verif/alutb/alutb.flist
++++ b/verif/alutb/alutb.flist
+@@ -6,7 +6,9 @@
+ +incdir+../../rtl/include
+ ../../verif/alutb/alutb_tb_top.sv
+ ../../verif/alutb/alu_wrapper.sv
++../../verif/alutb/clk_duty_cycle.sv
+ ../../verif/alutb/tests/basic.sv
+ ../../verif/alutb/tests/base_test.sv
++../../verif/alutb/tests/fast_clk.sv
++../../verif/alutb/tests/duty_cycle.sv
+ -f ../../verif/alutb/rtl.flist
+-
+diff --git a/verif/alutb/tb.py b/verif/alutb/tb.py
+index 3adcb12..113627f 100755
+--- a/verif/alutb/tb.py
++++ b/verif/alutb/tb.py
+@@ -1,5 +1,5 @@
+ # Add vkit dependencies *in order*
+-VKITS = ['cn', 'global', 'csr', 'ctx', 'alutb']
++VKITS = ['cn', 'global', 'csr', 'ctx', 'alu', 'alutb']
+ 
+ # Add testbench flists
+ FLISTS = ['alutb.flist', 'rtl.flist']
+diff --git a/verif/alutb/tests/basic.sv b/verif/alutb/tests/basic.sv
+index a6fcbf3..3e058d7 100755
+--- a/verif/alutb/tests/basic.sv
++++ b/verif/alutb/tests/basic.sv
+@@ -23,17 +23,35 @@ class basic_test_c extends base_test_c;
+    `uvm_component_utils(basic_test_c)
+ 
+    //----------------------------------------------------------------------------------------
+-   // Methods
++   // Group: Methods
+    function new(string name="test",
+                 uvm_component parent=null);
+       super.new(name, parent);
+    endfunction : new
+ 
+    ////////////////////////////////////////////
+-   // func: build_phase
+-   virtual function void build_phase(uvm_phase phase);
+-      super.build_phase(phase);
+-   endfunction : build_phase
++   // func: main_phase
++   virtual task main_phase(uvm_phase phase);
++      byte unsigned stream[];
++      alu_pkg::item_c item;
++      alu_pkg::item_c unp_item = alu_pkg::item_c::type_id::create("unp_item");;
++
++      phase.raise_objection(this);
++
++      repeat(50) begin
++         item = alu_pkg::item_c::type_id::create("item");
++         item.randomize();
++         `cn_info(("Created ALU transaction: %s", item.convert2string()))
++         item.pack_bytes(stream);
++         `cn_info(("Bytes: %s", cn_pkg::print_ubyte_array(stream)))
++         unp_item.unpack_bytes(stream);
++         `cn_info(("Unpacked: %s", unp_item.convert2string()))
++         if(item.compare(unp_item) == 0)
++            `cn_err(("Miscompare!"))
++      end
++
++      phase.drop_objection(this);
++   endtask : main_phase
+ 
+ endclass : basic_test_c
+ 
+diff --git a/verif/alutb/clk_duty_cycle.sv b/verif/alutb/clk_duty_cycle.sv
+new file mode 100755
+index 0000000..73d60ed
+--- /dev/null
++++ b/verif/alutb/clk_duty_cycle.sv
+@@ -0,0 +1,54 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   clk_duty_cycle.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __CLK_DUTY_CYCLE_SV__
++   `define __CLK_DUTY_CYCLE_SV__
++
++
++// (`includes go here)
++
++// class: clk_duty_cycle_c
++// A clock with a duty cycle of 75/25.
++class clk_duty_cycle_c extends cn_pkg::clk_drv_c;
++   `uvm_component_utils(clk_duty_cycle_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="clk_duty_cycle",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      int uptime = 3*period_ps / 4;
++      int downtime = period_ps - uptime;
++
++      // set to initial value
++      clk_vi.clk = (init_x)? 'bx : init_value;
++      #(init_delay_ps * 1ps);
++
++      forever begin
++         clk_vi.clk = 1;
++         #(uptime * 1ps);
++         clk_vi.clk = 0;
++         #(downtime * 1ps);
++      end
++   endtask : run_phase
++
++endclass : clk_duty_cycle_c
++
++`endif // __CLK_DUTY_CYCLE_SV__
++
+diff --git a/verif/alutb/tests/duty_cycle.sv b/verif/alutb/tests/duty_cycle.sv
+new file mode 100755
+index 0000000..0940097
+--- /dev/null
++++ b/verif/alutb/tests/duty_cycle.sv
+@@ -0,0 +1,43 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   duty_cycle.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __DUTY_CYCLE_SV__
++   `define __DUTY_CYCLE_SV__
++
++   `include "base_test.sv"
++   `include "clk_duty_cycle.sv"
++
++// class: duty_cycle_test_c
++// Run using the clk_duty_cycle_c instead of cn_pkg::clk_drv_c
++class duty_cycle_test_c extends base_test_c;
++   `uvm_component_utils(duty_cycle_test_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="duty_cycle_test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      set_type_override_by_type(cn_pkg::clk_drv_c::get_type(),
++                                clk_duty_cycle_c::get_type(), .replace(1));
++      super.build_phase(phase);
++   endfunction : build_phase
++
++endclass : duty_cycle_test_c
++
++`endif // __DUTY_CYCLE_SV__
+diff --git a/verif/alutb/tests/fast_clk.sv b/verif/alutb/tests/fast_clk.sv
+new file mode 100755
+index 0000000..7cd5536
+--- /dev/null
++++ b/verif/alutb/tests/fast_clk.sv
+@@ -0,0 +1,72 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   fast_clk.sv
++// Author: bhunter
++/* About:  A test that makes the clock go super fast!
++ *************************************************************************/
++
++`ifndef __FAST_CLK_SV__
++   `define __FAST_CLK_SV__
++
++
++   `include "base_test.sv"
++// (`includes go here)
++
++// class: fast_clk_test_c
++// (Describe me)
++class fast_clk_test_c extends base_test_c;
++   `uvm_component_utils_begin(fast_clk_test_c)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++      tb_clk_drv.randomize(period_ps) with {
++         period_ps inside {[1800:1999]};
++      };
++      `cn_info(("Selected a period of %0dps", tb_clk_drv.period_ps))
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      super.run_phase(phase);
++   endtask : run_phase
++
++endclass : fast_clk_test_c
++
++`endif // __FAST_CLK_SV__
++
+diff --git a/verif/vkits/alu/alu.flist b/verif/vkits/alu/alu.flist
+new file mode 100755
+index 0000000..5551dfe
+--- /dev/null
++++ b/verif/vkits/alu/alu.flist
+@@ -0,0 +1,2 @@
+++incdir+../../verif/vkits/alu
++../../verif/vkits/alu/alu_pkg.sv
+diff --git a/verif/vkits/alu/alu_item.sv b/verif/vkits/alu/alu_item.sv
+new file mode 100755
+index 0000000..a4976df
+--- /dev/null
++++ b/verif/vkits/alu/alu_item.sv
+@@ -0,0 +1,119 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013,
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   alu_item.sv
@@ -133,22 +389,19 @@ Index: verif/vkits/alu/alu_item.sv
 +`endif // __ALU_ITEM_SV__
 +
 +
-Index: verif/vkits/alu/alu_pkg.sv
-===================================================================
---- verif/vkits/alu/alu_pkg.sv	(revision 0)
-+++ verif/vkits/alu/alu_pkg.sv	(revision 0)
-@@ -0,0 +1,42 @@
+diff --git a/verif/vkits/alu/alu_pkg.sv b/verif/vkits/alu/alu_pkg.sv
+new file mode 100755
+index 0000000..ad91b42
+--- /dev/null
++++ b/verif/vkits/alu/alu_pkg.sv
+@@ -0,0 +1,38 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * legal mumbo jumbo
++// *
++// * Copyright 2013,
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   alu_pkg.sv
@@ -180,272 +433,3 @@ Index: verif/vkits/alu/alu_pkg.sv
 +endpackage : alu_pkg
 +
 +
-Index: verif/alutb/tests/basic.sv
-===================================================================
---- verif/alutb/tests/basic.sv	(revision 156811)
-+++ verif/alutb/tests/basic.sv	(working copy)
-@@ -29,18 +29,36 @@
-    `uvm_component_utils(basic_test_c)
- 
-    //----------------------------------------------------------------------------------------
--   // Methods
-+   // Group: Methods
-    function new(string name="test",
-                 uvm_component parent=null);
-       super.new(name, parent);
-    endfunction : new
- 
-    ////////////////////////////////////////////
--   // func: build_phase
--   virtual function void build_phase(uvm_phase phase);
--      super.build_phase(phase);
--   endfunction : build_phase
--   
-+   // func: main_phase
-+   virtual task main_phase(uvm_phase phase);
-+      byte unsigned stream[];
-+      alu_pkg::item_c item;
-+      alu_pkg::item_c unp_item = alu_pkg::item_c::type_id::create("unp_item");;
-+
-+      phase.raise_objection(this);
-+
-+      repeat(50) begin
-+         item = alu_pkg::item_c::type_id::create("item");
-+         item.randomize();
-+         `cn_info(("Created ALU transaction: %s", item.convert2string()))
-+         item.pack_bytes(stream);
-+         `cn_info(("Bytes: %s", cn_pkg::print_ubyte_array(stream)))
-+         unp_item.unpack_bytes(stream);
-+         `cn_info(("Unpacked: %s", unp_item.convert2string()))
-+         if(item.compare(unp_item) == 0)
-+            `cn_err(("Miscompare!"))
-+      end
-+
-+      phase.drop_objection(this);
-+   endtask : main_phase
-+
- endclass : basic_test_c
-    
- `endif // __BASIC_SV__
-Index: verif/alutb/tests/duty_cycle.sv
-===================================================================
---- verif/alutb/tests/duty_cycle.sv	(revision 0)
-+++ verif/alutb/tests/duty_cycle.sv	(revision 0)
-@@ -0,0 +1,47 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   duty_cycle.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __DUTY_CYCLE_SV__
-+   `define __DUTY_CYCLE_SV__
-+
-+   `include "base_test.sv"
-+   `include "clk_duty_cycle.sv"
-+
-+// class: duty_cycle_test_c
-+// Run using the clk_duty_cycle_c instead of cn_pkg::clk_drv_c
-+class duty_cycle_test_c extends base_test_c;
-+   `uvm_component_utils(duty_cycle_test_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="duty_cycle_test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      set_type_override_by_type(cn_pkg::clk_drv_c::get_type(),
-+                                clk_duty_cycle_c::get_type(), .replace(1));
-+      super.build_phase(phase);
-+   endfunction : build_phase
-+
-+endclass : duty_cycle_test_c
-+
-+`endif // __DUTY_CYCLE_SV__
-Index: verif/alutb/tests/fast_clk.sv
-===================================================================
---- verif/alutb/tests/fast_clk.sv	(revision 0)
-+++ verif/alutb/tests/fast_clk.sv	(revision 0)
-@@ -0,0 +1,76 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   fast_clk.sv
-+// Author: bhunter
-+/* About:  A test that makes the clock go super fast!
-+ *************************************************************************/
-+
-+`ifndef __FAST_CLK_SV__
-+   `define __FAST_CLK_SV__
-+
-+
-+   `include "base_test.sv"
-+// (`includes go here)
-+
-+// class: fast_clk_test_c
-+// (Describe me)
-+class fast_clk_test_c extends base_test_c;
-+   `uvm_component_utils_begin(fast_clk_test_c)
-+   `uvm_component_utils_end
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Configuration Fields
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Fields
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      super.build_phase(phase);
-+   endfunction : build_phase
-+
-+   ////////////////////////////////////////////
-+   // func: connect_phase
-+   virtual function void connect_phase(uvm_phase phase);
-+      super.connect_phase(phase);
-+   endfunction : connect_phase
-+
-+   ////////////////////////////////////////////
-+   // func: end_of_elaboration_phase
-+   virtual function void end_of_elaboration_phase(uvm_phase phase);
-+      super.end_of_elaboration_phase(phase);
-+      tb_clk_drv.randomize(period_ps) with {
-+         period_ps inside {[1800:1999]};
-+      };
-+      `cn_info(("Selected a period of %0dps", tb_clk_drv.period_ps))
-+   endfunction : end_of_elaboration_phase
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      super.run_phase(phase);
-+   endtask : run_phase
-+
-+endclass : fast_clk_test_c
-+
-+`endif // __FAST_CLK_SV__
-+
-Index: verif/alutb/clk_duty_cycle.sv
-===================================================================
---- verif/alutb/clk_duty_cycle.sv	(revision 0)
-+++ verif/alutb/clk_duty_cycle.sv	(revision 0)
-@@ -0,0 +1,58 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   clk_duty_cycle.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __CLK_DUTY_CYCLE_SV__
-+   `define __CLK_DUTY_CYCLE_SV__
-+
-+
-+// (`includes go here)
-+
-+// class: clk_duty_cycle_c
-+// A clock with a duty cycle of 75/25.
-+class clk_duty_cycle_c extends cn_pkg::clk_drv_c;
-+   `uvm_component_utils(clk_duty_cycle_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="clk_duty_cycle",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      int uptime = 3*period_ps / 4;
-+      int downtime = period_ps - uptime;
-+
-+      // set to initial value
-+      clk_vi.clk = (init_x)? 'bx : init_value;
-+      #(init_delay_ps * 1ps);
-+
-+      forever begin
-+         clk_vi.clk = 1;
-+         #(uptime * 1ps);
-+         clk_vi.clk = 0;
-+         #(downtime * 1ps);
-+      end
-+   endtask : run_phase
-+
-+endclass : clk_duty_cycle_c
-+
-+`endif // __CLK_DUTY_CYCLE_SV__
-+
-Index: verif/alutb/alutb.flist
-===================================================================
---- verif/alutb/alutb.flist	(revision 156811)
-+++ verif/alutb/alutb.flist	(working copy)
-@@ -6,7 +6,9 @@
- +incdir+../../rtl/include
- ../../verif/alutb/alutb_tb_top.sv
- ../../verif/alutb/alu_wrapper.sv
-+../../verif/alutb/clk_duty_cycle.sv
- ../../verif/alutb/tests/basic.sv
- ../../verif/alutb/tests/base_test.sv
-+../../verif/alutb/tests/fast_clk.sv
-+../../verif/alutb/tests/duty_cycle.sv
- -f ../../verif/alutb/rtl.flist
--
-Index: verif/alutb/Makefile
-===================================================================
---- verif/alutb/Makefile	(revision 157520)
-+++ verif/alutb/Makefile	(working copy)
-@@ -45,5 +45,6 @@
- 	verif/vkits/csr_cn/csr_cn.flist \
- 	verif/vkits/reg/reg.flist \
- 	verif/vkits/ctx/ctx.flist \
-+	verif/vkits/alu/alu.flist \
- 	verif/vkits/alutb/alutb.flist \
- 	verif/alutb/alutb.flist

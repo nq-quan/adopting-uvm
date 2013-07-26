@@ -1,19 +1,27 @@
-Index: verif/alutb/tests/fast_clk.sv
-===================================================================
---- verif/alutb/tests/fast_clk.sv	(revision 0)
-+++ verif/alutb/tests/fast_clk.sv	(revision 0)
-@@ -0,0 +1,76 @@
+diff --git a/verif/alutb/alutb.flist b/verif/alutb/alutb.flist
+index 59fb1e8..334220e 100755
+--- a/verif/alutb/alutb.flist
++++ b/verif/alutb/alutb.flist
+@@ -8,5 +8,5 @@
+ ../../verif/alutb/alu_wrapper.sv
+ ../../verif/alutb/tests/basic.sv
+ ../../verif/alutb/tests/base_test.sv
++../../verif/alutb/tests/fast_clk.sv
+ -f ../../verif/alutb/rtl.flist
+-
+diff --git a/verif/alutb/tests/fast_clk.sv b/verif/alutb/tests/fast_clk.sv
+new file mode 100644
+index 0000000..613ae79
+--- /dev/null
++++ b/verif/alutb/tests/fast_clk.sv
+@@ -0,0 +1,72 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * legal mumbo jumbo
++// *
++// * Copyright 2013,
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   fast_clk.sv
@@ -79,14 +87,3 @@ Index: verif/alutb/tests/fast_clk.sv
 +
 +`endif // __FAST_CLK_SV__
 +
-Index: verif/alutb/alutb.flist
-===================================================================
---- verif/alutb/alutb.flist	(revision 156811)
-+++ verif/alutb/alutb.flist	(working copy)
-@@ -8,5 +8,5 @@
- ../../verif/alutb/alu_wrapper.sv
- ../../verif/alutb/tests/basic.sv
- ../../verif/alutb/tests/base_test.sv
-+../../verif/alutb/tests/fast_clk.sv
- -f ../../verif/alutb/rtl.flist
--

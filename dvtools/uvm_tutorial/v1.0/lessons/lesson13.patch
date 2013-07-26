@@ -1,8 +1,8 @@
-Index: rtl/alu/alu_math.v
-===================================================================
---- rtl/alu/alu_math.v	(revision 156811)
-+++ rtl/alu/alu_math.v	(working copy)
-@@ -59,6 +59,8 @@
+diff --git a/rtl/alu/alu_math.v b/rtl/alu/alu_math.v
+index ed33530..64fbb9b 100755
+--- a/rtl/alu/alu_math.v
++++ b/rtl/alu/alu_math.v
+@@ -66,6 +66,8 @@ module alu_math
     reg [31:0]    result;
     reg           ready;
  
@@ -11,7 +11,7 @@ Index: rtl/alu/alu_math.v
     // register inputs
     always @(posedge clk) begin
        ctl_r <= ctl;
-@@ -148,16 +150,20 @@
+@@ -155,16 +157,20 @@ module alu_math
           ready      <= 1'b0;
           operation  <= 4'b0;
        end else begin
@@ -42,31 +42,1109 @@ Index: rtl/alu/alu_math.v
                         nxt_result;
           result     <= nxt_result;
           ready      <= (state == RESULT)? 1'b1 : 1'b0;
-Index: verif/vkits/alu/alu.flist
-===================================================================
---- verif/vkits/alu/alu.flist	(revision 0)
-+++ verif/vkits/alu/alu.flist	(revision 0)
+diff --git a/verif/alutb/alu_wrapper.sv b/verif/alutb/alu_wrapper.sv
+index 2ed57bf..904b542 100755
+--- a/verif/alutb/alu_wrapper.sv
++++ b/verif/alutb/alu_wrapper.sv
+@@ -14,19 +14,16 @@
+ 
+ module alu_wrapper(input logic tb_clk,
+                    tb_rst_n,
+-                   ctx_intf ctx_i);
++                   ctx_intf ctx_i,
++                   alu_intf alu_i);
+ 
+    /*AUTOREGINPUT*/
+    // Beginning of automatic reg inputs (for undeclared instantiated-module inputs)
+-   reg                  alu_ctl;                // To dut of alu.v
+-   reg [7:0]            alu_dat;                // To dut of alu.v
+    reg [4:0]            frame_len;              // To dut of alu.v
+    reg                  frame_len_val;          // To dut of alu.v
+    // End of automatics
+    /*AUTOWIRE*/
+    // Beginning of automatic wires (for undeclared instantiated-module outputs)
+-   wire                 alu_ready;              // From dut of alu.v
+-   wire [31:0]          alu_result;             // From dut of alu.v
+    wire                 frame;                  // From dut of alu.v
+    wire                 frame_bp;               // From dut of alu.v
+    wire [31:0]          frame_data;             // From dut of alu.v
+@@ -39,6 +36,7 @@ module alu_wrapper(input logic tb_clk,
+     .ctx_\(.*\)   (ctx_i.\1[]),
+     .clk          (tb_clk),
+     .rst_n        (tb_rst_n),
++    .alu_\(.*\)   (alu_i.\1[]),
+     .\(.*\) (\1[]),
+     ); */
+    alu dut(/*AUTOINST*/
+@@ -47,11 +45,11 @@ module alu_wrapper(input logic tb_clk,
+            .frame                       (frame),                 // Templated
+            .frame_bp                    (frame_bp),              // Templated
+            .frame_data                  (frame_data[31:0]),      // Templated
+-           .alu_ready                   (alu_ready),             // Templated
+-           .alu_result                  (alu_result[31:0]),      // Templated
++           .alu_ready                   (alu_i.ready),           // Templated
++           .alu_result                  (alu_i.result[31:0]),    // Templated
+            // Inputs
+-           .alu_ctl                     (alu_ctl),               // Templated
+-           .alu_dat                     (alu_dat[7:0]),          // Templated
++           .alu_ctl                     (alu_i.ctl),             // Templated
++           .alu_dat                     (alu_i.dat[7:0]),        // Templated
+            .clk                         (tb_clk),                // Templated
+            .ctx_in                      (ctx_i.in[7:0]),         // Templated
+            .ctx_val                     (ctx_i.val),             // Templated
+diff --git a/verif/alutb/alutb.flist b/verif/alutb/alutb.flist
+index 59fb1e8..911284c 100755
+--- a/verif/alutb/alutb.flist
++++ b/verif/alutb/alutb.flist
+@@ -6,7 +6,13 @@
+ +incdir+../../rtl/include
+ ../../verif/alutb/alutb_tb_top.sv
+ ../../verif/alutb/alu_wrapper.sv
++../../verif/alutb/clk_duty_cycle.sv
+ ../../verif/alutb/tests/basic.sv
+ ../../verif/alutb/tests/base_test.sv
++../../verif/alutb/tests/fast_clk.sv
++../../verif/alutb/tests/duty_cycle.sv
++../../verif/alutb/tests/dev_ref_model.sv
++../../verif/alutb/tests/kval.sv
++../../verif/alutb/tests/exer.sv
++../../verif/alutb/tests/div0.sv
+ -f ../../verif/alutb/rtl.flist
+-
+diff --git a/verif/alutb/alutb_tb_top.sv b/verif/alutb/alutb_tb_top.sv
+index e789596..9e77305 100755
+--- a/verif/alutb/alutb_tb_top.sv
++++ b/verif/alutb/alutb_tb_top.sv
+@@ -34,6 +34,10 @@ module alutb_tb_top;
+    // CTX Interface
+    ctx_intf ctx_i(.clk(tb_clk), .rst_n(tb_rst_n));
+ 
++   // obj: alu_i
++   // The <alu_intf> instance
++   alu_intf alu_i(.clk(tb_clk), .rst_n(tb_rst_n));
++
+    //----------------------------------------------------------------------------------------
+    // Group: DUT
+ 
+@@ -41,6 +45,7 @@ module alutb_tb_top;
+    alu_wrapper alu_wrapper(/*AUTOINST*/
+                            // Interfaces
+                            .ctx_i               (ctx_i),
++                           .alu_i               (alu_i),
+                            // Inputs
+                            .tb_clk              (tb_clk),
+                            .tb_rst_n            (tb_rst_n));
+@@ -56,6 +61,8 @@ module alutb_tb_top;
+       `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i);
+       `cn_set_intf(virtual ctx_intf.drv_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp);
+       `cn_set_intf(virtual ctx_intf.mon_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp);
++      `cn_set_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf", "drv_vi", alu_i.drv_mp)
++      `cn_set_intf(virtual alu_intf.mon_mp, "alu_pkg::alu_intf", "mon_vi", alu_i.mon_mp)
+    endfunction : pre_run_test
+ 
+    `include "tb_common.v"
+diff --git a/verif/alutb/clk_duty_cycle.sv b/verif/alutb/clk_duty_cycle.sv
+new file mode 100755
+index 0000000..73d60ed
+--- /dev/null
++++ b/verif/alutb/clk_duty_cycle.sv
+@@ -0,0 +1,54 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   clk_duty_cycle.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __CLK_DUTY_CYCLE_SV__
++   `define __CLK_DUTY_CYCLE_SV__
++
++
++// (`includes go here)
++
++// class: clk_duty_cycle_c
++// A clock with a duty cycle of 75/25.
++class clk_duty_cycle_c extends cn_pkg::clk_drv_c;
++   `uvm_component_utils(clk_duty_cycle_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="clk_duty_cycle",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      int uptime = 3*period_ps / 4;
++      int downtime = period_ps - uptime;
++
++      // set to initial value
++      clk_vi.clk = (init_x)? 'bx : init_value;
++      #(init_delay_ps * 1ps);
++
++      forever begin
++         clk_vi.clk = 1;
++         #(uptime * 1ps);
++         clk_vi.clk = 0;
++         #(downtime * 1ps);
++      end
++   endtask : run_phase
++
++endclass : clk_duty_cycle_c
++
++`endif // __CLK_DUTY_CYCLE_SV__
++
+diff --git a/verif/alutb/tb.py b/verif/alutb/tb.py
+index 3adcb12..113627f 100755
+--- a/verif/alutb/tb.py
++++ b/verif/alutb/tb.py
+@@ -1,5 +1,5 @@
+ # Add vkit dependencies *in order*
+-VKITS = ['cn', 'global', 'csr', 'ctx', 'alutb']
++VKITS = ['cn', 'global', 'csr', 'ctx', 'alu', 'alutb']
+ 
+ # Add testbench flists
+ FLISTS = ['alutb.flist', 'rtl.flist']
+diff --git a/verif/alutb/tests/basic.sv b/verif/alutb/tests/basic.sv
+index a6fcbf3..fd3ff0a 100755
+--- a/verif/alutb/tests/basic.sv
++++ b/verif/alutb/tests/basic.sv
+@@ -35,6 +35,40 @@ class basic_test_c extends base_test_c;
+       super.build_phase(phase);
+    endfunction : build_phase
+ 
++   ////////////////////////////////////////////
++   // func: main_phase
++   virtual task main_phase(uvm_phase phase);
++      alu_pkg::sum_of_factorials_seq_c sof_seq = new("sof");
++      alu_pkg::sum_array_seq_c sum_array_seq = new("sum_array");
++      alu_pkg::exer_seq_c exer_seq = new("exer_seq");
++
++      phase.raise_objection(this);
++      fork
++         begin
++            sof_seq.randomize();
++            `cn_info(("Starting:\\n%s", sof_seq.sprint()))
++            sof_seq.start(alutb_env.alu_agent.sqr);
++            `cn_info(("The sum-of-factorials from %0d to %0d is %d",
++                      sof_seq.op_x, sof_seq.op_y, sof_seq.result))
++         end
++
++         begin
++            sum_array_seq.randomize() with {data.size() > 8; };
++            `cn_info(("Starting:\\n%s", sum_array_seq.sprint()))
++            sum_array_seq.start(alutb_env.alu_agent.sqr);
++            `cn_info(("The sum is %0d", sum_array_seq.result))
++         end
++
++         begin
++            alu_pkg::factorial_seq_c fact_seq = new("fact_seq");
++            fact_seq.randomize();
++            fact_seq.start(alutb_env.alu_agent.sqr);
++         end
++      join
++
++      phase.drop_objection(this);
++   endtask : main_phase
++
+ endclass : basic_test_c
+ 
+ `endif // __BASIC_SV__
+diff --git a/verif/alutb/tests/dev_ref_model.sv b/verif/alutb/tests/dev_ref_model.sv
+new file mode 100755
+index 0000000..076e9b6
+--- /dev/null
++++ b/verif/alutb/tests/dev_ref_model.sv
+@@ -0,0 +1,44 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   dev_ref_model.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __DEV_REF_MODEL_SV__
++   `define __DEV_REF_MODEL_SV__
++
++`include "basic.sv"
++
++// class: dev_ref_model_test_c
++// Test the ALU using the predictor as a reference model
++class dev_ref_model_test_c extends basic_test_c;
++   `uvm_component_utils(dev_ref_model_test_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++      uvm_config_db#(int)::set(this, "alutb_env.alu_agent", "dev_ref_model", 1);
++
++      // reset the interface to avoid x-checkers
++      alutb_tb_top.alu_i.reset();
++   endfunction : build_phase
++endclass : dev_ref_model_test_c
++
++`endif // __DEV_REF_MODEL_SV__
++
+diff --git a/verif/alutb/tests/div0.sv b/verif/alutb/tests/div0.sv
+new file mode 100755
+index 0000000..cc486ff
+--- /dev/null
++++ b/verif/alutb/tests/div0.sv
+@@ -0,0 +1,65 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   div0.sv
++// Author: bhunter
++/* About:  Create a divide-by-zero condition 50% of the time.
++ *************************************************************************/
++
++`ifndef __DIV0_SV__
++   `define __DIV0_SV__
++
++`include "basic.sv"
++
++//****************************************************************************************
++// class: div0_item_c
++// Causes a divide-by-zero on 50% of all divide operations
++class div0_item_c extends alu_pkg::item_c;
++   `uvm_object_utils(div0_item_c)
++
++   constraint protocol_cnstr {
++      (operation == DIV_A_B) -> beta dist { 0 :/ 50,
++                                            [1:'hffff] :/ 50};
++      (operation == DIV_B_A) -> alpha dist { 0 :/ 50,
++                                            [1:'hffff] :/ 50};
++      (operation == SUB_A_B) -> alpha > beta;
++      (operation == SUB_B_A) -> beta > alpha;
++   }
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="div0_item");
++      super.new(name);
++   endfunction : new
++endclass : div0_item_c
++
++//****************************************************************************************
++// class: div0_test_c
++// Uses the div0_item_c class instead
++class div0_test_c extends basic_test_c;
++   `uvm_component_utils(div0_test_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="div0_test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++      set_type_override_by_type(alu_pkg::item_c::get_type(), div0_item_c::get_type());
++   endfunction : build_phase
++
++endclass : div0_test_c
++
++`endif // __DIV0_SV__
++
+diff --git a/verif/alutb/tests/duty_cycle.sv b/verif/alutb/tests/duty_cycle.sv
+new file mode 100755
+index 0000000..0940097
+--- /dev/null
++++ b/verif/alutb/tests/duty_cycle.sv
+@@ -0,0 +1,43 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   duty_cycle.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __DUTY_CYCLE_SV__
++   `define __DUTY_CYCLE_SV__
++
++   `include "base_test.sv"
++   `include "clk_duty_cycle.sv"
++
++// class: duty_cycle_test_c
++// Run using the clk_duty_cycle_c instead of cn_pkg::clk_drv_c
++class duty_cycle_test_c extends base_test_c;
++   `uvm_component_utils(duty_cycle_test_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="duty_cycle_test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      set_type_override_by_type(cn_pkg::clk_drv_c::get_type(),
++                                clk_duty_cycle_c::get_type(), .replace(1));
++      super.build_phase(phase);
++   endfunction : build_phase
++
++endclass : duty_cycle_test_c
++
++`endif // __DUTY_CYCLE_SV__
+diff --git a/verif/alutb/tests/exer.sv b/verif/alutb/tests/exer.sv
+new file mode 100755
+index 0000000..7475352
+--- /dev/null
++++ b/verif/alutb/tests/exer.sv
+@@ -0,0 +1,53 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   exer.sv
++// Author: bhunter
++/* About:  Constraint alu_const_knob based on distributions.
++ *************************************************************************/
++
++`ifndef __EXER_SV__
++   `define __EXER_SV__
++
++   `include "basic.sv"
++
++// class: exer_test_c
++// Turns on all possible values of K_VAL and C_VAL
++class exer_test_c extends basic_test_c;
++   `uvm_component_utils(exer_test_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++   constraint const_knob_cnstr {
++      cfg.alu_const_knob dist { alutb_pkg::cfg_c::INNOCUOUS :/ 20,
++                                alutb_pkg::cfg_c::SMALL     :/ 50,
++                                alutb_pkg::cfg_c::LARGE     :/ 15,
++                                alutb_pkg::cfg_c::XLARGE    :/ 5,
++                                alutb_pkg::cfg_c::UNLIMITED :/ 10
++      };
++   }
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="alu_exer",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: randomize_cfg
++   // Disable the const_knob_cnstr in cfg
++   virtual function void randomize_cfg();
++      cfg.const_knob_cnstr.constraint_mode(0);
++      super.randomize_cfg();
++   endfunction : randomize_cfg
++endclass : exer_test_c
++
++`endif // __EXER_SV__
++
+diff --git a/verif/alutb/tests/fast_clk.sv b/verif/alutb/tests/fast_clk.sv
+new file mode 100755
+index 0000000..7cd5536
+--- /dev/null
++++ b/verif/alutb/tests/fast_clk.sv
+@@ -0,0 +1,72 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   fast_clk.sv
++// Author: bhunter
++/* About:  A test that makes the clock go super fast!
++ *************************************************************************/
++
++`ifndef __FAST_CLK_SV__
++   `define __FAST_CLK_SV__
++
++
++   `include "base_test.sv"
++// (`includes go here)
++
++// class: fast_clk_test_c
++// (Describe me)
++class fast_clk_test_c extends base_test_c;
++   `uvm_component_utils_begin(fast_clk_test_c)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++      tb_clk_drv.randomize(period_ps) with {
++         period_ps inside {[1800:1999]};
++      };
++      `cn_info(("Selected a period of %0dps", tb_clk_drv.period_ps))
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      super.run_phase(phase);
++   endtask : run_phase
++
++endclass : fast_clk_test_c
++
++`endif // __FAST_CLK_SV__
++
+diff --git a/verif/alutb/tests/kval.sv b/verif/alutb/tests/kval.sv
+new file mode 100755
+index 0000000..93a2c40
+--- /dev/null
++++ b/verif/alutb/tests/kval.sv
+@@ -0,0 +1,50 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   kval.sv
++// Author: bhunter
++/* About:  Test with different values of K.
++ *************************************************************************/
++
++`ifndef __KVAL_SV__
++   `define __KVAL_SV__
++
++
++   `include "basic.sv"
++
++// class: kval_test_c
++// (Describe me)
++class kval_test_c extends basic_test_c;
++   `uvm_component_utils_begin(kval_test_c)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Constraints
++   constraint kval_cnstr {
++      reg_block.CONST.K_VAL.value inside {[9:20]};
++   }
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="test",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: randomize_cfg
++   // Turn off the innocuous constraint
++   virtual function void randomize_cfg();
++      super.randomize_cfg();
++   endfunction : randomize_cfg
++
++endclass : kval_test_c
++
++`endif // __KVAL_SV__
++
+diff --git a/verif/vkits/alu/alu.flist b/verif/vkits/alu/alu.flist
+new file mode 100755
+index 0000000..6d7328f
+--- /dev/null
++++ b/verif/vkits/alu/alu.flist
 @@ -0,0 +1,4 @@
 ++incdir+../../verif/vkits/alu
 +../../verif/vkits/alu/alu_intf.sv
 +../../verif/vkits/alu/alu_pkg.sv
 +
-Index: verif/vkits/alu/alu_mon.sv
-===================================================================
---- verif/vkits/alu/alu_mon.sv	(revision 0)
-+++ verif/vkits/alu/alu_mon.sv	(revision 0)
-@@ -0,0 +1,155 @@
+diff --git a/verif/vkits/alu/alu_agent.sv b/verif/vkits/alu/alu_agent.sv
+new file mode 100755
+index 0000000..ca9fe10
+--- /dev/null
++++ b/verif/vkits/alu/alu_agent.sv
+@@ -0,0 +1,132 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   alu_agent.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __ALU_AGENT_SV__
++   `define __ALU_AGENT_SV__
++
++`include "alu_drv.sv"
++`include "alu_mon.sv"
++`include "alu_sqr.sv"
++`include "alu_pred.sv"
++
++// class: agent_c
++// (Description)
++class agent_c extends uvm_agent;
++   `uvm_component_utils_begin(alu_pkg::agent_c)
++      `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_ALL_ON)
++      `uvm_field_int(dev_ref_model, UVM_ALL_ON)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   // field: is_active
++   // When set to UVM_ACTIVE, the sqr and drv will be present.
++   uvm_active_passive_enum is_active = UVM_ACTIVE;
++
++   // field: dev_ref_model
++   // When set to 1, the predictor operates in reference mode and the monitor/driver are not enabled
++   bit dev_ref_model = 0;
++
++   //----------------------------------------------------------------------------------------
++   // Group: TLM Ports
++
++   // field: monitored_item_port
++   // All monitored transactions go out here
++   uvm_analysis_port #(item_c) monitored_item_port;
++
++   // field: monitored_result_port
++   // All monitored results go out here
++   uvm_analysis_port #(result_t) monitored_result_port;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   // fields: drv, mon, sqr
++   // Driver, monitor, and sequencer found in most agents
++   sqr_c sqr;
++   drv_c drv;
++   mon_c mon;
++
++   // field: pred
++   // The ALU Predictor
++   pred_c pred;
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="agent",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++
++      if(!dev_ref_model)
++         mon = mon_c::type_id::create("mon", this);
++      if(is_active) begin
++         if(!dev_ref_model)
++            drv = drv_c::type_id::create("drv", this);
++         sqr = sqr_c::type_id::create("sqr", this);
++      end
++
++      pred = pred_c::type_id::create("pred", this);
++      uvm_config_db#(int)::set(this, "pred", "dev_ref_model", dev_ref_model);
++
++      monitored_item_port = new("monitored_item_port", this);
++      monitored_result_port = new("monitored_result_port", this);
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++
++      if(!dev_ref_model) begin
++         // connect to the monitor's analysis ports
++         mon.monitored_item_port.connect(monitored_item_port);
++         mon.monitored_result_port.connect(monitored_result_port);
++         
++         if(is_active)
++            drv.seq_item_port.connect(sqr.seq_item_export);
++         
++         mon.monitored_item_port.connect(pred.monitored_item_imp);
++         mon.monitored_result_port.connect(pred.monitored_result_imp);
++      end else begin
++         // as a reference model
++         pred.seq_item_port.connect(sqr.seq_item_export);
++         pred.monitored_item_port.connect(monitored_item_port);
++         pred.monitored_result_port.connect(monitored_result_port);
++      end
++
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      super.run_phase(phase);
++   endtask : run_phase
++
++endclass : agent_c
++
++`endif // __ALU_AGENT_SV__
++
+diff --git a/verif/vkits/alu/alu_drv.sv b/verif/vkits/alu/alu_drv.sv
+new file mode 100755
+index 0000000..fc21dac
+--- /dev/null
++++ b/verif/vkits/alu/alu_drv.sv
+@@ -0,0 +1,111 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   alu_drv.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __ALU_DRV_SV__
++   `define __ALU_DRV_SV__
++
++`include "alu_item.sv"
++
++// class: drv_c
++// (Describe me)
++class drv_c extends uvm_driver#(item_c);
++   `uvm_component_utils_begin(alu_pkg::drv_c)
++      `uvm_field_string(intf_name, UVM_ALL_ON)
++   `uvm_component_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Configuration Fields
++
++   // field: intf_name
++   // The name of the virtual interface that we'll hook up to
++   string intf_name = "drv_vi";
++
++   //----------------------------------------------------------------------------------------
++   // Group: TLM Ports
++
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   // field: drv_vi
++   // Virtual interface to drive on
++   virtual alu_intf.drv_mp drv_vi;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="drv",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: build_phase
++   virtual function void build_phase(uvm_phase phase);
++      super.build_phase(phase);
++      // get the interface
++      `cn_get_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf", intf_name, drv_vi)
++   endfunction : build_phase
++
++   ////////////////////////////////////////////
++   // func: connect_phase
++   virtual function void connect_phase(uvm_phase phase);
++      super.connect_phase(phase);
++   endfunction : connect_phase
++
++   ////////////////////////////////////////////
++   // func: end_of_elaboration_phase
++   virtual function void end_of_elaboration_phase(uvm_phase phase);
++      super.end_of_elaboration_phase(phase);
++   endfunction : end_of_elaboration_phase
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      drv_vi.reset();
++      driver();
++   endtask : run_phase
++
++   ////////////////////////////////////////////
++   // func: driver
++   // Drive transactions by packing into an array of bytes, then sending two 4-bit cycles
++   // for each byte. Then wait for the response and send it back.
++   task driver();
++      byte unsigned stream[];
++
++      @(posedge drv_vi.drv_cb.rst_n);
++      forever begin
++         seq_item_port.get_next_item(req);
++
++         req.pack_bytes(stream);
++         foreach(stream[x]) begin
++            @(drv_vi.drv_cb);
++
++            drv_vi.drv_cb.ctl <= (x == 0)? 1'b1 : 1'b0;
++            drv_vi.drv_cb.dat <= stream[x];
++         end
++
++         // wait 1 clock, then clear the bus
++         @(drv_vi.drv_cb);
++         drv_vi.reset();
++
++         // wait for result
++         @(posedge drv_vi.drv_cb.ready);
++         req.result = drv_vi.drv_cb.result;
++         seq_item_port.item_done(req);
++      end
++   endtask : driver
++
++endclass : drv_c
++
++`endif // __ALU_DRV_SV__
++
+diff --git a/verif/vkits/alu/alu_intf.sv b/verif/vkits/alu/alu_intf.sv
+new file mode 100755
+index 0000000..42f6821
+--- /dev/null
++++ b/verif/vkits/alu/alu_intf.sv
+@@ -0,0 +1,114 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   alu_intf.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __ALU_INTF_SV__
++   `define __ALU_INTF_SV__
++
++// class: alu_intf
++interface alu_intf(input logic clk,
++                   input logic rst_n);
++
++   import uvm_pkg::*;
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Signals
++
++   // var: ctl
++   // Asserted only on the first cycle of a new transaction, while dat contains the operation
++   logic        ctl;
++
++   // var: dat
++   // The input data nibble that contains the operation and operands
++   logic [7:0]  dat;
++
++   // var: ready
++   // The output of the ALU that indicates when the result data is valid
++   logic        ready;
++
++   // var: result
++   // The 32-bit result data
++   logic [31:0] result;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Clocking blocks
++
++   // var: drv_cb
++   // A clocking block that represents how the environment's driver sees the interface
++   clocking drv_cb @(posedge clk);
++      output    ctl;
++      output    dat;
++      input     ready;
++      input     result;
++      input     rst_n;
++   endclocking : drv_cb
++
++   // var: mon_cb
++   // A clocking block that represents how the environment's monitor sees the interface
++   clocking mon_cb @(posedge clk);
++      input     ctl;
++      input     dat;
++      input     ready;
++      input     result;
++      input     rst_n;
++   endclocking : mon_cb
++
++   //----------------------------------------------------------------------------------------
++   // Group: Modports
++
++   modport drv_mp(clocking drv_cb,
++                  import reset);
++   modport mon_mp(clocking mon_cb);
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++
++   // func: reset
++   // Convenience function for the driver to reset its outputs
++   function void reset();
++      ctl = 0;
++      dat = 8'b0;
++   endfunction : reset
++
++   //----------------------------------------------------------------------------------------
++   // Group: Assertions
++
++   ctl_not_x :
++      assert property(@(posedge clk)
++                      disable iff (~rst_n || rst_n === 1'bx)
++                      (!$isunknown(ctl))) else
++         `cn_err_intf(("ctl signal is an X"))
++
++   dat_not_x :       
++      assert property(@(posedge clk)
++                      disable iff (~rst_n || rst_n === 1'bx)
++                      (!$isunknown(dat))) else
++         `cn_err_intf(("dat signal is an X"))
++
++   ready_not_x : 
++      assert property(@(posedge clk)
++                      disable iff (~rst_n || rst_n === 1'bx)
++                      (!$isunknown(ready))) else
++         `cn_err_intf(("ready signal is an X"))
++
++   result_not_x : 
++      assert property(@(posedge clk)
++                      disable iff (~rst_n || rst_n === 1'bx || ready == 0)
++                      (!$isunknown(result))) else
++         `cn_err_intf(("result signal is an X"))
++         
++endinterface : alu_intf
++
++
++`endif // __ALU_INTF_SV__
++
+diff --git a/verif/vkits/alu/alu_item.sv b/verif/vkits/alu/alu_item.sv
+new file mode 100755
+index 0000000..49d3caa
+--- /dev/null
++++ b/verif/vkits/alu/alu_item.sv
+@@ -0,0 +1,119 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   alu_item.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __ALU_ITEM_SV__
++   `define __ALU_ITEM_SV__
++
++// class: item_c
++// An ALU Transaction as a sequence item
++class item_c extends uvm_sequence_item;
++   //----------------------------------------------------------------------------------------
++   // Group: Types
++   typedef enum bit [7:0] {
++                           ADD_A_B = 0,
++                           SUB_A_B = 1,
++                           SUB_B_A = 2,
++                           MUL_A_B = 3,
++                           DIV_A_B = 4,
++                           DIV_B_A = 5,
++                           INC_A   = 6,
++                           INC_B   = 7,
++                           CLR_RES = 8,
++                           ACCUM   = 9
++                           } operation_e;
++
++   `uvm_object_utils_begin(alu_pkg::item_c)
++      `uvm_field_enum(operation_e, operation, UVM_ALL_ON)
++      `uvm_field_int (alpha,                  UVM_ALL_ON | UVM_NOPACK | UVM_NOCOMPARE)
++      `uvm_field_int (beta,                   UVM_ALL_ON | UVM_NOPACK | UVM_NOCOMPARE)
++   `uvm_object_utils_end
++
++   //----------------------------------------------------------------------------------------
++   // Group: Fields
++
++   // var: operation
++   rand operation_e operation;
++
++   // var: A variable
++   rand bit [15:0] alpha;
++
++   // var: B variable
++   rand bit [15:0] beta;
++
++   // ensure that all operands have legal values
++   constraint protocol_cnstr {
++      (operation == DIV_A_B) -> beta != 0;
++      (operation == DIV_B_A) -> alpha != 0;
++      (operation == SUB_A_B) -> alpha > beta;
++      (operation == SUB_B_A) -> beta > alpha;
++   }
++
++   // var: result
++   // This is the result of the operation, filled in by the driver and sent back with the response
++   result_t result;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="item");
++      super.new(name);
++   endfunction : new
++
++   //----------------------------------------------------------------------------------------
++   // func: convert2string
++   // Single-line printing
++   virtual function string convert2string();
++      convert2string = $psprintf("%s A:%04X B:%04X", operation, alpha, beta);
++   endfunction : convert2string
++
++   ////////////////////////////////////////////
++   // func: do_pack
++   virtual function void do_pack(uvm_packer packer);
++      super.do_pack(packer);
++
++      if(operation inside {[ADD_A_B : INC_A], ACCUM})
++         packer.pack_field_int(alpha, 16);
++      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
++         packer.pack_field_int(beta, 16);
++   endfunction : do_pack
++
++   ////////////////////////////////////////////
++   // func: do_unpack
++   virtual function void do_unpack(uvm_packer packer);
++      super.do_unpack(packer);
++
++      if(operation inside {[ADD_A_B : INC_A], ACCUM})
++         alpha = packer.unpack_field_int(16);
++      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
++         beta = packer.unpack_field_int(16);
++   endfunction : do_unpack
++
++   ////////////////////////////////////////////
++   // func: do_compare
++   virtual function bit do_compare(uvm_object rhs,
++                                   uvm_comparer comparer);
++      item_c _rhs;
++      $cast(_rhs, rhs);
++      do_compare = super.do_compare(rhs, comparer);
++      if(operation inside {[ADD_A_B : INC_A], ACCUM})
++         do_compare &= comparer.compare_field_int("alpha", alpha, _rhs.alpha, 16);
++      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
++         do_compare &= comparer.compare_field_int("beta", beta, _rhs.beta, 16);
++   endfunction : do_compare
++
++endclass : item_c
++
++
++`endif // __ALU_ITEM_SV__
++
++
+diff --git a/verif/vkits/alu/alu_mon.sv b/verif/vkits/alu/alu_mon.sv
+new file mode 100755
+index 0000000..5bb1016
+--- /dev/null
++++ b/verif/vkits/alu/alu_mon.sv
+@@ -0,0 +1,151 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   alu_mon.sv
@@ -211,22 +1289,75 @@ Index: verif/vkits/alu/alu_mon.sv
 +
 +`endif // __ALU_MON_SV__
 +
-Index: verif/vkits/alu/alu_pred.sv
-===================================================================
---- verif/vkits/alu/alu_pred.sv	(revision 0)
-+++ verif/vkits/alu/alu_pred.sv	(revision 0)
-@@ -0,0 +1,157 @@
+diff --git a/verif/vkits/alu/alu_pkg.sv b/verif/vkits/alu/alu_pkg.sv
+new file mode 100755
+index 0000000..1cf08b0
+--- /dev/null
++++ b/verif/vkits/alu/alu_pkg.sv
+@@ -0,0 +1,50 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
++// * (utg v0.8.2)
++// ***********************************************************************
++// File:   alu_pkg.sv
++// Author: bhunter
++/* About:  alu package
++ *************************************************************************/
++
++
++// (`includes of macros may go here)
++`include "uvm_macros.svh"
++
++// package: alu_pkg
++// (Describe me)
++package alu_pkg;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Imports
++   import uvm_pkg::*;
++
++   //----------------------------------------------------------------------------------------
++   // Group: Imp Declarations
++
++   `uvm_analysis_imp_decl(_item)
++   `uvm_analysis_imp_decl(_result)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Types
++   typedef logic [31:0] result_t;
++   
++   //----------------------------------------------------------------------------------------
++   // Group: Includes
++
++`include "alu_agent.sv"
++`include "alu_drv.sv"
++`include "alu_item.sv"
++`include "alu_mon.sv"
++`include "alu_pred.sv"
++`include "alu_seq_lib.sv"
++`include "alu_sqr.sv"
++
++endpackage : alu_pkg
++
++
+diff --git a/verif/vkits/alu/alu_pred.sv b/verif/vkits/alu/alu_pred.sv
+new file mode 100755
+index 0000000..8178189
+--- /dev/null
++++ b/verif/vkits/alu/alu_pred.sv
+@@ -0,0 +1,153 @@
++//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   alu_pred.sv
@@ -373,411 +1504,19 @@ Index: verif/vkits/alu/alu_pred.sv
 +
 +`endif // __ALU_PRED_SV__
 +
-Index: verif/vkits/alu/alu_drv.sv
-===================================================================
---- verif/vkits/alu/alu_drv.sv	(revision 0)
-+++ verif/vkits/alu/alu_drv.sv	(revision 0)
-@@ -0,0 +1,115 @@
+diff --git a/verif/vkits/alu/alu_seq_lib.sv b/verif/vkits/alu/alu_seq_lib.sv
+new file mode 100755
+index 0000000..3e75572
+--- /dev/null
++++ b/verif/vkits/alu/alu_seq_lib.sv
+@@ -0,0 +1,239 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   alu_drv.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __ALU_DRV_SV__
-+   `define __ALU_DRV_SV__
-+
-+`include "alu_item.sv"
-+
-+// class: drv_c
-+// (Describe me)
-+class drv_c extends uvm_driver#(item_c);
-+   `uvm_component_utils_begin(alu_pkg::drv_c)
-+      `uvm_field_string(intf_name, UVM_ALL_ON)
-+   `uvm_component_utils_end
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Configuration Fields
-+
-+   // field: intf_name
-+   // The name of the virtual interface that we'll hook up to
-+   string intf_name = "drv_vi";
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: TLM Ports
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Fields
-+
-+   // field: drv_vi
-+   // Virtual interface to drive on
-+   virtual alu_intf.drv_mp drv_vi;
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="drv",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      super.build_phase(phase);
-+      // get the interface
-+      `cn_get_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf", intf_name, drv_vi)
-+   endfunction : build_phase
-+
-+   ////////////////////////////////////////////
-+   // func: connect_phase
-+   virtual function void connect_phase(uvm_phase phase);
-+      super.connect_phase(phase);
-+   endfunction : connect_phase
-+
-+   ////////////////////////////////////////////
-+   // func: end_of_elaboration_phase
-+   virtual function void end_of_elaboration_phase(uvm_phase phase);
-+      super.end_of_elaboration_phase(phase);
-+   endfunction : end_of_elaboration_phase
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      drv_vi.reset();
-+      driver();
-+   endtask : run_phase
-+
-+   ////////////////////////////////////////////
-+   // func: driver
-+   // Drive transactions by packing into an array of bytes, then sending two 4-bit cycles
-+   // for each byte. Then wait for the response and send it back.
-+   task driver();
-+      byte unsigned stream[];
-+
-+      @(posedge drv_vi.drv_cb.rst_n);
-+      forever begin
-+         seq_item_port.get_next_item(req);
-+
-+         req.pack_bytes(stream);
-+         foreach(stream[x]) begin
-+            @(drv_vi.drv_cb);
-+
-+            drv_vi.drv_cb.ctl <= (x == 0)? 1'b1 : 1'b0;
-+            drv_vi.drv_cb.dat <= stream[x];
-+         end
-+
-+         // wait 1 clock, then clear the bus
-+         @(drv_vi.drv_cb);
-+         drv_vi.reset();
-+
-+         // wait for result
-+         @(posedge drv_vi.drv_cb.ready);
-+         req.result = drv_vi.drv_cb.result;
-+         seq_item_port.item_done(req);
-+      end
-+   endtask : driver
-+
-+endclass : drv_c
-+
-+`endif // __ALU_DRV_SV__
-+
-Index: verif/vkits/alu/alu_item.sv
-===================================================================
---- verif/vkits/alu/alu_item.sv	(revision 0)
-+++ verif/vkits/alu/alu_item.sv	(revision 0)
-@@ -0,0 +1,123 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
++// * legal mumbo jumbo
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   alu_item.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __ALU_ITEM_SV__
-+   `define __ALU_ITEM_SV__
-+
-+// class: item_c
-+// An ALU Transaction as a sequence item
-+class item_c extends uvm_sequence_item;
-+   //----------------------------------------------------------------------------------------
-+   // Group: Types
-+   typedef enum bit [7:0] {
-+                           ADD_A_B = 0,
-+                           SUB_A_B = 1,
-+                           SUB_B_A = 2,
-+                           MUL_A_B = 3,
-+                           DIV_A_B = 4,
-+                           DIV_B_A = 5,
-+                           INC_A   = 6,
-+                           INC_B   = 7,
-+                           CLR_RES = 8,
-+                           ACCUM   = 9
-+                           } operation_e;
-+
-+   `uvm_object_utils_begin(alu_pkg::item_c)
-+      `uvm_field_enum(operation_e, operation, UVM_ALL_ON)
-+      `uvm_field_int (alpha,                  UVM_ALL_ON | UVM_NOPACK | UVM_NOCOMPARE)
-+      `uvm_field_int (beta,                   UVM_ALL_ON | UVM_NOPACK | UVM_NOCOMPARE)
-+   `uvm_object_utils_end
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Fields
-+
-+   // var: operation
-+   rand operation_e operation;
-+
-+   // var: A variable
-+   rand bit [15:0] alpha;
-+
-+   // var: B variable
-+   rand bit [15:0] beta;
-+
-+   // ensure that all operands have legal values
-+   constraint protocol_cnstr {
-+      (operation == DIV_A_B) -> beta != 0;
-+      (operation == DIV_B_A) -> alpha != 0;
-+      (operation == SUB_A_B) -> alpha > beta;
-+      (operation == SUB_B_A) -> beta > alpha;
-+   }
-+
-+   // var: result
-+   // This is the result of the operation, filled in by the driver and sent back with the response
-+   result_t result;
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="item");
-+      super.new(name);
-+   endfunction : new
-+
-+   //----------------------------------------------------------------------------------------
-+   // func: convert2string
-+   // Single-line printing
-+   virtual function string convert2string();
-+      convert2string = $psprintf("%s A:%04X B:%04X", operation, alpha, beta);
-+   endfunction : convert2string
-+
-+   ////////////////////////////////////////////
-+   // func: do_pack
-+   virtual function void do_pack(uvm_packer packer);
-+      super.do_pack(packer);
-+
-+      if(operation inside {[ADD_A_B : INC_A], ACCUM})
-+         packer.pack_field_int(alpha, 16);
-+      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
-+         packer.pack_field_int(beta, 16);
-+   endfunction : do_pack
-+
-+   ////////////////////////////////////////////
-+   // func: do_unpack
-+   virtual function void do_unpack(uvm_packer packer);
-+      super.do_unpack(packer);
-+
-+      if(operation inside {[ADD_A_B : INC_A], ACCUM})
-+         alpha = packer.unpack_field_int(16);
-+      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
-+         beta = packer.unpack_field_int(16);
-+   endfunction : do_unpack
-+
-+   ////////////////////////////////////////////
-+   // func: do_compare
-+   virtual function bit do_compare(uvm_object rhs,
-+                                   uvm_comparer comparer);
-+      item_c _rhs;
-+      $cast(_rhs, rhs);
-+      do_compare = super.do_compare(rhs, comparer);
-+      if(operation inside {[ADD_A_B : INC_A], ACCUM})
-+         do_compare &= comparer.compare_field_int("alpha", alpha, _rhs.alpha, 16);
-+      if(operation inside {[ADD_A_B : DIV_B_A], INC_B})
-+         do_compare &= comparer.compare_field_int("beta", beta, _rhs.beta, 16);
-+   endfunction : do_compare
-+
-+endclass : item_c
-+
-+
-+`endif // __ALU_ITEM_SV__
-+
-+
-Index: verif/vkits/alu/alu_agent.sv
-===================================================================
---- verif/vkits/alu/alu_agent.sv	(revision 0)
-+++ verif/vkits/alu/alu_agent.sv	(revision 0)
-@@ -0,0 +1,136 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   alu_agent.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __ALU_AGENT_SV__
-+   `define __ALU_AGENT_SV__
-+
-+`include "alu_drv.sv"
-+`include "alu_mon.sv"
-+`include "alu_sqr.sv"
-+`include "alu_pred.sv"
-+
-+// class: agent_c
-+// (Description)
-+class agent_c extends uvm_agent;
-+   `uvm_component_utils_begin(alu_pkg::agent_c)
-+      `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_ALL_ON)
-+      `uvm_field_int(dev_ref_model, UVM_ALL_ON)
-+   `uvm_component_utils_end
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Configuration Fields
-+
-+   // field: is_active
-+   // When set to UVM_ACTIVE, the sqr and drv will be present.
-+   uvm_active_passive_enum is_active = UVM_ACTIVE;
-+
-+   // field: dev_ref_model
-+   // When set to 1, the predictor operates in reference mode and the monitor/driver are not enabled
-+   bit dev_ref_model = 0;
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: TLM Ports
-+
-+   // field: monitored_item_port
-+   // All monitored transactions go out here
-+   uvm_analysis_port #(item_c) monitored_item_port;
-+
-+   // field: monitored_result_port
-+   // All monitored results go out here
-+   uvm_analysis_port #(result_t) monitored_result_port;
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Fields
-+
-+   // fields: drv, mon, sqr
-+   // Driver, monitor, and sequencer found in most agents
-+   sqr_c sqr;
-+   drv_c drv;
-+   mon_c mon;
-+
-+   // field: pred
-+   // The ALU Predictor
-+   pred_c pred;
-+   
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="agent",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      super.build_phase(phase);
-+
-+      if(!dev_ref_model)
-+         mon = mon_c::type_id::create("mon", this);
-+      if(is_active) begin
-+         if(!dev_ref_model)
-+            drv = drv_c::type_id::create("drv", this);
-+         sqr = sqr_c::type_id::create("sqr", this);
-+      end
-+
-+      pred = pred_c::type_id::create("pred", this);
-+      uvm_config_db#(int)::set(this, "pred", "dev_ref_model", dev_ref_model);
-+
-+      monitored_item_port = new("monitored_item_port", this);
-+      monitored_result_port = new("monitored_result_port", this);
-+   endfunction : build_phase
-+
-+   ////////////////////////////////////////////
-+   // func: connect_phase
-+   virtual function void connect_phase(uvm_phase phase);
-+      super.connect_phase(phase);
-+
-+      if(!dev_ref_model) begin
-+         // connect to the monitor's analysis ports
-+         mon.monitored_item_port.connect(monitored_item_port);
-+         mon.monitored_result_port.connect(monitored_result_port);
-+         
-+         if(is_active)
-+            drv.seq_item_port.connect(sqr.seq_item_export);
-+         
-+         mon.monitored_item_port.connect(pred.monitored_item_imp);
-+         mon.monitored_result_port.connect(pred.monitored_result_imp);
-+      end else begin
-+         // as a reference model
-+         pred.seq_item_port.connect(sqr.seq_item_export);
-+         pred.monitored_item_port.connect(monitored_item_port);
-+         pred.monitored_result_port.connect(monitored_result_port);
-+      end
-+
-+   endfunction : connect_phase
-+
-+   ////////////////////////////////////////////
-+   // func: end_of_elaboration_phase
-+   virtual function void end_of_elaboration_phase(uvm_phase phase);
-+      super.end_of_elaboration_phase(phase);
-+   endfunction : end_of_elaboration_phase
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      super.run_phase(phase);
-+   endtask : run_phase
-+
-+endclass : agent_c
-+
-+`endif // __ALU_AGENT_SV__
-+
-Index: verif/vkits/alu/alu_seq_lib.sv
-===================================================================
---- verif/vkits/alu/alu_seq_lib.sv	(revision 0)
-+++ verif/vkits/alu/alu_seq_lib.sv	(revision 0)
-@@ -0,0 +1,243 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * Copyright 2013
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   alu_seq_lib.sv
@@ -1010,204 +1749,19 @@ Index: verif/vkits/alu/alu_seq_lib.sv
 +
 +`endif // __ALU_SEQ_LIB_SV__
 +
-Index: verif/vkits/alu/alu_intf.sv
-===================================================================
---- verif/vkits/alu/alu_intf.sv	(revision 0)
-+++ verif/vkits/alu/alu_intf.sv	(revision 0)
-@@ -0,0 +1,118 @@
+diff --git a/verif/vkits/alu/alu_sqr.sv b/verif/vkits/alu/alu_sqr.sv
+new file mode 100755
+index 0000000..35e7e85
+--- /dev/null
++++ b/verif/vkits/alu/alu_sqr.sv
+@@ -0,0 +1,69 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   alu_intf.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __ALU_INTF_SV__
-+   `define __ALU_INTF_SV__
-+
-+// class: alu_intf
-+interface alu_intf(input logic clk,
-+                   input logic rst_n);
-+
-+   import uvm_pkg::*;
-+   
-+   //----------------------------------------------------------------------------------------
-+   // Group: Signals
-+
-+   // var: ctl
-+   // Asserted only on the first cycle of a new transaction, while dat contains the operation
-+   logic        ctl;
-+
-+   // var: dat
-+   // The input data nibble that contains the operation and operands
-+   logic [7:0]  dat;
-+
-+   // var: ready
-+   // The output of the ALU that indicates when the result data is valid
-+   logic        ready;
-+
-+   // var: result
-+   // The 32-bit result data
-+   logic [31:0] result;
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Clocking blocks
-+
-+   // var: drv_cb
-+   // A clocking block that represents how the environment's driver sees the interface
-+   clocking drv_cb @(posedge clk);
-+      output    ctl;
-+      output    dat;
-+      input     ready;
-+      input     result;
-+      input     rst_n;
-+   endclocking : drv_cb
-+
-+   // var: mon_cb
-+   // A clocking block that represents how the environment's monitor sees the interface
-+   clocking mon_cb @(posedge clk);
-+      input     ctl;
-+      input     dat;
-+      input     ready;
-+      input     result;
-+      input     rst_n;
-+   endclocking : mon_cb
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Modports
-+
-+   modport drv_mp(clocking drv_cb,
-+                  import reset);
-+   modport mon_mp(clocking mon_cb);
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+
-+   // func: reset
-+   // Convenience function for the driver to reset its outputs
-+   function void reset();
-+      ctl = 0;
-+      dat = 8'b0;
-+   endfunction : reset
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Assertions
-+
-+   ctl_not_x :
-+      assert property(@(posedge clk)
-+                      disable iff (~rst_n || rst_n === 1'bx)
-+                      (!$isunknown(ctl))) else
-+         `cn_err_intf(("ctl signal is an X"))
-+
-+   dat_not_x :       
-+      assert property(@(posedge clk)
-+                      disable iff (~rst_n || rst_n === 1'bx)
-+                      (!$isunknown(dat))) else
-+         `cn_err_intf(("dat signal is an X"))
-+
-+   ready_not_x : 
-+      assert property(@(posedge clk)
-+                      disable iff (~rst_n || rst_n === 1'bx)
-+                      (!$isunknown(ready))) else
-+         `cn_err_intf(("ready signal is an X"))
-+
-+   result_not_x : 
-+      assert property(@(posedge clk)
-+                      disable iff (~rst_n || rst_n === 1'bx || ready == 0)
-+                      (!$isunknown(result))) else
-+         `cn_err_intf(("result signal is an X"))
-+         
-+endinterface : alu_intf
-+
-+
-+`endif // __ALU_INTF_SV__
-+
-Index: verif/vkits/alu/alu_pkg.sv
-===================================================================
---- verif/vkits/alu/alu_pkg.sv	(revision 0)
-+++ verif/vkits/alu/alu_pkg.sv	(revision 0)
-@@ -0,0 +1,54 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
++// * legal mumbo jumbo
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   alu_pkg.sv
-+// Author: bhunter
-+/* About:  alu package
-+ *************************************************************************/
-+
-+
-+// (`includes of macros may go here)
-+`include "uvm_macros.svh"
-+
-+// package: alu_pkg
-+// (Describe me)
-+package alu_pkg;
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Imports
-+   import uvm_pkg::*;
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Imp Declarations
-+
-+   `uvm_analysis_imp_decl(_item)
-+   `uvm_analysis_imp_decl(_result)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Types
-+   typedef logic [31:0] result_t;
-+   
-+   //----------------------------------------------------------------------------------------
-+   // Group: Includes
-+
-+`include "alu_agent.sv"
-+`include "alu_drv.sv"
-+`include "alu_item.sv"
-+`include "alu_mon.sv"
-+`include "alu_pred.sv"
-+`include "alu_seq_lib.sv"
-+`include "alu_sqr.sv"
-+
-+endpackage : alu_pkg
-+
-+
-Index: verif/vkits/alu/alu_sqr.sv
-===================================================================
---- verif/vkits/alu/alu_sqr.sv	(revision 0)
-+++ verif/vkits/alu/alu_sqr.sv	(revision 0)
-@@ -0,0 +1,73 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * Copyright 2013
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   alu_sqr.sv
@@ -1270,38 +1824,19 @@ Index: verif/vkits/alu/alu_sqr.sv
 +
 +`endif // __ALU_SQR_SV__
 +
-Index: verif/vkits/alutb/alutb_pkg.sv
-===================================================================
---- verif/vkits/alutb/alutb_pkg.sv	(revision 156811)
-+++ verif/vkits/alutb/alutb_pkg.sv	(working copy)
-@@ -31,9 +31,10 @@
- 
-    //----------------------------------------------------------------------------------------
-    // Group: Includes
-+`include "alutb_alu_item_subscriber.sv"
- `include "alutb_cfg.sv"
- `include "alutb_env.sv"
--
-+   
- endpackage : alutb_pkg
-    
- 
-Index: verif/vkits/alutb/alutb_alu_item_subscriber.sv
-===================================================================
---- verif/vkits/alutb/alutb_alu_item_subscriber.sv	(revision 0)
-+++ verif/vkits/alutb/alutb_alu_item_subscriber.sv	(revision 0)
-@@ -0,0 +1,43 @@
+diff --git a/verif/vkits/alutb/alutb_alu_item_subscriber.sv b/verif/vkits/alutb/alutb_alu_item_subscriber.sv
+new file mode 100755
+index 0000000..6b3b417
+--- /dev/null
++++ b/verif/vkits/alutb/alutb_alu_item_subscriber.sv
+@@ -0,0 +1,39 @@
 +//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
 +// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
++// * legal mumbo jumbo
++// *
++// * Copyright 2013
 +// * (utg v0.8.2)
 +// ***********************************************************************
 +// File:   alutb_alu_item_subscriber.sv
@@ -1334,57 +1869,11 @@ Index: verif/vkits/alutb/alutb_alu_item_subscriber.sv
 +
 +`endif // __ALUTB_ALU_ITEM_SUBSCRIBER_SV__
 +
-Index: verif/vkits/alutb/alutb_env.sv
-===================================================================
---- verif/vkits/alutb/alutb_env.sv	(revision 157479)
-+++ verif/vkits/alutb/alutb_env.sv	(working copy)
-@@ -23,6 +23,7 @@
-    `define __ALUTB_ENV_SV__
- 
-    `include "alutb_cfg.sv"
-+   `include "alutb_alu_item_subscriber.sv"
- 
- // class: env_c
- // ALUTB Environment class
-@@ -53,6 +54,14 @@
-    // field: Drives the CTX traffic
-    ctx_pkg::agent_c ctx_agent;
-    
-+   // field: alu_agent
-+   // The ALU agent
-+   alu_pkg::agent_c alu_agent;
-+
-+   // field: alu_item_subscriber
-+   // Prints out all of the Monitored items
-+   alu_item_subscriber_c alu_item_subscriber;   
-+   
-    //----------------------------------------------------------------------------------------
-    // Group: Methods
-    function new(string name="env",
-@@ -68,12 +77,18 @@
- 
-       // build ctx agent
-       ctx_agent = ctx_pkg::agent_c::type_id::create("ctx_agent", this);
-+
-+      // create the ALU agent
-+      uvm_config_db#(int)::set(this, "alu_agent", "is_active", is_active);
-+      alu_agent = alu_pkg::agent_c::type_id::create("alu_agent", this);
-+      alu_item_subscriber = alu_item_subscriber_c::type_id::create("alu_item_subscriber", this);
-    endfunction : build_phase
- 
-    ////////////////////////////////////////////
-    // func: connect_phase
-    virtual function void connect_phase(uvm_phase phase);
-       super.connect_phase(phase);
-+      alu_agent.monitored_item_port.connect(alu_item_subscriber.analysis_export);
-    endfunction : connect_phase
- 
-    ////////////////////////////////////////////
-Index: verif/vkits/alutb/alutb_cfg.sv
-===================================================================
---- verif/vkits/alutb/alutb_cfg.sv	(revision 157479)
-+++ verif/vkits/alutb/alutb_cfg.sv	(working copy)
-@@ -28,8 +28,13 @@
+diff --git a/verif/vkits/alutb/alutb_cfg.sv b/verif/vkits/alutb/alutb_cfg.sv
+index 2a58346..7b54a1a 100755
+--- a/verif/vkits/alutb/alutb_cfg.sv
++++ b/verif/vkits/alutb/alutb_cfg.sv
+@@ -22,8 +22,13 @@ class cfg_c extends uvm_object;
     //----------------------------------------------------------------------------------------
     // Group: Types
  
@@ -1398,7 +1887,7 @@ Index: verif/vkits/alutb/alutb_cfg.sv
     `uvm_object_utils_end
  
     //----------------------------------------------------------------------------------------
-@@ -39,11 +44,29 @@
+@@ -33,9 +38,27 @@ class cfg_c extends uvm_object;
     // Register block for this environment
     rand alu_csr_pkg::reg_block_c reg_block;
  
@@ -1417,8 +1906,8 @@ Index: verif/vkits/alutb/alutb_cfg.sv
 +      alu_const_knob == LARGE     -> (reg_block.CONST.K_VAL.value inside {[6:50]});
 +      alu_const_knob == XLARGE    -> (reg_block.CONST.K_VAL.value inside {[51:255]});
 +      alu_const_knob == UNLIMITED -> (reg_block.CONST.K_VAL.value inside {[0:255]});
-    }
- 
++   }
++
 +   // constrain C_VAL based on alu_const_knob
 +   constraint cval_cnstr {
 +      alu_const_knob == INNOCUOUS -> (reg_block.CONST.C_VAL.value == 0);
@@ -1426,669 +1915,72 @@ Index: verif/vkits/alutb/alutb_cfg.sv
 +      alu_const_knob == LARGE     -> (reg_block.CONST.C_VAL.value inside {[11:128]});
 +      alu_const_knob == XLARGE    -> (reg_block.CONST.C_VAL.value inside {[129:255]});
 +      alu_const_knob == UNLIMITED -> (reg_block.CONST.C_VAL.value inside {[0:255]});
-+   }
-+
+    }
+ 
+    //----------------------------------------------------------------------------------------
+diff --git a/verif/vkits/alutb/alutb_env.sv b/verif/vkits/alutb/alutb_env.sv
+index 667f35f..f60ed7b 100755
+--- a/verif/vkits/alutb/alutb_env.sv
++++ b/verif/vkits/alutb/alutb_env.sv
+@@ -17,6 +17,7 @@
+    `define __ALUTB_ENV_SV__
+ 
+    `include "alutb_cfg.sv"
++   `include "alutb_alu_item_subscriber.sv"
+ 
+ // class: env_c
+ // ALUTB Environment class
+@@ -44,9 +45,17 @@ class env_c extends uvm_env;
     //----------------------------------------------------------------------------------------
     // Group: Fields
  
-
-Property changes on: verif/alutb
-___________________________________________________________________
-Modified: svn:ignore
-   - .pid_history
-obj
-project
-sim
-.make_history
-novas.conf
-novas_dump.log
-ucli.key
-
-   + .pid_history
-obj
-project
-sim
-.make_history
-novas.conf
-novas_dump.log
-ucli.key
-DVEfiles
-srand.log
-urgReport
-coverage
-merged.vdb
-
-
-Index: verif/alutb/tests/base_test.sv
-===================================================================
---- verif/alutb/tests/base_test.sv	(revision 157479)
-+++ verif/alutb/tests/base_test.sv	(working copy)
-@@ -148,7 +148,7 @@
-       `cn_info(("Configuration finished with status %s", status))
-       phase.drop_objection(this);
-    endtask : configure_phase
--   
-+
- endclass : base_test_c
-    
- `endif // __BASE_TEST_SV__
-Index: verif/alutb/tests/dev_ref_model.sv
-===================================================================
---- verif/alutb/tests/dev_ref_model.sv	(revision 0)
-+++ verif/alutb/tests/dev_ref_model.sv	(revision 0)
-@@ -0,0 +1,48 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   dev_ref_model.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __DEV_REF_MODEL_SV__
-+   `define __DEV_REF_MODEL_SV__
-+
-+`include "basic.sv"
-+
-+// class: dev_ref_model_test_c
-+// Test the ALU using the predictor as a reference model
-+class dev_ref_model_test_c extends basic_test_c;
-+   `uvm_component_utils(dev_ref_model_test_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      super.build_phase(phase);
-+      uvm_config_db#(int)::set(this, "alutb_env.alu_agent", "dev_ref_model", 1);
-+
-+      // reset the interface to avoid x-checkers
-+      alutb_tb_top.alu_i.reset();
-+   endfunction : build_phase
-+endclass : dev_ref_model_test_c
-+
-+`endif // __DEV_REF_MODEL_SV__
-+
-Index: verif/alutb/tests/kval.sv
-===================================================================
---- verif/alutb/tests/kval.sv	(revision 0)
-+++ verif/alutb/tests/kval.sv	(revision 0)
-@@ -0,0 +1,54 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   kval.sv
-+// Author: bhunter
-+/* About:  Test with different values of K.
-+ *************************************************************************/
-+
-+`ifndef __KVAL_SV__
-+   `define __KVAL_SV__
-+
-+
-+   `include "basic.sv"
-+
-+// class: kval_test_c
-+// (Describe me)
-+class kval_test_c extends basic_test_c;
-+   `uvm_component_utils_begin(kval_test_c)
-+   `uvm_component_utils_end
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Constraints
-+   constraint kval_cnstr {
-+      reg_block.CONST.K_VAL.value inside {[9:20]};
-+   }
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: randomize_cfg
-+   // Turn off the innocuous constraint
-+   virtual function void randomize_cfg();
-+      super.randomize_cfg();
-+   endfunction : randomize_cfg
-+
-+endclass : kval_test_c
-+
-+`endif // __KVAL_SV__
-+
-Index: verif/alutb/tests/basic.sv
-===================================================================
---- verif/alutb/tests/basic.sv	(revision 156811)
-+++ verif/alutb/tests/basic.sv	(working copy)
-@@ -29,18 +29,52 @@
-    `uvm_component_utils(basic_test_c)
+-   // field: Drives the CTX traffic
++   // field: ctx_agent
++   // Drives the CTX traffic
+    ctx_pkg::agent_c ctx_agent;
  
++   // field: alu_agent
++   // The ALU agent
++   alu_pkg::agent_c alu_agent;
++
++   // field: alu_item_subscriber
++   alu_item_subscriber_c alu_item_subscriber;
++
     //----------------------------------------------------------------------------------------
--   // Methods
-+   // Group: Methods
-    function new(string name="test",
-                 uvm_component parent=null);
-       super.new(name, parent);
-    endfunction : new
+    // Group: Methods
+    function new(string name="env",
+@@ -62,12 +71,18 @@ class env_c extends uvm_env;
+ 
+       // build ctx agent
+       ctx_agent = ctx_pkg::agent_c::type_id::create("ctx_agent", this);
++
++      // create the ALU agent
++      uvm_config_db#(int)::set(this, "alu_agent", "is_active", is_active);
++      alu_agent = alu_pkg::agent_c::type_id::create("alu_agent", this);
++      alu_item_subscriber = alu_item_subscriber_c::type_id::create("alu_item_subscriber", this);
+    endfunction : build_phase
  
     ////////////////////////////////////////////
--   // func: build_phase
--   virtual function void build_phase(uvm_phase phase);
--      super.build_phase(phase);
--   endfunction : build_phase
--   
-+   // func: main_phase
-+   virtual task main_phase(uvm_phase phase);
-+      alu_pkg::sum_of_factorials_seq_c sof_seq = new("sof");
-+      alu_pkg::sum_array_seq_c sum_array_seq = new("sum_array");
-+      alu_pkg::exer_seq_c exer_seq = new("exer_seq");
-+
-+      phase.raise_objection(this);
-+      fork
-+         begin
-+            sof_seq.randomize();
-+            `cn_info(("Starting:\\n%s", sof_seq.sprint()))
-+            sof_seq.start(alutb_env.alu_agent.sqr);
-+            `cn_info(("The sum-of-factorials from %0d to %0d is %d",
-+                      sof_seq.op_x, sof_seq.op_y, sof_seq.result))
-+         end
-+
-+         begin
-+            sum_array_seq.randomize() with {data.size() > 8; };
-+            `cn_info(("Starting:\\n%s", sum_array_seq.sprint()))
-+            sum_array_seq.start(alutb_env.alu_agent.sqr);
-+            `cn_info(("The sum is %0d", sum_array_seq.result))
-+         end
-+
-+         begin
-+            exer_seq.randomize();
-+            `cn_info(("Starting:\\n%s", exer_seq.sprint()))
-+            exer_seq.start(alutb_env.alu_agent.sqr);
-+         end
-+
-+         begin
-+            alu_pkg::factorial_seq_c fact_seq = new("fact_seq");
-+            fact_seq.randomize();
-+            fact_seq.start(alutb_env.alu_agent.sqr);
-+         end
-+      join
-+
-+      phase.drop_objection(this);
-+   endtask : main_phase
-+
- endclass : basic_test_c
-    
- `endif // __BASIC_SV__
-Index: verif/alutb/tests/div0.sv
-===================================================================
---- verif/alutb/tests/div0.sv	(revision 0)
-+++ verif/alutb/tests/div0.sv	(revision 0)
-@@ -0,0 +1,69 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   div0.sv
-+// Author: bhunter
-+/* About:  Create a divide-by-zero condition 50% of the time.
-+ *************************************************************************/
-+
-+`ifndef __DIV0_SV__
-+   `define __DIV0_SV__
-+
-+`include "basic.sv"
-+
-+//****************************************************************************************
-+// class: div0_item_c
-+// Causes a divide-by-zero on 50% of all divide operations
-+class div0_item_c extends alu_pkg::item_c;
-+   `uvm_object_utils(div0_item_c)
-+
-+   constraint protocol_cnstr {
-+      (operation == DIV_A_B) -> beta dist { 0 :/ 50,
-+                                            [1:'hffff] :/ 50};
-+      (operation == DIV_B_A) -> alpha dist { 0 :/ 50,
-+                                            [1:'hffff] :/ 50};
-+      (operation == SUB_A_B) -> alpha > beta;
-+      (operation == SUB_B_A) -> beta > alpha;
-+   }
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="div0_item");
-+      super.new(name);
-+   endfunction : new
-+endclass : div0_item_c
-+
-+//****************************************************************************************
-+// class: div0_test_c
-+// Uses the div0_item_c class instead
-+class div0_test_c extends basic_test_c;
-+   `uvm_component_utils(div0_test_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="div0_test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      super.build_phase(phase);
-+      set_type_override_by_type(alu_pkg::item_c::get_type(), div0_item_c::get_type());
-+   endfunction : build_phase
-+
-+endclass : div0_test_c
-+
-+`endif // __DIV0_SV__
-+
-Index: verif/alutb/tests/exer.sv
-===================================================================
---- verif/alutb/tests/exer.sv	(revision 0)
-+++ verif/alutb/tests/exer.sv	(revision 0)
-@@ -0,0 +1,57 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   exer.sv
-+// Author: bhunter
-+/* About:  Constraint alu_const_knob based on distributions.
-+ *************************************************************************/
-+
-+`ifndef __EXER_SV__
-+   `define __EXER_SV__
-+
-+   `include "basic.sv"
-+
-+// class: exer_test_c
-+// Turns on all possible values of K_VAL and C_VAL
-+class exer_test_c extends basic_test_c;
-+   `uvm_component_utils(exer_test_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Configuration Fields
-+   constraint const_knob_cnstr {
-+      cfg.alu_const_knob dist { alutb_pkg::cfg_c::INNOCUOUS :/ 20,
-+                                alutb_pkg::cfg_c::SMALL     :/ 50,
-+                                alutb_pkg::cfg_c::LARGE     :/ 15,
-+                                alutb_pkg::cfg_c::XLARGE    :/ 5,
-+                                alutb_pkg::cfg_c::UNLIMITED :/ 10
-+      };
-+   }
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="alu_exer",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: randomize_cfg
-+   // Disable the const_knob_cnstr in cfg
-+   virtual function void randomize_cfg();
-+      cfg.const_knob_cnstr.constraint_mode(0);
-+      super.randomize_cfg();
-+   endfunction : randomize_cfg
-+endclass : exer_test_c
-+
-+`endif // __EXER_SV__
-+
-Index: verif/alutb/tests/duty_cycle.sv
-===================================================================
---- verif/alutb/tests/duty_cycle.sv	(revision 0)
-+++ verif/alutb/tests/duty_cycle.sv	(revision 0)
-@@ -0,0 +1,47 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   duty_cycle.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __DUTY_CYCLE_SV__
-+   `define __DUTY_CYCLE_SV__
-+
-+   `include "base_test.sv"
-+   `include "clk_duty_cycle.sv"
-+
-+// class: duty_cycle_test_c
-+// Run using the clk_duty_cycle_c instead of cn_pkg::clk_drv_c
-+class duty_cycle_test_c extends base_test_c;
-+   `uvm_component_utils(duty_cycle_test_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="duty_cycle_test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      set_type_override_by_type(cn_pkg::clk_drv_c::get_type(),
-+                                clk_duty_cycle_c::get_type(), .replace(1));
-+      super.build_phase(phase);
-+   endfunction : build_phase
-+
-+endclass : duty_cycle_test_c
-+
-+`endif // __DUTY_CYCLE_SV__
-Index: verif/alutb/tests/fast_clk.sv
-===================================================================
---- verif/alutb/tests/fast_clk.sv	(revision 0)
-+++ verif/alutb/tests/fast_clk.sv	(revision 0)
-@@ -0,0 +1,76 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   fast_clk.sv
-+// Author: bhunter
-+/* About:  A test that makes the clock go super fast!
-+ *************************************************************************/
-+
-+`ifndef __FAST_CLK_SV__
-+   `define __FAST_CLK_SV__
-+
-+
-+   `include "base_test.sv"
-+// (`includes go here)
-+
-+// class: fast_clk_test_c
-+// (Describe me)
-+class fast_clk_test_c extends base_test_c;
-+   `uvm_component_utils_begin(fast_clk_test_c)
-+   `uvm_component_utils_end
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Configuration Fields
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Fields
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      super.build_phase(phase);
-+   endfunction : build_phase
-+
-+   ////////////////////////////////////////////
-+   // func: connect_phase
-+   virtual function void connect_phase(uvm_phase phase);
-+      super.connect_phase(phase);
-+   endfunction : connect_phase
-+
-+   ////////////////////////////////////////////
-+   // func: end_of_elaboration_phase
-+   virtual function void end_of_elaboration_phase(uvm_phase phase);
-+      super.end_of_elaboration_phase(phase);
-+      tb_clk_drv.randomize(period_ps) with {
-+         period_ps inside {[1800:1999]};
-+      };
-+      `cn_info(("Selected a period of %0dps", tb_clk_drv.period_ps))
-+   endfunction : end_of_elaboration_phase
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      super.run_phase(phase);
-+   endtask : run_phase
-+
-+endclass : fast_clk_test_c
-+
-+`endif // __FAST_CLK_SV__
-+
-Index: verif/alutb/clk_duty_cycle.sv
-===================================================================
---- verif/alutb/clk_duty_cycle.sv	(revision 0)
-+++ verif/alutb/clk_duty_cycle.sv	(revision 0)
-@@ -0,0 +1,58 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// * CAVIUM CONFIDENTIAL AND PROPRIETARY NOTE
-+// *
-+// * This software contains information confidential and proprietary to
-+// * Cavium, Inc. It shall not be reproduced in whole or in part, or
-+// * transferred to other documents, or disclosed to third parties, or
-+// * used for any purpose other than that for which it was obtained,
-+// * without the prior written consent of Cavium, Inc.
-+// * Copyright 2013, Cavium, Inc.  All rights reserved.
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   clk_duty_cycle.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __CLK_DUTY_CYCLE_SV__
-+   `define __CLK_DUTY_CYCLE_SV__
-+
-+
-+// (`includes go here)
-+
-+// class: clk_duty_cycle_c
-+// A clock with a duty cycle of 75/25.
-+class clk_duty_cycle_c extends cn_pkg::clk_drv_c;
-+   `uvm_component_utils(clk_duty_cycle_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="clk_duty_cycle",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      int uptime = 3*period_ps / 4;
-+      int downtime = period_ps - uptime;
-+
-+      // set to initial value
-+      clk_vi.clk = (init_x)? 'bx : init_value;
-+      #(init_delay_ps * 1ps);
-+
-+      forever begin
-+         clk_vi.clk = 1;
-+         #(uptime * 1ps);
-+         clk_vi.clk = 0;
-+         #(downtime * 1ps);
-+      end
-+   endtask : run_phase
-+
-+endclass : clk_duty_cycle_c
-+
-+`endif // __CLK_DUTY_CYCLE_SV__
-+
-Index: verif/alutb/alutb_tb_top.sv
-===================================================================
---- verif/alutb/alutb_tb_top.sv	(revision 156811)
-+++ verif/alutb/alutb_tb_top.sv	(working copy)
-@@ -38,6 +38,10 @@
-    // CTX Interface
-    ctx_intf ctx_i(.clk(tb_clk), .rst_n(tb_rst_n));
+    // func: connect_phase
+    virtual function void connect_phase(uvm_phase phase);
+       super.connect_phase(phase);
++      alu_agent.monitored_item_port.connect(alu_item_subscriber.analysis_export);
+    endfunction : connect_phase
  
-+   // obj: alu_i
-+   // The <alu_intf> instance
-+   alu_intf alu_i(.clk(tb_clk), .rst_n(tb_rst_n));
-+
+    ////////////////////////////////////////////
+diff --git a/verif/vkits/alutb/alutb_pkg.sv b/verif/vkits/alutb/alutb_pkg.sv
+index 1997758..70fbedd 100755
+--- a/verif/vkits/alutb/alutb_pkg.sv
++++ b/verif/vkits/alutb/alutb_pkg.sv
+@@ -25,9 +25,10 @@ package alutb_pkg;
+ 
     //----------------------------------------------------------------------------------------
-    // Group: DUT
- 
-@@ -45,6 +49,7 @@
-    alu_wrapper alu_wrapper(/*AUTOINST*/
-                            // Interfaces
-                            .ctx_i               (ctx_i),
-+                           .alu_i               (alu_i),
-                            // Inputs
-                            .tb_clk              (tb_clk),
-                            .tb_rst_n            (tb_rst_n));
-@@ -60,6 +65,8 @@
-       `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i);
-       `cn_set_intf(virtual ctx_intf.drv_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp);
-       `cn_set_intf(virtual ctx_intf.mon_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp);
-+      `cn_set_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf", "drv_vi", alu_i.drv_mp)
-+      `cn_set_intf(virtual alu_intf.mon_mp, "alu_pkg::alu_intf", "mon_vi", alu_i.mon_mp)
-    endfunction : pre_run_test
- 
-    `include "tbv_common.v"
-Index: verif/alutb/alutb.flist
-===================================================================
---- verif/alutb/alutb.flist	(revision 156811)
-+++ verif/alutb/alutb.flist	(working copy)
-@@ -6,7 +6,13 @@
- +incdir+../../rtl/include
- ../../verif/alutb/alutb_tb_top.sv
- ../../verif/alutb/alu_wrapper.sv
-+../../verif/alutb/clk_duty_cycle.sv
- ../../verif/alutb/tests/basic.sv
- ../../verif/alutb/tests/base_test.sv
-+../../verif/alutb/tests/fast_clk.sv
-+../../verif/alutb/tests/duty_cycle.sv
-+../../verif/alutb/tests/dev_ref_model.sv
-+../../verif/alutb/tests/kval.sv
-+../../verif/alutb/tests/exer.sv
-+../../verif/alutb/tests/div0.sv
- -f ../../verif/alutb/rtl.flist
+    // Group: Includes
++`include "alutb_alu_item_subscriber.sv"
+ `include "alutb_cfg.sv"
+ `include "alutb_env.sv"
 -
-Index: verif/alutb/alu_wrapper.sv
-===================================================================
---- verif/alutb/alu_wrapper.sv	(revision 156811)
-+++ verif/alutb/alu_wrapper.sv	(working copy)
-@@ -18,19 +18,16 @@
++   
+ endpackage : alutb_pkg
  
- module alu_wrapper(input logic tb_clk,
-                    tb_rst_n,
--                   ctx_intf ctx_i);
-+                   ctx_intf ctx_i,
-+                   alu_intf alu_i);
- 
-    /*AUTOREGINPUT*/
-    // Beginning of automatic reg inputs (for undeclared instantiated-module inputs)
--   reg                  alu_ctl;                // To dut of alu.v
--   reg [7:0]            alu_dat;                // To dut of alu.v
-    reg [4:0]            frame_len;              // To dut of alu.v
-    reg                  frame_len_val;          // To dut of alu.v
-    // End of automatics
-    /*AUTOWIRE*/
-    // Beginning of automatic wires (for undeclared instantiated-module outputs)
--   wire                 alu_ready;              // From dut of alu.v
--   wire [31:0]          alu_result;             // From dut of alu.v
-    wire                 frame;                  // From dut of alu.v
-    wire                 frame_bp;               // From dut of alu.v
-    wire [31:0]          frame_data;             // From dut of alu.v
-@@ -43,6 +40,7 @@
-     .ctx_\(.*\)   (ctx_i.\1[]),
-     .clk          (tb_clk),
-     .rst_n        (tb_rst_n),
-+    .alu_\(.*\)   (alu_i.\1[]),
-     .\(.*\) (\1[]),
-     ); */
-    alu dut(/*AUTOINST*/
-@@ -51,11 +49,11 @@
-            .frame                       (frame),                 // Templated
-            .frame_bp                    (frame_bp),              // Templated
-            .frame_data                  (frame_data[31:0]),      // Templated
--           .alu_ready                   (alu_ready),             // Templated
--           .alu_result                  (alu_result[31:0]),      // Templated
-+           .alu_ready                   (alu_i.ready),           // Templated
-+           .alu_result                  (alu_i.result[31:0]),    // Templated
-            // Inputs
--           .alu_ctl                     (alu_ctl),               // Templated
--           .alu_dat                     (alu_dat[7:0]),          // Templated
-+           .alu_ctl                     (alu_i.ctl),             // Templated
-+           .alu_dat                     (alu_i.dat[7:0]),        // Templated
-            .clk                         (tb_clk),                // Templated
-            .ctx_in                      (ctx_i.in[7:0]),         // Templated
-            .ctx_val                     (ctx_i.val),             // Templated
-Index: verif/alutb/Makefile
-===================================================================
---- verif/alutb/Makefile	(revision 157525)
-+++ verif/alutb/Makefile	(working copy)
-@@ -45,6 +45,7 @@
- 	verif/vkits/csr_cn/csr_cn.flist \
- 	verif/vkits/reg/reg.flist \
- 	verif/vkits/ctx/ctx.flist \
-+	verif/vkits/alu/alu.flist \
- 	verif/vkits/alutb/alutb.flist \
- 	verif/alutb/alutb.flist
  
