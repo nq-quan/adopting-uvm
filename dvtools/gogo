@@ -199,7 +199,11 @@ def build():
     flists = [GVars['UVM_FLIST']] + vkits + GVars['FLISTS']
 
     if not os.path.exists(GVars['VCOMP_DIR']):
-        os.makedirs(GVars['VCOMP_DIR'], 0777)
+        try:
+            os.makedirs(GVars['VCOMP_DIR'], 0777)
+        except OSError:
+            print "!! Unable to create directory %s" % GVars['VCOMP_DIR']
+            sys.exit(255)
 
     build_cmd = GVars['BUILD_TOOL']
     build_cmd += ' -o %s -Mupdate' % (os.path.join(GVars['VCOMP_DIR'], 'sim.exe'))
@@ -237,7 +241,11 @@ def simulate(test_name):
     sim_cmd += " +seed=%d" % Options.seed
 
     if not os.path.exists(sim_dir):
-        os.makedirs(sim_dir)
+        try:
+            os.makedirs(sim_dir)
+        except OSError:
+            print "!! Unable to create %s" % sim_dir
+            sys.exit(254)
 
     # OPTIONS
     if Options.verb:
