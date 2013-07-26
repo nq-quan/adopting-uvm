@@ -16,20 +16,20 @@ UTUT_DIR   = os.path.dirname(os.path.realpath(__file__))
 Log = None
 
 # Different types of patches available
-TYPES = (LESSONS, FIXES) = xrange(2)
+TYPES = (CHAPTERS, FIXES) = xrange(2)
 
 ########################################################################################
 def getDir(revision, myType):
     """
-    Returns the name of the directory to use for either lessons or fixes
+    Returns the name of the directory to use for either chapters or fixes
 
     revision  : (string) The name of the revision, such as 'v0.4'.
-    myType      : LESSONS or FIXES
+    myType      : CHAPTERS or FIXES
     =>        : (string)
     """
 
-    if myType == LESSONS:
-        return os.path.join(UTUT_DIR, revision, "lessons")
+    if myType == CHAPTERS:
+        return os.path.join(UTUT_DIR, revision, "chapters")
     else:
         return os.path.join(UTUT_DIR, revision, "fixes")
 
@@ -47,8 +47,10 @@ def availablePatches(myType, revision):
     dir = getDir(revision, myType)
 
     patches = os.listdir(dir)
-    if myType == LESSONS:
-        patches = [int(it[6:-6]) for it in patches if it.endswith(".patch")]
+    print dir
+    print patches
+    if myType == CHAPTERS:
+        patches = [int(it[7:-6]) for it in patches if it.endswith(".patch")]
     else:
         patches = [int(it[3:-6]) for it in patches if it.endswith(".patch")]
 
@@ -58,16 +60,14 @@ def availablePatches(myType, revision):
 ########################################################################################
 def fetchPatch(myType, num, revision, rootDir=None):
     """
-    Patches the current work directory with the given lesson or fix number.
+    Patches the current work directory with the given chapter or fix number.
     """
 
-    import svn_tools as svn
     import subprocess
-    svn.Log = Log
 
-    typename = {LESSONS : "lesson",
+    typename = {CHAPTERS : "chapter",
                 FIXES : "fix"}[myType]
-    printedTypename = ("%s/chapter" % typename) if myType == LESSONS else typename
+    printedTypename = ("%s/chapter" % typename) if myType == CHAPTERS else typename
     dir = getDir(revision, myType)
 
     Log.plain_info("Patching with %s #%0d" % (printedTypename, num))
@@ -85,7 +85,7 @@ def fetchPatch(myType, num, revision, rootDir=None):
             Log.critical("%s command must be run from within the project tree." % printedTypename)
 
     patchFile = os.path.join(dir, "%s%d.patch" % (typename, num))
-    cmd = "patch -p0 -f -s --no-backup-if-mismatch -i %s" % patchFile
+    cmd = "git apply %s" % patchFile
 
     try:
         cwd = os.getcwd()
@@ -99,25 +99,16 @@ def fetchPatch(myType, num, revision, rootDir=None):
     Log.debug("Running '%s'" % cmd)
     subprocess.Popen(cmd.split(), stderr=subprocess.STDOUT, stdout=subprocess.PIPE, cwd=rootDir).communicate()
 
-    results = svn.analyze_status(rootDir)
-    addFiles = []
-    for file in results:
-        for item in results[file]:
-            if (svn.NORMAL, "?") in item:
-                addFiles.append(file)
-                break
-    if len(addFiles):
-        svncmd = "add %s" % (' '.join(addFiles))
-        svn.run(svncmd, rootDir, quiet=True)
-
     Log.info("Successfully updated %s with %s #%d" % (rootDir, printedTypename, num))
-
     os.chdir(cwd)
 
 ########################################################################################
 if __name__ == '__main__':
     # test
     import logging
-    import cn_logging
-    Log = cn_logging.createLogger('log', logging.INFO)
-    fetchPatch(LESSONS, 5, 'v1.0')
+    log = logging.getLogger('log')
+    log.setLevel(logging.INFO)
+    console = logging.StreamHandler()
+    log.addHandler(console)
+
+    fetchPatch(CHAPTERS, 5, 'v1.0')
