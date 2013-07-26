@@ -41,6 +41,7 @@ Keys = (
 
         # Simulation-related
         'SIM_GUI',           # (string) Add this to simulation command-line when you want to run in GUI mode
+        'SIMOPTS',           # (string) Added to the simulation command-line (not overridden by --simopts)
 
         # LSF-related
         'LSF_SUBMIT_TOOL',   # (string) The LSF tool to call
@@ -269,6 +270,8 @@ def simulate(test_name):
         sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb"), sig_list)
 
     # add simulation command-line options
+    if GVars['SIMOPTS']:
+        sim_cmd += " " + GVars['SIMOPTS']
     if Options.simopts:
         sim_cmd += " " + Options.simopts
 

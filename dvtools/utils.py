@@ -44,9 +44,7 @@ def gitscrub():
     for cmdline in cmdlines:
         Log.debug("Running '%s'" % cmdline)
         proc = subprocess.Popen(args=cmdline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=file(os.devnull, 'r+'))
-        ret_code = proc.wait()
-        if ret_code:
-            Log.critical("%s returned an error code %d" % (cmdline, ret_code))
+        proc.wait()
 
     os.chdir(cwd)
 

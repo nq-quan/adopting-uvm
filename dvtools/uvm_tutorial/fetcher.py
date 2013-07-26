@@ -47,8 +47,6 @@ def availablePatches(myType, revision):
     dir = getDir(revision, myType)
 
     patches = os.listdir(dir)
-    print dir
-    print patches
     if myType == CHAPTERS:
         patches = [int(it[7:-6]) for it in patches if it.endswith(".patch")]
     else:
