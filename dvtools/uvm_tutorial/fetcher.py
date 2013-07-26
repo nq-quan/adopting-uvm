@@ -3,7 +3,7 @@
 __author__ = "Brian Hunter"
 __email__  = "brian.hunter@cavium.com"
 
-import area_utils
+import utils
 import os
 
 ########################################################################################
@@ -70,7 +70,7 @@ def fetchPatch(myType, num, revision, rootDir=None):
     printedTypename = ("%s/chapter" % typename) if myType == CHAPTERS else typename
     dir = getDir(revision, myType)
 
-    Log.plain_info("Patching with %s #%0d" % (printedTypename, num))
+    Log.info("Patching with %s #%0d" % (printedTypename, num))
 
     # ensure that num is valid
     avail = availablePatches(myType, revision)
@@ -80,8 +80,8 @@ def fetchPatch(myType, num, revision, rootDir=None):
     # change to the root directory
     if not rootDir:
         try:
-            rootDir = area_utils.calcRootDir()
-        except area_utils.AreaError:
+            rootDir = utils.calc_root_dir()
+        except utils.AreaError:
             Log.critical("%s command must be run from within the project tree." % printedTypename)
 
     patchFile = os.path.join(dir, "%s%d.patch" % (typename, num))

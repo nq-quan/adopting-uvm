@@ -1,5 +1,10 @@
 #!/usr/bin/env python2.7
 
+#######################################################################################
+# Globals
+
+Log = None
+
 ########################################################################################
 # Imports
 
@@ -19,6 +24,31 @@ def upDir(path):
     """
 
     return os.path.abspath(os.path.join(path, '..'))
+
+########################################################################################
+def gitscrub():
+    """
+    Clean out the area from the root directory
+    """
+
+    import subprocess
+
+    root_dir = calc_root_dir()
+    cwd = os.getcwd()
+    os.chdir(root_dir)
+    Log.info("Scrubbing area...")
+    cmdlines = ('git reset HEAD .',
+                'git clean -fxd -e newtb/tests',
+                'git checkout .')
+
+    for cmdline in cmdlines:
+        Log.debug("Running '%s'" % cmdline)
+        proc = subprocess.Popen(args=cmdline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=file(os.devnull, 'r+'))
+        ret_code = proc.wait()
+        if ret_code:
+            Log.critical("%s returned an error code %d" % (cmdline, ret_code))
+
+    os.chdir(cwd)
 
 #######################################################################################
 def calc_root_dir():
