@@ -37,9 +37,9 @@ def gitscrub():
     cwd = os.getcwd()
     os.chdir(root_dir)
     Log.info("Scrubbing area...")
-    cmdlines = ('git reset HEAD .',
+    cmdlines = ('git reset HEAD verif rtl',
                 'git clean -fxd -e newtb/tests',
-                'git checkout .')
+                'git checkout verif rtl')
 
     for cmdline in cmdlines:
         Log.debug("Running '%s'" % cmdline)
