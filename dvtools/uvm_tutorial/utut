@@ -9,7 +9,7 @@ UVM Tutorial Script:
              usage: utut code <N1> [<N2>-<N3> <N4> ...]
 
     chapter: Makes an area up-to-date with the solutions from the given chapter.
-             usage: utut chapter <NUM> 
+             usage: utut chapter <NUM>
 
     fix:     Patches the current rtl/ directory with a fix number.
              usage: utut fix <FNUM>
@@ -28,6 +28,7 @@ import logging
 import os
 import sys
 import re
+import utils
 
 ########################################################################################
 # Constants
@@ -63,10 +64,7 @@ def parseArgs():
     # create Log
     level = {True: logging.DEBUG,
              False: logging.INFO}[Options.dbg]
-    Log = logging.getLogger('utut_log')
-    Log.setLevel(level)
-    console = logging.StreamHandler()
-    Log.addHandler(console)
+    Log = utils.get_logger('utut_log', level)
 
     # Ensure that code option has at least 1 argument
     if Options.cmd == 'code' and len(Options.extras) == 0:

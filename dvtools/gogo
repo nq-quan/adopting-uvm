@@ -13,6 +13,8 @@ import os
 import subprocess
 import sys
 import argparse
+import logging
+import utils
 
 ########################################################################################
 # Globals
@@ -53,9 +55,16 @@ Keys = (
         'CLEAN_FILES',       # (list of strings) Names of files to delete
 )
 
+OPTIONAL = ('SIMOPTS', 'PLI_FILES', 'LSF_SIM_LICS', 'LSF_BUILD_LICS')
+
 # Command-line Options
 Options = None
+
+# Command-Line actions
 Actions = None
+
+# Logger
+Log = None
 
 ########################################################################################
 def setup_globals():
@@ -72,9 +81,7 @@ def setup_globals():
         try:
             lib = __import__(mod_name)
         except ImportError:
-            print "!! %s.py file not found!" % mod_name
-            print "!! Ensure that your PYTHONPATH variable includes '.'"
-            sys.exit(1)
+            Log.critical("%s.py file not found! Ensure that your PYTHONPATH variable includes '.'" % mod_name)
 
         lib_dict = lib.__dict__
         for key in GVars:
@@ -88,8 +95,8 @@ def setup_globals():
     GVars['UVM_FLIST'] = os.path.join(GVars['UVM_DIR'], 'uvm.flist')
 
     for key in GVars:
-        if GVars[key] is None:
-            print "!! %s is not defined in any of %s." % (key, ','.join(["%s.py" % it for it in Libraries]))
+        if GVars[key] is None and key not in OPTIONAL:
+            Log.error("%s is not defined in any of %s." % (key, ','.join(["%s.py" % it for it in Libraries])))
             sys.exit(1)
 
 ########################################################################################
@@ -98,8 +105,9 @@ def parse_args():
     Parse Command-Line
     """
 
-    global Options, Actions
+    global Options, Actions, Log
 
+    Log = utils.get_logger('gogo.log', logging.INFO)
     Actions = {'b'       : build,
                'build'   : build,
                'bld'     : build,
@@ -125,19 +133,19 @@ def parse_args():
     p.add_argument('--verb', '-V',   action='store',             default=None,    help="Specify UVM Verbosity.")
 
     p.add_argument('--simopts',      action='store',             default=None,    help="Add simulation opts as a string to simulator command-line.")
-    p.add_argument('--comp', '-c',   action='store',             default=None,    help="Add compilation opts as a string to compiler command-line.")
+    p.add_argument('--cmpopts',      action='store',             default=None,    help="Add compilation opts as a string to compiler command-line.")
     p.add_argument('--seed', '-s',   action='store', type=int,   default=1,       help="Run with the given seed (0 for a random seed).")
 
     p.add_argument('--topo',         action='store', type=int,   default=None,    help="Print UVM topology at this depth.")
-    p.add_argument('--wdog', '-w',   action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
+    p.add_argument('--wdog',         action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
     p.add_argument('--gui',  '-g',   action='store_true',        default=False,   help="Run DVE in GUI mode.")
-    p.add_argument('--fsdb', '-f',   action='store_true',        default=False,   help="Run with Verdi wave dumping.")
+    p.add_argument('--wave', '-w',   action='store_true',        default=False,   help="Run with wave dumping.")
 
     Options = p.parse_args()
 
     for action in Options.actions:
         if action not in Actions.keys():
-            print "!! Unknown action: %s" % action
+            Log.critical("Unknown action: %s" % action)
 
     if Options.actions == []:
         Options.actions = ['bld', 'sim']
@@ -148,7 +156,7 @@ def run_cmd(cmd_line):
     Run the given command in a sub-process, exiting on failure
     """
 
-    print "++ Running", cmd_line
+    Log.info("++ Running %s" % cmd_line)
 
     proc = subprocess.Popen(args=cmd_line, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=file(os.devnull, 'r+'))
     while True:
@@ -172,18 +180,18 @@ def clean():
     """
     from shutil import rmtree
 
-    print "> Cleaning..."
+    Log.info("> Cleaning...")
     for dname in GVars['CLEAN_DIRS']:
         try:
             rmtree(dname)
-            print "++ Removed dir", dname
+            Log.info("++ Removed dir %s" % dname)
         except:
             pass
 
     for fname in GVars['CLEAN_FILES']:
         try:
             os.remove(fname)
-            print "++ Removed file", fname
+            Log.info("++ Removed file %s" % fname)
         except:
             pass
 
@@ -193,7 +201,7 @@ def build():
     Build the simulation executable
     """
 
-    print "> Building..."
+    Log.info("> Building...")
 
     # determine all of the vkits and flists
     vkits = [os.path.join(GVars['VKITS_DIR'], it, "%s.flist" % it) for it in GVars['VKITS']]
@@ -203,7 +211,7 @@ def build():
         try:
             os.makedirs(GVars['VCOMP_DIR'], 0777)
         except OSError:
-            print "!! Unable to create directory %s" % GVars['VCOMP_DIR']
+            Log.critical("Unable to create directory %s" % GVars['VCOMP_DIR'])
             sys.exit(255)
 
     build_cmd = GVars['BUILD_TOOL']
@@ -216,10 +224,13 @@ def build():
         build_cmd += ' -P ' + ' '.join(GVars['PLI_FILES'])
 
     # compile-time options specified on command-line
-    if Options.comp:
-        build_cmd += " " + Options.comp
+    if Options.cmpopts:
+        build_cmd += " " + Options.cmpopts
 
-    cmd_line = '%s %s=1 -N build "%s"' % (GVars['LSF_SUBMIT_TOOL'], GVars['LSF_BUILD_LICS'], build_cmd)
+    cmd_line = "%s -N build" % GVars['LSF_SUBMIT_TOOL']
+    if GVars['LSF_BUILD_LICS']:
+        cmd_line += " %s=1" % GVars['LSF_BUILD_LICS']
+    cmd_line += ' "%s"' % (build_cmd)
     run_cmd(cmd_line)
 
 ########################################################################################
@@ -228,7 +239,7 @@ def simulate(test_name):
     Run the simulation
     """
 
-    print "> Simulating..."
+    Log.info("> Simulating...")
 
     sim_cmd = os.path.join(GVars['VCOMP_DIR'], 'sim.exe')
     sim_cmd += " +UVM_TESTNAME=%s_test_c" % test_name
@@ -245,7 +256,7 @@ def simulate(test_name):
         try:
             os.makedirs(sim_dir)
         except OSError:
-            print "!! Unable to create %s" % sim_dir
+            Log.critical("Unable to create %s" % sim_dir)
             sys.exit(254)
 
     # OPTIONS
@@ -261,7 +272,7 @@ def simulate(test_name):
     if Options.gui:
         sim_cmd += GVars['SIM_GUI']
 
-    elif Options.fsdb:
+    elif Options.wave:
         # make .signal_list file
         sig_list = os.path.join(sim_dir, '.signal_list')
         with open(sig_list, 'w') as f:
@@ -275,7 +286,11 @@ def simulate(test_name):
     if Options.simopts:
         sim_cmd += " " + Options.simopts
 
-    cmd_line = '%s %s=1 -N %s "%s"' % (GVars['LSF_SUBMIT_TOOL'], GVars['LSF_SIM_LICS'], test_name, sim_cmd)
+    cmd_line = '%s -N %s' % (GVars['LSF_SUBMIT_TOOL'], test_name)
+    if GVars['LSF_SIM_LICS']:
+        cmd_line += " %s=1" % GVars['LSF_SIM_LICS']
+
+    cmd_line += ' "%s"' % (sim_cmd)
     run_cmd(cmd_line)
 
 ########################################################################################
@@ -293,7 +308,7 @@ if __name__ == '__main__':
         if simulate in acts:
             simulate(Options.test)
     except KeyboardInterrupt:
-        print "!! Exiting due to Ctrl-C."
+        Log.critical("Exiting due to Ctrl-C.")
         sys.exit(255)
 
     # if we get here, we must have passed

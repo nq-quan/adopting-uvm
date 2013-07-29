@@ -77,3 +77,12 @@ def calc_root_dir():
             raise AreaError, ' '.join([originalPath, "is not in a project tree."])
 
     return currPath
+
+#######################################################################################
+def get_logger(name, level):
+    import logging
+    log = logging.getLogger(name)
+    log.setLevel(level)
+    console = logging.StreamHandler()
+    log.addHandler(console)
+    return log
