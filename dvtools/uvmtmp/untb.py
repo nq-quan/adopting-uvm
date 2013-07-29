@@ -10,11 +10,10 @@ __description__ = "UVM New Testbench Generator, v%s" % __version__
 import os
 import utg
 import logging
-import cn_logging
 import argparse
 import sys
-import area_utils
 import shutil
+import utils
 
 ########################################################################################
 # Constants
@@ -50,12 +49,12 @@ def setup():
         sys.exit(1)
 
     verbosity = {False: logging.INFO, True: logging.DEBUG}[Options.dbg]
-    Log = cn_logging.createLogger('log', verbosity)
+    Log = utils.get_logger('log', verbosity)
     utg.Log = Log
 
     try:
-        RootDir = area_utils.calcRootDir(views=True)
-    except area_utils.AreaError:
+        RootDir = utils.calc_root_dir()
+    except utils.AreaError:
         Log.critical("CWD is not in an Octeon Tree.")
 
     VerifDir = os.path.join(RootDir, "verif")
@@ -78,13 +77,6 @@ def createTb(path, tbname):
 
     # replace all instances of <TB> in all the files
     os.chdir(path)
-
-    # remove .svn if it exists
-    try:
-        shutil.rmtree('.svn')
-        shutil.rmtree('tests/.svn')
-    except:
-        pass
 
     # replace any <TB> found in any file
     for (dirpath, dirnames, filenames) in os.walk('.'):
@@ -126,8 +118,8 @@ def useUtg(tbname):
 
 ########################################################################################
 def main():
-    from cmdline import logUsage
-    logUsage('untb.py', __version__)
+    # from cmdline import logUsage
+    # logUsage('untb.py', __version__)
 
     setup()
     for tbName in Options.tbname[0]:

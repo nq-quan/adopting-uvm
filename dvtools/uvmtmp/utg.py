@@ -22,8 +22,8 @@ import sys
 import argparse
 import re
 import logging
-import cn_logging
 import textwrap
+import utils
 
 ########################################################################################
 # Exceptions
@@ -279,8 +279,6 @@ def determineFilename(tempName):
 
 ########################################################################################
 def templateVkit(createVcomponent=False):
-    import area_utils
-
     global Substitutions
 
     vDirName = {False: 'vkits', True: 'vcomponents'}[createVcomponent]
@@ -290,7 +288,7 @@ def templateVkit(createVcomponent=False):
     else:
         vkName = Options.name
 
-    rootDir = area_utils.calcRootDir()
+    rootDir = utils.calc_root_dir()
     vkitDir = os.path.join(rootDir, "verif/%s" % vDirName)
     newDir = os.path.join(vkitDir, vkName)
 
@@ -477,7 +475,7 @@ Prints out the standard component phases to the screen.
     verbosity = {False: logging.INFO, True: logging.DEBUG}[Options.dbg]
 
     if not Log:
-        Log = cn_logging.createLogger('log', verbosity)
+        Log = utils.get_logger('log', verbosity)
 
     # check legality
     if Options.filename and len(Options.templates[0]) != 1:
@@ -494,8 +492,8 @@ Prints out the standard component phases to the screen.
 
 ########################################################################################
 def main(argv=None):
-    from cmdline import logUsage
-    logUsage('utg', __version__)
+    # from cmdline import logUsage
+    # logUsage('utg', __version__)
 
     if not argv:
         argv = sys.argv[1:]

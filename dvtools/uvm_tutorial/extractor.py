@@ -132,12 +132,10 @@ def pickleCodes(codes, pickleFileName):
 #######################################################################################
 if __name__ == '__main__':
     import logging
-    import cn_logging
-    Log = cn_logging.createLogger('log', logging.INFO)
+    Log = utils.get_logger('log', logging.INFO)
 
     fileName = sys.argv[1]
     pFileName = os.path.join(U_REVISION, os.path.split(fileName)[1] + ".pkl")
-    Log.debug("Here I am with %s, %s" % (fileName, pFileName))
     codes = parseRtf(fileName)
     pickleCodes(codes, pFileName)
 
