@@ -75,7 +75,8 @@ index 0000000..73d60ed
 --- /dev/null
 +++ b/verif/alutb/clk_duty_cycle.sv
 @@ -0,0 +1,54 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
 +// *
@@ -135,7 +136,8 @@ index 0000000..0940097
 --- /dev/null
 +++ b/verif/alutb/tests/duty_cycle.sv
 @@ -0,0 +1,43 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
 +// *
@@ -184,7 +186,8 @@ index 0000000..7cd5536
 --- /dev/null
 +++ b/verif/alutb/tests/fast_clk.sv
 @@ -0,0 +1,72 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
 +// *
@@ -270,7 +273,8 @@ index 0000000..a4976df
 --- /dev/null
 +++ b/verif/vkits/alu/alu_item.sv
 @@ -0,0 +1,119 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
 +// *
@@ -395,7 +399,8 @@ index 0000000..ad91b42
 --- /dev/null
 +++ b/verif/vkits/alu/alu_pkg.sv
 @@ -0,0 +1,38 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
 +// *

@@ -1,4 +1,5 @@
-//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+//-*-
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 // ***********************************************************************
 // *
 // * legal mumbo jumbo

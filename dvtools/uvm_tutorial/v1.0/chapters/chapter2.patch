@@ -15,7 +15,8 @@ index 0000000..613ae79
 --- /dev/null
 +++ b/verif/alutb/tests/fast_clk.sv
 @@ -0,0 +1,72 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// **********************************************************************
 +// *

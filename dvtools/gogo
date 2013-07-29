@@ -1,5 +1,4 @@
 #!/usr/bin/env python2.7
-#-*- mode: Python;-*-
 
 """
 A lightweight compile and simulate script.

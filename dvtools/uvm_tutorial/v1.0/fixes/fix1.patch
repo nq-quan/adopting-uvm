@@ -4,7 +4,8 @@ index ed33530..0000000
 --- a/rtl/alu/alu_math.v
 +++ /dev/null
 @@ -1,184 +0,0 @@
--//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+-//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 -
 -// ************************************************************************
 -// *
@@ -194,7 +195,8 @@ index 0000000..ed33530
 --- /dev/null
 +++ b/rtl/alu/alu_math.v.orig
 @@ -0,0 +1,184 @@
-+//-*- mode: Verilog; verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
++//-*- 
+ verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
 +
 +// ************************************************************************
 +// *
