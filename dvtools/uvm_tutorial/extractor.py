@@ -19,14 +19,16 @@ Log = None
 Rexp = re.compile(r'(\\[a-z]\S*\s)')
 Rexp2 = re.compile(r"\\\'9[34]")
 
-def StartSnipping(line):
+#######################################################################################
+def start_snipping(line):
     return line.find("\\strokec6 {\\listtext\t1.\t}") == 0
 
-def EndSnipping(line):
+#######################################################################################
+def end_snipping(line):
     return line.startswith("\\f0") and line.endswith("\\kerning0\n")
 
 #######################################################################################
-def consumeEscapes(line):
+def consume_escapes(line):
     if line.isspace():
         return line
 
@@ -37,95 +39,95 @@ def consumeEscapes(line):
 
     Log.debug("line now= '%s'" % line)
 
-    (newLine, numReplaced) = Rexp.subn('', line)
-    newLine = newLine.replace('BOOGIES', '\\n')
+    (new_line, numReplaced) = Rexp.subn('', line)
+    new_line = new_line.replace('BOOGIES', '\\n')
 
     # if after consuming this stuff, it's actually just a plain new-line, then return that
-    # (newlines look like just a '\')
+    # (new_lines look like just a '\')
     if line == "\\\n":
         return "\n"
 
     # if after consuming there's nothing left, then ignore this line altogether
-    if newLine.isspace():
+    if new_line.isspace():
         return None
 
-    # replace trailing slash and newline with just newline
-    newLine = newLine.replace('\\\n', '\n')
+    # replace trailing slash and new_line with just new_line
+    new_line = new_line.replace('\\\n', '\n')
 
     # replace double-quotes
-    Log.debug("In consumeEscapes with newLine= '%s'" % newLine)
-    (newLine, numReplaced) = Rexp2.subn('"', newLine)
+    Log.debug("In consume_escapes with new_line= '%s'" % new_line)
+    (new_line, numReplaced) = Rexp2.subn('"', new_line)
 
-    return newLine
+    return new_line
 
 #######################################################################################
-def parseRtf(fileName):
+def parse_rtf(file_name):
     """
     Given the .rtf file, looks for code samples and returns a dictionary.  Each item is
-    keyed on the snippet number, and the value is a tuple.  The first item is any filename
+    keyed on the snippet number, and the value is a tuple.  The first item is any file_name
     that was present on the code# line.  The second is the list of lines in the code snippet.
     """
 
-    codeNum = 0
+    code_num = 0
     codes = {}
     snipping = False
-    snipLines = []
-    codeFileName = None
+    snip_lines = []
+    code_file_name = None
     prepending = None
 
     try:
-        file = open(fileName)
+        file = open(file_name)
     except:
-        Log.critical("Unable to open", fileName)
+        Log.critical("Unable to open", file_name)
 
-    for (lineNum, line) in enumerate(file.readlines()):
+    for (line_num, line) in enumerate(file.readlines()):
         if snipping:
             # Log.debug("Here with line: '%s'" % line)
             pass
 
         if not snipping:
-            if StartSnipping(line):
-                codeNum += 1
+            if start_snipping(line):
+                code_num += 1
 
-                codeFileName = line[line.find('verif'):].rstrip().rstrip('\\')
-                Log.info("Found %d starting on line: %d with codeFileName: %s\n%s" % (codeNum, lineNum, codeFileName, line))
+                code_file_name = line[line.find('verif'):].rstrip().rstrip('\\')
+                Log.info("Found %d starting on line: %d with code_file_name: %s\n%s" % (code_num, line_num, code_file_name, line))
                 snipping = True
-                snipLines = []
+                snip_lines = []
         else:
-            if EndSnipping(line):
+            if end_snipping(line):
                 snipping = False
-                codes[codeNum] = (codeFileName, '\n'.join(snipLines))
-                Log.debug("Closed", codeNum, "with", len(snipLines), "lines on line", lineNum)
+                codes[code_num] = (code_file_name, '\n'.join(snip_lines))
+                Log.debug("Closed", code_num, "with", len(snip_lines), "lines on line", line_num)
             elif line == '\\\n':
-                snipLines.append("")
+                snip_lines.append("")
                 Log.debug("Added an empty new line.")
             elif line.isspace():
                 # prepend it to the next line printed
                 prepending = line[:-1]
                 Log.debug("Set prepending: '%s'" % prepending)
             else:
-                newLine = consumeEscapes(line)
-                Log.debug("Newline now = '%s'" % newLine)
-                if newLine:
+                new_line = consume_escapes(line)
+                Log.debug("New_line now = '%s'" % new_line)
+                if new_line:
                     if prepending:
-                        newLine = prepending + newLine
+                        new_line = prepending + new_line
                         Log.debug("Prepended '%s'" % prepending)
                         prepending = None
-                    snipLines.append(newLine.rstrip())
-                    Log.debug("Added newLine: '%s'" % newLine)
+                    snip_lines.append(new_line.rstrip())
+                    Log.debug("Added new_line: '%s'" % new_line)
     file.close()
 
     return codes
 
 #######################################################################################
-def pickleCodes(codes, pickleFileName):
+def pickle_codes(codes, pickleFile_name):
     pickled = cPickle.dumps(codes, protocol=2)
 
     try:
-        file = open(pickleFileName, 'w')
+        file = open(pickleFile_name, 'w')
         file.writelines(pickled)
     except:
-        Log.critical("Unable to create", pickleFileName)
+        Log.critical("Unable to create", pickleFile_name)
 
     file.close()
 
@@ -134,11 +136,11 @@ if __name__ == '__main__':
     import logging
     Log = utils.get_logger('log', logging.INFO)
 
-    fileName = sys.argv[1]
-    pFileName = os.path.join(U_REVISION, os.path.split(fileName)[1] + ".pkl")
-    codes = parseRtf(fileName)
-    pickleCodes(codes, pFileName)
+    file_name = sys.argv[1]
+    pFile_name = os.path.join(U_REVISION, os.path.split(file_name)[1] + ".pkl")
+    codes = parse_rtf(file_name)
+    pickle_codes(codes, pFile_name)
 
-    for codeNum in codes:
-        (fname, lines) = codes[codeNum]
-        print codeNum, ":", fname, "> ", lines.splitlines()
+    for code_num in codes:
+        (fname, lines) = codes[code_num]
+        print code_num, ":", fname, "> ", lines.splitlines()

@@ -45,24 +45,24 @@ ClearedSubstitutions = ('<description>',)
 Substitutions = None
 
 ########################################################################################
-def getAllLines(templateName):
+def get_all_lines(template_name):
     """
     Fetch all the lines from a template file and return them.
     """
 
     # read in the template file
-    tempFileName = os.path.join(TemplateDir, templateName+'.sv')
+    temp_file_name = os.path.join(TemplateDir, template_name+'.sv')
     try:
-        file = open(tempFileName)
+        file = open(temp_file_name)
     except:
-        Log.critical("Unable to find %s" % tempFileName)
+        Log.critical("Unable to find %s" % temp_file_name)
 
     lines = file.readlines()
     file.close()
     return lines
 
 ########################################################################################
-def fetchIncludes(allLines):
+def fetch_includes(all_lines):
     """
     Continuously fetch any included templates until no more are needed.
     Return the new set of lines, fully expanded.
@@ -71,23 +71,23 @@ def fetchIncludes(allLines):
     rexp = re.compile('<@(.*)>')
     while True:
         done = True
-        newAllLines = []
-        for line in allLines:
-            reResults = rexp.match(line)
-            if reResults:
+        new_all_lines = []
+        for line in all_lines:
+            re_results = rexp.match(line)
+            if re_results:
                 done = False
-                incFile = reResults.group(1)
-                incLines = getAllLines(incFile)
-                newAllLines.extend(incLines)
+                incFile = re_results.group(1)
+                incLines = get_all_lines(incFile)
+                new_all_lines.extend(incLines)
             else:
-                newAllLines.append(line)
-        allLines = newAllLines[:]
+                new_all_lines.append(line)
+        all_lines = new_all_lines[:]
         if done:
             break
-    return newAllLines
+    return new_all_lines
 
 ########################################################################################
-def absorbSubstitutions(allLines, absorbed, tempName):
+def absorb_substitutions(all_lines, absorbed, temp_name):
     """
     Look for <$(name)> in the code and set Substitutions[name] equal to
     all of the following lines until <$end> is seen.
@@ -97,78 +97,78 @@ def absorbSubstitutions(allLines, absorbed, tempName):
     Return the new set of lines with the substitutions stripped out.
     """
 
-    newAllLines = []
+    new_all_lines = []
     rexp = re.compile('<\$(.*)>')
-    inSub, subLines = False, []
-    for lineno, line in enumerate(allLines):
-        if not inSub:
-            reResults = rexp.match(line)
-            if reResults:
-                inSub = True
-                subName = reResults.group(1)
+    in_sub, sub_lines = False, []
+    for lineno, line in enumerate(all_lines):
+        if not in_sub:
+            re_results = rexp.match(line)
+            if re_results:
+                in_sub = True
+                subName = re_results.group(1)
                 Log.debug("Saw substitution: %s" % subName)
             else:
-                newAllLines.append(line)
+                new_all_lines.append(line)
         elif line.startswith('<$end>'):
             sub = "<" + subName + ">"
-            (subLines, junk) = makeSubstitutions(subLines, tempName)
-            Substitutions[sub] = subLines
+            (sub_lines, junk) = make_substitutions(sub_lines, temp_name)
+            Substitutions[sub] = sub_lines
             absorbed.append(sub)
-            inSub = False
-            subLines = []
+            in_sub = False
+            sub_lines = []
         else:
-            subLines.append(line)
-    return newAllLines
+            sub_lines.append(line)
+    return new_all_lines
 
 ########################################################################################
-def makeSubstitutions(allLines, tempName):
+def make_substitutions(all_lines, temp_name):
     """
     Go line-by-line.  Repeat until no substitutions need to be made.
     Return the new list of lines, and the list of substitutions that were prompted for.
     """
 
-    answeredSubs = []
+    answered_subs = []
     rexp = re.compile('<(?P<sub>[^\>\?]*)(?P<maybe>\?*)>')
 
     Log.debug("Here with Substitutions= %s" % Substitutions)
 
-    inClass = False  # set when we're on a line that's inside the class
-    newLines = []
-    for line in allLines:
+    in_class = False  # set when we're on a line that's inside the class
+    new_lines = []
+    for line in all_lines:
         Log.debug("Looking at '%s'" % line.rstrip())
         # make the substitutions
         try:
-            reResults = rexp.finditer(line)
-            if reResults:
-                line = handleMatch(reResults, line, answeredSubs, newLines, tempName)
+            re_results = rexp.finditer(line)
+            if re_results:
+                line = handle_match(re_results, line, answered_subs, new_lines, temp_name)
 
             # detect class
-            if not inClass and (line.startswith('class ') or line.startswith('interface ')):
-                inClass = True
+            if not in_class and (line.startswith('class ') or line.startswith('interface ')):
+                in_class = True
 
             # add it to the lines?
-            if not Options.classonly or inClass:
+            if not Options.classonly or in_class:
                 Log.debug("Adding: '%s'" % line)
-                newLines.append(line)
+                new_lines.append(line)
 
             # detect end of class
-            if inClass and (line.startswith('endclass ') or line.startswith('endinterface ')):
-                inClass = False
+            if in_class and (line.startswith('endclass ') or line.startswith('endinterface ')):
+                in_class = False
 
         except SkipLine:
             Log.debug("Skipping line because it is empty.")
             continue
 
-    return newLines, answeredSubs
+    return new_lines, answered_subs
 
 ########################################################################################
-def handleMatch(reResults, line, answeredSubs, newLines, tempName):
+def handle_match(re_results, line, answered_subs, new_lines, temp_name):
     newLine = line
 
-    if reResults:
-        for reResult in reResults:
-            Log.debug("reResults = %s" % str(reResult.groups()))
-            sub, maybe = ("<%s>" % reResult.group('sub')), (reResult.group('maybe') == '?')
+    if re_results:
+        for re_result in re_results:
+            Log.debug("re_results = %s" % str(re_result.groups()))
+            sub, maybe = ("<%s>" % re_result.group('sub')), (re_result.group('maybe') == '?')
 
             Log.debug("Here with sub = %s, maybe = %s" % (sub, maybe))
 
@@ -178,19 +178,19 @@ def handleMatch(reResults, line, answeredSubs, newLines, tempName):
 
                 # Conditional substitutions just get skipped
                 if maybe:
-                    Log.debug("Replacing '%s' with ''" % reResult.group(0))
-                    newLine = newLine.replace(reResult.group(0), "")
+                    Log.debug("Replacing '%s' with ''" % re_result.group(0))
+                    newLine = newLine.replace(re_result.group(0), "")
                     if not newLine.rstrip():
                         raise SkipLine
 
                 # otherwise, require that the user fill in the value
                 if not Options.quiet:
-                    fetchAnswer(tempName, sub)
-                    answeredSubs.append(sub)
+                    fetch_answer(temp_name, sub)
+                    answered_subs.append(sub)
                 else:
                     # just leave the text alone
                     Substitutions[sub] = sub
-                    answeredSubs.append(sub)
+                    answered_subs.append(sub)
 
             # make the substitution:  either just a simple string replacement, or a list of lines
             if type(Substitutions[sub]) == str:
@@ -198,14 +198,14 @@ def handleMatch(reResults, line, answeredSubs, newLines, tempName):
                 newLine = newLine.replace(sub, Substitutions[sub])
             else:
                 # happens when the substitution is a list of lines
-                newLines.extend(Substitutions[sub])
+                new_lines.extend(Substitutions[sub])
                 raise SkipLine
 
     return newLine
 
 ########################################################################################
-def fetchAnswer(tempName, sub):
-    answer = raw_input("%s %s: Enter substitution for %s: " % (Options.name, tempName, sub))
+def fetch_answer(temp_name, sub):
+    answer = raw_input("%s %s: Enter substitution for %s: " % (Options.name, temp_name, sub))
     if answer == "":
         answer = sub.replace('<', '[').replace('>', ']')
 
@@ -218,7 +218,7 @@ def fetchAnswer(tempName, sub):
     Substitutions[sub.swapcase()] = answer.swapcase()
 
 ########################################################################################
-def printLines(allLines):
+def print_lines(all_lines):
     """
     Print all of the lines, either to stdout or to the correct file.
     """
@@ -229,14 +229,14 @@ def printLines(allLines):
     else:
         target = sys.stdout
 
-    for line in allLines:
+    for line in all_lines:
         print >>target, line,
 
     if Options.file:
         target.close()
 
 ########################################################################################
-def determineFilename(tempName):
+def determine_filename(temp_name):
     """
     Figures out what the filename should be based on all the information available and returns it.
     """
@@ -244,22 +244,22 @@ def determineFilename(tempName):
     if Options.filename:
         return Options.filename
 
-    if tempName == 'base_test':
+    if temp_name == 'base_test':
         return 'base_test.sv'
 
-    if tempName in DIRECTLY_NAMED:
+    if temp_name in DIRECTLY_NAMED:
         if Options.name is not None:
             filename = Options.name
         else:
-            filename = tempName
+            filename = temp_name
     else:
-        filename = tempName if not Options.name else ("%s_%s" % (Options.name, tempName))
+        filename = temp_name if not Options.name else ("%s_%s" % (Options.name, temp_name))
 
     if "<name>" not in Substitutions:
-        fetchAnswer(tempName, "<name>")
+        fetch_answer(temp_name, "<name>")
     name = Substitutions["<name>"]
-    if not name.endswith("_%s" % tempName):
-        filename = "%s_%s" % (name, tempName)
+    if not name.endswith("_%s" % temp_name):
+        filename = "%s_%s" % (name, temp_name)
     else:
         filename = name
 
@@ -278,56 +278,60 @@ def determineFilename(tempName):
     return filename
 
 ########################################################################################
-def templateVkit(createVcomponent=False):
+def template_vkit():
     global Substitutions
 
-    vDirName = {False: 'vkits', True: 'vcomponents'}[createVcomponent]
-
     if not Options.name:
-        Log.critical("No name for the %s was specified on the command-line." % vDirName)
+        Log.critical("No name for the vkit was specified on the command-line.")
     else:
-        vkName = Options.name
+        vkit_name = Options.name
 
-    rootDir = utils.calc_root_dir()
-    vkitDir = os.path.join(rootDir, "verif/%s" % vDirName)
-    newDir = os.path.join(vkitDir, vkName)
+    try:
+        vkit_dir = os.path.join(utils.calc_root_dir(), "verif/vkits")
+    except utils.AreaError:
+        Log.critical("Unable to determine root directory.")
 
-    if os.path.exists(newDir):
-        Log.critical("Path %s already exists!" % newDir)
+    new_dir = os.path.join(vkit_dir, vkit_name)
 
-    os.mkdir(newDir)
+    if os.path.exists(new_dir):
+        Log.critical("Path %s already exists!" % new_dir)
+
+    try:
+        os.mkdir(new_dir)
+    except OSError:
+        Log.critical("Unable to create %s" % new_dir)
 
     # create an flist file there
-    lines = ["+incdir+../../verif/%s/%s\n" % (vDirName, vkName),
-             "../../verif/%s/%s/%s_pkg.sv\n" % (vDirName, vkName, vkName)
+    lines = ["+incdir+../../verif/vkits/%s\n" % (vkit_name),
+             "../../verif/vkits/%s/%s_pkg.sv\n" % (vkit_name, vkit_name)
              ]
-    flistFileName = os.path.join(newDir, "%s.flist" % vkName)
-    file = open(flistFileName, 'w')
+    flist_file_name = os.path.join(new_dir, "%s.flist" % vkit_name)
+    file = open(flist_file_name, 'w')
     file.writelines(lines)
     file.close()
 
-    os.chdir(newDir)
+    os.chdir(new_dir)
     Options.file = True
-    Substitutions['<description>'] = "%s package" % vkName
-    Substitutions['<name>'] = vkName
-    Substitutions['<pkg_name>'] = vkName
-    templateIt('pkg')
+    Substitutions['<description>'] = "%s package" % vkit_name
+    Substitutions['<name>'] = vkit_name
+    Substitutions['<pkg_name>'] = vkit_name
+    template_it('pkg')
 
-    Log.info("Created %s %s" % (vDirName, vkName))
+    Log.info("Created vkit %s" % (vkit_name))
 
 ########################################################################################
-def templateIt(tempName):
+def template_it(temp_name):
     """
     Load the template file, perform the substitutions, and print it out.
     """
 
     # set the template variable
-    className = tempName if not Options.name else ("%s_%s" % (Options.name, tempName))
-    Substitutions['<template>'] = className
-    Substitutions['<TEMPLATE>'] = className.upper()
+    class_name = temp_name if not Options.name else ("%s_%s" % (Options.name, temp_name))
+    Substitutions['<template>'] = class_name
+    Substitutions['<TEMPLATE>'] = class_name.upper()
 
     if not Options.classonly:
-        filename = determineFilename(tempName)
+        filename = determine_filename(temp_name)
 
         Substitutions['<filename>'] = filename
         # for `ifndef headers:
@@ -337,37 +341,37 @@ def templateIt(tempName):
         Log.info("Creating %s" % filename)
 
     # Get the template
-    lines = getAllLines(tempName)
+    lines = get_all_lines(temp_name)
 
     # expand all of the includes
-    lines = fetchIncludes(lines)
+    lines = fetch_includes(lines)
 
     # check for options
-    lines = checkOptions(lines)
+    lines = check_options(lines)
 
     # absorb any substitutions from the file
-    absorbedSubs = []
-    lines = absorbSubstitutions(lines, absorbedSubs, tempName)
+    absorbed_subs = []
+    lines = absorb_substitutions(lines, absorbed_subs, temp_name)
 
     # Make substitutions
-    lines, answeredSubs = makeSubstitutions(lines, tempName)
+    lines, answered_subs = make_substitutions(lines, temp_name)
 
     # print out the template
-    printLines(lines)
+    print_lines(lines)
 
     # remove substitutions that don't cross templates if they were prompted (substitution, for example)
     for sub in ClearedSubstitutions:
-        if sub in answeredSubs:
+        if sub in answered_subs:
             del Substitutions[sub]
 
     # remove any absorbed substitutions
-    for sub in absorbedSubs:
+    for sub in absorbed_subs:
         if sub in Substitutions:
             Log.debug("Removing %s" % sub)
             del Substitutions[sub]
 
 ########################################################################################
-def checkOptions(lines):
+def check_options(lines):
     """
     When a line is of the form: <?blah>, then check to see if Options.blah is set.  If it
     isn't, then skip lines until <?end>.  Otherwise, keep these lines.
@@ -396,7 +400,7 @@ def checkOptions(lines):
     return result
 
 ########################################################################################
-def createSubstitutions():
+def create_substitutions():
     global Substitutions
 
     Substitutions = {
@@ -426,13 +430,13 @@ def setup(argv):
     global Log
 
     # investigate utemplates directory for available templates
-    allTemplates = [it[:-3] for it in os.listdir(TemplateDir) if it.endswith('.sv') and it[:-3] not in EXCLUDED_TEMPLATES]
-    if not allTemplates:
+    all_templates = [it[:-3] for it in os.listdir(TemplateDir) if it.endswith('.sv') and it[:-3] not in EXCLUDED_TEMPLATES]
+    if not all_templates:
         Log.critical("There are No Templates in the directory %s. Cannot continue!" % TemplateDir)
 
     # this template is not part of other templates
-    allTemplates.extend(["vkit", "vcomponent"])
-    allTemplatesStr = textwrap.fill(', '.join(allTemplates), width=80)
+    all_templates.extend(["vkit", "vcomponent"])
+    all_templates_str = textwrap.fill(', '.join(all_templates), width=80)
 
     p = argparse.ArgumentParser(
         prog='utg',
@@ -455,9 +459,9 @@ Prints out just the classes foo_agent_c, foo_drv_c, foo_mon_c, and foo_sqr_c to 
 > utg phases -n foo
 
 Prints out the standard component phases to the screen.
-""" % (__version__, allTemplatesStr))
+""" % (__version__, all_templates_str))
 
-    p.add_argument('templates',           action='append',    nargs='+',    default=None,     choices=allTemplates)
+    p.add_argument('templates',           action='append',    nargs='+',    default=None,     choices=all_templates)
     p.add_argument('-n', '--name',        action='store',                   default=None,     help="Name of the component(s)")
     p.add_argument('-d', '--description', action='store',                   default=None,     help="Brief description for the header")
     p.add_argument('-f', '--file',        action='store_true',              default=False,    help="Write it out to the appropriately named file")
@@ -488,7 +492,7 @@ Prints out the standard component phases to the screen.
         Log.critical("--classonly may not be used at the same time.")
 
     # create all of the substitution variables
-    createSubstitutions()
+    create_substitutions()
 
 ########################################################################################
 def main(argv=None):
@@ -502,20 +506,20 @@ def main(argv=None):
     setup(argv)
 
     # for each template, do it
-    allTemplates = Options.templates[0]
-    if 'vkit' in allTemplates:
-        templateVkit(createVcomponent=False)
+    all_templates = Options.templates[0]
+    if 'vkit' in all_templates:
+        template_vkit(create_vkit=False)
         Log.info("Exiting.")
         sys.exit(0)
 
-    if 'vcomponent' in allTemplates:
-        templateVkit(createVcomponent=True)
+    if 'vcomponent' in all_templates:
+        template_vkit(create_vkit=True)
         Log.info("Exiting.")
         sys.exit(0)
 
-    for template in allTemplates:
-        templateIt(template)
-        if len(allTemplates) > 1 and not Options.file:
+    for template in all_templates:
+        template_it(template)
+        if len(all_templates) > 1 and not Options.file:
             Log.info("<----- %s CUT HERE ----->" % template)
 
 ########################################################################################

@@ -19,22 +19,22 @@ Log = None
 TYPES = (CHAPTERS, FIXES) = xrange(2)
 
 ########################################################################################
-def getDir(revision, myType):
+def get_dir(revision, my_type):
     """
     Returns the name of the directory to use for either chapters or fixes
 
     revision  : (string) The name of the revision, such as 'v0.4'.
-    myType      : CHAPTERS or FIXES
+    my_type   : CHAPTERS or FIXES
     =>        : (string)
     """
 
-    if myType == CHAPTERS:
+    if my_type == CHAPTERS:
         return os.path.join(UTUT_DIR, revision, "chapters")
     else:
         return os.path.join(UTUT_DIR, revision, "fixes")
 
 ########################################################################################
-def availablePatches(myType, revision):
+def available_patches(my_type, revision):
     """
     Returns the list of patch files that are available.
     """
@@ -44,10 +44,10 @@ def availablePatches(myType, revision):
     except:
         Log.critical("Unable to get current working directory.")
 
-    dir = getDir(revision, myType)
+    dir = get_dir(revision, my_type)
 
     patches = os.listdir(dir)
-    if myType == CHAPTERS:
+    if my_type == CHAPTERS:
         patches = [int(it[7:-6]) for it in patches if it.endswith(".patch")]
     else:
         patches = [int(it[3:-6]) for it in patches if it.endswith(".patch")]
@@ -56,7 +56,7 @@ def availablePatches(myType, revision):
     return patches
 
 ########################################################################################
-def fetchPatch(myType, num, revision, rootDir=None):
+def fetch_patch(my_type, num, revision, root_dir=None):
     """
     Patches the current work directory with the given chapter or fix number.
     """
@@ -64,49 +64,45 @@ def fetchPatch(myType, num, revision, rootDir=None):
     import subprocess
 
     typename = {CHAPTERS : "chapter",
-                FIXES : "fix"}[myType]
-    printedTypename = ("%s/chapter" % typename) if myType == CHAPTERS else typename
-    dir = getDir(revision, myType)
+                FIXES : "fix"}[my_type]
+    printed_typename = ("%s/chapter" % typename) if my_type == CHAPTERS else typename
+    dir = get_dir(revision, my_type)
 
-    Log.info("Patching with %s #%0d" % (printedTypename, num))
+    Log.info("Patching with %s #%0d" % (printed_typename, num))
 
     # ensure that num is valid
-    avail = availablePatches(myType, revision)
+    avail = available_patches(my_type, revision)
     if num not in avail:
-        Log.critical("%s #%d is not a valid patch.  Available %s patches are: %s" % (printedTypename, num, avail))
+        Log.critical("%s #%d is not a valid patch.  Available %s patches are: %s" % (printed_typename, num, avail))
 
     # change to the root directory
-    if not rootDir:
+    if not root_dir:
         try:
-            rootDir = utils.calc_root_dir()
+            root_dir = utils.calc_root_dir()
         except utils.AreaError:
-            Log.critical("%s command must be run from within the project tree." % printedTypename)
+            Log.critical("%s command must be run from within the project tree." % printed_typename)
 
-    patchFile = os.path.join(dir, "%s%d.patch" % (typename, num))
-    cmd = "git apply %s" % patchFile
+    patch_file = os.path.join(dir, "%s%d.patch" % (typename, num))
+    cmd = "git apply %s" % patch_file
 
     try:
         cwd = os.getcwd()
     except:
         Log.critical("Unable to get current working directory.")
 
-    os.chdir(rootDir)
+    os.chdir(root_dir)
 
     # run the patch, add any ? files, repeat until no ? files
     Log.info("Patching files...")
     Log.debug("Running '%s'" % cmd)
-    subprocess.Popen(cmd.split(), stderr=subprocess.STDOUT, stdout=subprocess.PIPE, cwd=rootDir).communicate()
+    subprocess.Popen(cmd.split(), stderr=subprocess.STDOUT, stdout=subprocess.PIPE, cwd=root_dir).communicate()
 
-    Log.info("Successfully updated %s with %s #%d" % (rootDir, printedTypename, num))
+    Log.info("Successfully updated %s with %s #%d" % (root_dir, printed_typename, num))
     os.chdir(cwd)
 
 ########################################################################################
 if __name__ == '__main__':
     # test
     import logging
-    log = logging.getLogger('log')
-    log.setLevel(logging.INFO)
-    console = logging.StreamHandler()
-    log.addHandler(console)
-
-    fetchPatch(CHAPTERS, 5, 'v1.0')
+    log = utils.get_logger('log', logging.INFO)
+    fetch_patch(CHAPTERS, 5, 'v1.0')

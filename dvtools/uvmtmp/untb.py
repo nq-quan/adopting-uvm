@@ -38,7 +38,7 @@ def setup():
         version="%(prog)s v"+str(__version__),
         description=__description__)
 
-    p.add_argument('tbname',            action='append',     nargs='+',   default=None)
+    p.add_argument('tb_name',           action='append',     nargs='+',   default=None)
     p.add_argument('-f', '--force',     action='store_true',              default=False,   help="Force creation of new testbench even if it already exists.")
     p.add_argument('-d', '--dbg',       action='store_true',              default=False,   help="Turns on debug lines.")
 
@@ -60,10 +60,10 @@ def setup():
     VerifDir = os.path.join(RootDir, "verif")
 
 ########################################################################################
-def createTb(path, tbname):
+def create_tb(path, tb_name):
     Log.info("Creating Testbench %s" % path)
 
-    newtbPath = os.path.join(os.path.dirname(__file__), 'newtb')
+    newtb_path = os.path.join(os.path.dirname(__file__), 'newtb')
 
     if Options.force and os.path.exists(path):
         Log.info("Removing existing testbench: %s" % path)
@@ -71,7 +71,7 @@ def createTb(path, tbname):
 
     # copy files into new path
     try:
-        shutil.copytree(newtbPath, path)
+        shutil.copytree(newtb_path, path)
     except OSError, err:
         Log.critical("Unable to create new directory: %s" % err)
 
@@ -85,29 +85,29 @@ def createTb(path, tbname):
             lines = file.readlines()
             newlines = []
             for line in lines:
-                newlines.append(line.replace('<TB>', tbname))
+                newlines.append(line.replace('<TB>', tb_name))
             file.close()
             file = open(filename, 'w')
             file.writelines(newlines)
             file.close()
 
-    # rename TB.flist to tbname.flist
-    os.rename('TB.flist', '%s.flist' % tbname)
+    # rename TB.flist to tb_name.flist
+    os.rename('TB.flist', '%s.flist' % tb_name)
 
     # create any utg files
-    useUtg(tbname)
+    use_utg(tb_name)
 
 ########################################################################################
-def useUtg(tbname):
+def use_utg(tb_name):
     cwd = os.getcwd()
 
-    # create <tbname>_tb_top.sv
-    arguments = ("tb_top -n %s -f -q" % tbname).split()
+    # create <tb_name>_tb_top.sv
+    arguments = ("tb_top -n %s -f -q" % tb_name).split()
     utg.main(arguments)
 
     # create tests/base_test.sv
     os.chdir('tests')
-    arguments = ("base_test -n %s -f -q" % tbname).split()
+    arguments = ("base_test -n %s -f -q" % tb_name).split()
     utg.main(arguments)
 
     # create tests/basic.sv
@@ -122,10 +122,10 @@ def main():
     # logUsage('untb.py', __version__)
 
     setup()
-    for tbName in Options.tbname[0]:
+    for tb_name in Options.tb_name[0]:
         # create directory
-        tbPath = os.path.join(VerifDir, tbName)
-        createTb(tbPath, tbName)
+        tbPath = os.path.join(VerifDir, tb_name)
+        create_tb(tbPath, tb_name)
 
 ########################################################################################
 if __name__ == '__main__':
