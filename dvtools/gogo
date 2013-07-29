@@ -4,19 +4,12 @@
 A lightweight compile and simulate script.
 """
 
+########################################################################################
+# Globals
+
 __version__       = '0.0'
 __author__        = "Brian Hunter"
 __email__         = 'brian.hunter@cavium.com'
-
-import os
-import subprocess
-import sys
-import argparse
-import logging
-import utils
-
-########################################################################################
-# Globals
 
 # The names of all the library files that will be imported
 Libraries = ('project', 'tb')
@@ -64,6 +57,15 @@ Actions = None
 
 # Logger
 Log = None
+
+#######################################################################################
+# Imports
+import os
+import subprocess
+import sys
+import argparse
+import logging
+import utils
 
 ########################################################################################
 def setup_globals():
