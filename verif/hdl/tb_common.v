@@ -38,16 +38,6 @@ import uvm_pkg::*;
       run_test();
    end : start_uvm
 
-   ////////////////////////////////////////////
-   // Needed for UVM 1.1c/d
-   // turn these warnings off: UVM/FLD/SET/BSY
-   ////////////////////////////////////////////
-   initial begin
-      #(1ps);
-      uvm_top.set_report_severity_id_action(UVM_WARNING, "UVM/FLD/SET/BSY", UVM_NO_ACTION);
-      uvm_top.set_report_severity_id_action_hier(UVM_ERROR, "SEQREQZMB", UVM_NO_ACTION);
-   end
-
    initial begin
       #(1ns);
       if(global_pkg::env == null)
@@ -59,8 +49,7 @@ import uvm_pkg::*;
    ////////////////////////////////////////////
    initial begin : functional_coverage
       integer svfcov;
-      integer fcov_setting = ($value$plusargs("svfcov=%d", svfcov));
-      if (fcov_setting) begin
+      if ($value$plusargs("svfcov=%d", svfcov)) begin
          uvm_config_db#(int)::set(uvm_top, "*", "coverage_enable", svfcov);
       end else begin
          uvm_config_db#(int)::set(uvm_top, "*", "coverage_enable", 0);

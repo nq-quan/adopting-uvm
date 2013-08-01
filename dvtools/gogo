@@ -141,6 +141,7 @@ def parse_args():
     p.add_argument('--wdog',         action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
     p.add_argument('--gui',  '-g',   action='store_true',        default=False,   help="Run DVE in GUI mode.")
     p.add_argument('--wave', '-w',   action='store_true',        default=False,   help="Run with wave dumping.")
+    p.add_argument('--svfcov',       action='store_true',        default=False,   help="Run with SV Functional Coverage")
 
     Options = p.parse_args()
 
@@ -280,6 +281,9 @@ def simulate(test_name):
             print >>f, "0 %s" % GVars['TB_TOP']
 
         sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb"), sig_list)
+
+    if Options.svfcov:
+        sim_cmd += " +svfcov"
 
     # add simulation command-line options
     if GVars['SIMOPTS']:
