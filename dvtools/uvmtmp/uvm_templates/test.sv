@@ -4,10 +4,10 @@
    `include "basic.sv"
 // (`includes go here)
 
-// class: <template>_c
+// class: <class_name>
 // (Describe me)
-class <template>_c extends base_test_c;
-   `uvm_component_utils_begin(<template>_c)
+class <class_name> extends base_test_c;
+   `uvm_component_utils_begin(<class_name>)
    `uvm_component_utils_end
 
 <@section_border>
@@ -17,6 +17,6 @@ class <template>_c extends base_test_c;
    // Group: Fields
 
 <@phases>
-endclass : <template>_c
+endclass : <class_name>
 
 <@endif>

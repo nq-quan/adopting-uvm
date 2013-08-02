@@ -1,9 +1,10 @@
 <@header>
 <@ifndef>
 
-// class: <template>
+// class: <class_name>
 // (Describe me)
-interface <template>(input logic clk, input logic rst_n);
+interface <class_name>(input logic clk, input logic rst_n);
+   import uvm_pkg::*;
 
 <@section_border>
    // Group: Signals
@@ -20,6 +21,6 @@ interface <template>(input logic clk, input logic rst_n);
 <@section_border>
    // Group: Assertions
 
-endinterface : <template>
+endinterface : <class_name>
 
 <@endif>

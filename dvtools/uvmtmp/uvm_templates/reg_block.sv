@@ -1,12 +1,12 @@
 <@header>
 <@ifndef>
-   
+
 // (`includes go here)
 
-// class: <template>_c
+// class: <class_name>
 // (Describe me)
-class <template>_c extends uvm_<template>;
-   `uvm_object_utils_begin(<pkg_name>_pkg::<template>_c)
+class <class_name> extends uvm_<template>;
+   `uvm_object_utils_begin(<vkit_name>_pkg::<class_name>)
    `uvm_object_utils_end
 
 <@section_border>
@@ -15,14 +15,14 @@ class <template>_c extends uvm_<template>;
    // (put reg maps here. capitalize instance names)
    uvm_reg_map <MAP>;
 
-   // (put reg files here.  capitalize instance names. If there is more than one, 
+   // (put reg files here.  capitalize instance names. If there is more than one,
    // distinguish them with name of csr_pkg)
    rand <csr_pkg>_csr_pkg::reg_file_c REG_FILE;
-   
+
 <@section_border>
    // Group: Methods
 
-   function new(name="<template>");
+   function new(name="<name>");
       super.new(name, .has_coverage(UVM_NO_COVERAGE));
    endfunction : new
 
@@ -46,8 +46,7 @@ class <template>_c extends uvm_<template>;
       // (set the offset accordingly)
       REG_FILE.map(<MAP>, .offset(0));
    endfunction : build
-   
-endclass : <template>_c
-   
+
+endclass : <class_name>
+
 <@endif>
-   

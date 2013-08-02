@@ -1,5 +1,3 @@
 +incdir+../../rtl/include
 +incdir+../../rtl/<TB>
--y ../../verif/hdl
--y ../../rtl/common
 -y ../../rtl/<TB>

@@ -3,7 +3,7 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) <year>, Cav
+// * (c) <year>
 // * (utg v<utgversion>)
 // ***********************************************************************
 // File:   <filename>

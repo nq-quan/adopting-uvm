@@ -3,12 +3,62 @@
 ########################################################################################
 # Constants
 
-__version__ = '0.10'
+__version__ = '1.0'
 __author__  = "Brian Hunter"
 __email__   = "brian.hunter@cavium.com"
 
-# These templates are named whatever the name was specified as
-DIRECTLY_NAMED = ('test', 'object', 'component', 'empty_file')
+# These are the algorithms for determining a file's name
+FILENAMES = {
+    'agent'         : "vkit_name_temp.sv",
+    'base_test'     : "temp.sv",
+    'cfg'           : "vkit_name_temp.sv",
+    'component'     : "vkit_name.sv",
+    'drv'           : "vkit_name_temp.sv",
+    'empty_file'    : "vkit_name.sv",
+    'env'           : "vkit_name_temp.sv",
+    'intf'          : "vkit_name_temp.sv",
+    'item'          : "vkit_name_temp.sv",
+    'mon'           : "vkit_name_temp.sv",
+    'object'        : "vkit_name.sv",
+    'pkg'           : "vkit_temp.sv",
+    'reg_adapter'   : "vkit_name_temp.sv",
+    'reg_block'     : "name_temp.sv",
+    'seq'           : "vkit_name_temp.sv",
+    'seq_lib'       : "vkit_name_temp.sv",
+    'sqr'           : "vkit_name_temp.sv",
+    'subscriber'    : "vkit_name_temp.sv",
+    'tb_top'        : "name_temp.sv",
+    'test'          : "name_temp.sv",
+    'vseq'          : "vkit_name_temp.sv",
+    'vseq_lib'      : "vkit_name_temp.sv",
+    'vsqr'          : "vkit_name_temp.sv",
+}
+
+# These are the algorithms for determining a class's name (if any)
+CLASSNAMES = {
+    'agent'         : "name_temp_c",
+    'base_test'     : "temp_c",
+    'cfg'           : "name_temp_c",
+    'component'     : "name_c",
+    'drv'           : "name_temp_c",
+    'env'           : "name_temp_c",
+    'intf'          : "vkit_name_temp",
+    'item'          : "name_temp_c",
+    'mon'           : "name_temp_c",
+    'object'        : "name_c",
+    'pkg'           : "vkit_temp",
+    'reg_adapter'   : "name_temp_c",
+    'reg_block'     : "name_temp_c",
+    'seq'           : "name_temp_c",
+    'seq_lib'       : "name_temp_c",
+    'sqr'           : "name_temp_c",
+    'subscriber'    : "name_temp_c",
+    'tb_top'        : "name_temp",
+    'test'          : "name_temp_c",
+    'vseq'          : "name_temp_c",
+    'vseq_lib'      : "name_temp_c",
+    'vsqr'          : "name_temp_c",
+}
 
 # These templates are included within other templates and are not available for usage
 # on the command line
@@ -56,6 +106,7 @@ def get_all_lines(template_name):
         file = open(temp_file_name)
     except:
         Log.critical("Unable to find %s" % temp_file_name)
+        sys.exit(1)
 
     lines = file.readlines()
     file.close()
@@ -205,12 +256,13 @@ def handle_match(re_results, line, answered_subs, new_lines, temp_name):
 
 ########################################################################################
 def fetch_answer(temp_name, sub):
-    answer = raw_input("%s %s: Enter substitution for %s: " % (Options.name, temp_name, sub))
+    name = Options.name if Options.name else ""
+    answer = raw_input("%s %s: Enter substitution for %s: " % (name, temp_name, sub))
     if answer == "":
         answer = sub.replace('<', '[').replace('>', ']')
 
     # trim _pkg from answer
-    if sub in ("<pkg_name>", "<PKG_NAME>") and (answer.endswith('_pkg') or answer.endswith('_PKG')):
+    if sub in ("<vkit_name>", "<VKIT_NAME>") and (answer.endswith('_pkg') or answer.endswith('_PKG')):
         answer = answer[:-4]
 
     # set the substitutions for sub and SUB
@@ -236,46 +288,42 @@ def print_lines(all_lines):
         target.close()
 
 ########################################################################################
-def determine_filename(temp_name):
+def determine_name(temp_name, stylesheet):
     """
     Figures out what the filename should be based on all the information available and returns it.
     """
 
-    if Options.filename:
-        return Options.filename
-
-    if temp_name == 'base_test':
-        return 'base_test.sv'
-
-    if temp_name in DIRECTLY_NAMED:
-        if Options.name is not None:
-            filename = Options.name
-        else:
-            filename = temp_name
-    else:
-        filename = temp_name if not Options.name else ("%s_%s" % (Options.name, temp_name))
-
-    if "<name>" not in Substitutions:
-        fetch_answer(temp_name, "<name>")
-    name = Substitutions["<name>"]
-    if not name.endswith("_%s" % temp_name):
-        filename = "%s_%s" % (name, temp_name)
-    else:
-        filename = name
-
-    # add .sv?
-    if not filename.endswith('.sv'):
-        filename += ".sv"
-
-    # prepend package name?
     try:
-        pkgName = Substitutions["<pkg_name>"]
-        if not filename.startswith("%s_" % pkgName):
-            filename = "%s_%s" % (pkgName, filename)
-    except KeyError:
-        pass
+        style = stylesheet[temp_name]
+    except:
+        Log.critical("%(temp_name)s never gets its own name!:\n%(stylesheet)s" % locals())
+        sys.exit(1)
 
-    return filename
+    Log.debug("setting name with '%(style)s', '%(temp_name)s'" % locals())
+
+    result = style
+    if "vkit" in style:
+        if "<vkit_name>" in Substitutions:
+            result = result.replace('vkit', Substitutions["<vkit_name>"], 1)
+        else:
+            result = result.replace('vkit_', '', 1)
+
+    if "name" in style:
+        if Options.name:
+            name = Options.name
+        elif "<name>" not in Substitutions:
+            fetch_answer(temp_name, "<name>")
+
+        name = Substitutions["<name>"]
+        if name == "[name]":
+            result = result.replace('name_', '', 1)
+        else:
+            result = result.replace('name', name, 1)
+
+    if "temp" in style:
+        result = result.replace('temp', temp_name, 1)
+
+    return result
 
 ########################################################################################
 def template_vkit():
@@ -283,6 +331,7 @@ def template_vkit():
 
     if not Options.name:
         Log.critical("No name for the vkit was specified on the command-line.")
+        sys.exit(1)
     else:
         vkit_name = Options.name
 
@@ -290,16 +339,19 @@ def template_vkit():
         vkit_dir = os.path.join(utils.calc_root_dir(), "verif/vkits")
     except utils.AreaError:
         Log.critical("Unable to determine root directory.")
+        sys.exit(1)
 
     new_dir = os.path.join(vkit_dir, vkit_name)
 
     if os.path.exists(new_dir):
         Log.critical("Path %s already exists!" % new_dir)
+        sys.exit(1)
 
     try:
         os.mkdir(new_dir)
     except OSError:
         Log.critical("Unable to create %s" % new_dir)
+        sys.exit(1)
 
     # create an flist file there
     lines = ["+incdir+../../verif/vkits/%s\n" % (vkit_name),
@@ -313,8 +365,7 @@ def template_vkit():
     os.chdir(new_dir)
     Options.file = True
     Substitutions['<description>'] = "%s package" % vkit_name
-    Substitutions['<name>'] = vkit_name
-    Substitutions['<pkg_name>'] = vkit_name
+    Substitutions['<name>'] = Substitutions['<vkit_name>'] = vkit_name
     template_it('pkg')
 
     Log.info("Created vkit %s" % (vkit_name))
@@ -326,12 +377,15 @@ def template_it(temp_name):
     """
 
     # set the template variable
-    class_name = temp_name if not Options.name else ("%s_%s" % (Options.name, temp_name))
-    Substitutions['<template>'] = class_name
-    Substitutions['<TEMPLATE>'] = class_name.upper()
+    if temp_name in CLASSNAMES:
+        class_name = determine_name(temp_name, CLASSNAMES)
+        Substitutions['<template>'] = Substitutions['<class_name>'] = class_name
+    else:
+        Substitutions['<template>'] = temp_name
+    Substitutions['<TEMPLATE>'] = Substitutions['<template>'].upper()
 
     if not Options.classonly:
-        filename = determine_filename(temp_name)
+        filename = determine_name(temp_name, FILENAMES)
 
         Substitutions['<filename>'] = filename
         # for `ifndef headers:
@@ -393,6 +447,7 @@ def check_options(lines):
                         skipping = True
                 except KeyError:
                     Log.critical("Line '%s' contains an unrecognized option." % line)
+                    sys.exit(1)
         else:
             if not skipping:
                 result.append(line)
@@ -418,11 +473,11 @@ def create_substitutions():
     if Options.description:
         Substitutions['<description>'] = Options.description
 
-    # if sitting in a vkits/vcomponents directory, then use that directory name as the pkg_name
+    # if sitting in a vkits directory, then use that directory name as the vkit_name
     cwd = os.getcwd().split('/')
-    if cwd[-2] in ('vkits', 'vcomponents'):
-        Substitutions['<pkg_name>'] = cwd[-1]
-        Substitutions['<PKG_NAME>'] = Substitutions['<pkg_name>'].upper()
+    if cwd[-2] == 'vkits':
+        Substitutions['<vkit_name>'] = cwd[-1]
+        Substitutions['<VKIT_NAME>'] = Substitutions['<vkit_name>'].upper()
 
 ########################################################################################
 def setup(argv):
@@ -433,9 +488,10 @@ def setup(argv):
     all_templates = [it[:-3] for it in os.listdir(TemplateDir) if it.endswith('.sv') and it[:-3] not in EXCLUDED_TEMPLATES]
     if not all_templates:
         Log.critical("There are No Templates in the directory %s. Cannot continue!" % TemplateDir)
+        sys.exit(1)
 
     # this template is not part of other templates
-    all_templates.extend(["vkit", "vcomponent"])
+    all_templates.append("vkit")
     all_templates_str = textwrap.fill(', '.join(all_templates), width=80)
 
     p = argparse.ArgumentParser(
@@ -484,12 +540,14 @@ Prints out the standard component phases to the screen.
     # check legality
     if Options.filename and len(Options.templates[0]) != 1:
         Log.critical("You may not specify a filename when more than one template is on the command-line.")
+        sys.exit(1)
 
     if Options.filename:
         Options.file = True
 
     if Options.classonly:
         Log.critical("--classonly may not be used at the same time.")
+        sys.exit(1)
 
     # create all of the substitution variables
     create_substitutions()
@@ -508,12 +566,7 @@ def main(argv=None):
     # for each template, do it
     all_templates = Options.templates[0]
     if 'vkit' in all_templates:
-        template_vkit(create_vkit=False)
-        Log.info("Exiting.")
-        sys.exit(0)
-
-    if 'vcomponent' in all_templates:
-        template_vkit(create_vkit=True)
+        template_vkit()
         Log.info("Exiting.")
         sys.exit(0)
 
@@ -524,4 +577,8 @@ def main(argv=None):
 
 ########################################################################################
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print "Ctrl-C Detected. Exiting."
+        sys.exit(1)

@@ -1,15 +1,15 @@
 <@header>
 <@ifndef>
-   
-`include "<pkg_name>_drv.sv"
-`include "<pkg_name>_mon.sv"
-`include "<pkg_name>_sqr.sv"
+
+`include "<vkit_name>_drv.sv"
+`include "<vkit_name>_mon.sv"
+`include "<vkit_name>_sqr.sv"
 // (`includes go here)
 
-// class: <template>_c
+// class: <class_name>
 // (Description)
-class <template>_c extends uvm_<template>;
-   `uvm_component_utils_begin(<pkg_name>_pkg::<template>_c)
+class <class_name> extends uvm_agent;
+   `uvm_component_utils_begin(<vkit_name>_pkg::<class_name>)
       `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_ALL_ON)
    `uvm_component_utils_end
 
@@ -19,10 +19,10 @@ class <template>_c extends uvm_<template>;
    // var: is_active
    // When set to UVM_ACTIVE, the sqr and drv will be present.
    uvm_active_passive_enum is_active = UVM_ACTIVE;
-   
+
 <@section_border>
    // Group: TLM Ports
-   
+
 <@section_border>
    // Group: Fields
 
@@ -31,7 +31,7 @@ class <template>_c extends uvm_<template>;
    sqr_c sqr;
    drv_c drv;
    mon_c mon;
-   
+
 <@phases>
 <$build_phase>
 
@@ -45,8 +45,7 @@ class <template>_c extends uvm_<template>;
 
       if(is_active)
          drv.seq_item_port.connect(sqr.seq_item_export);
-<$end>            
-endclass : <template>_c
-   
+<$end>
+endclass : <class_name>
+
 <@endif>
-   

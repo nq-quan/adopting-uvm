@@ -1,5 +1,5 @@
 class <name>_vseq_c extends uvm_sequence;
-   `uvm_object_utils_begin(<pkg_name>_pkg::<name>_vseq_c)
+   `uvm_object_utils_begin(<vkit_name>_pkg::<name>_vseq_c)
    `uvm_object_utils_end
 
 <@section_border>
@@ -17,4 +17,3 @@ class <name>_vseq_c extends uvm_sequence;
    virtual task body();
    endtask : body
 endclass : <name>_vseq_c
-   

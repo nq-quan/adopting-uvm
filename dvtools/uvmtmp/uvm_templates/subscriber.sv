@@ -1,12 +1,12 @@
 <@header>
 <@ifndef>
-   
+
 // (`includes go here)
 
-// class: <name>_c
+// class: <class_name>
 // (Describe me)
-class <name>_c extends uvm_<template>#(<subscription_type>);
-   `uvm_component_utils_begin(<pkg_name>_pkg::<name>_c)
+class <class_name> extends uvm_<template>#(<subscription_type>);
+   `uvm_component_utils_begin(<vkit_name>_pkg::<class_name>)
    `uvm_component_utils_end
 
 <@section_border>
@@ -14,7 +14,7 @@ class <name>_c extends uvm_<template>#(<subscription_type>);
 
 <@section_border>
    // Group: TLM Ports
-   
+
 <@section_border>
    // Group: Fields
 
@@ -24,7 +24,6 @@ class <name>_c extends uvm_<template>#(<subscription_type>);
    // Receives the <subscription_type>
    virtual function void write(<subscription_type> t);
    endfunction : write
-endclass : <name>_c
-   
+endclass : <class_name>
+
 <@endif>
-   

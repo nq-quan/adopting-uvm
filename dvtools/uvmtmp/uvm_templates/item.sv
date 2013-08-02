@@ -4,10 +4,10 @@
 
 // (`includes go here)
 
-// class: <template>_c
+// class: <class_name>
 // (Describe me)
-class <template>_c extends uvm_sequence_item;
-   `uvm_object_utils_begin(<pkg_name>_pkg::<template>_c)
+class <class_name> extends uvm_sequence_item;
+   `uvm_object_utils_begin(<vkit_name>_pkg::<class_name>)
    `uvm_object_utils_end
 
 <@section_border>
@@ -15,7 +15,7 @@ class <template>_c extends uvm_sequence_item;
 
 <@section_border>
    // Group: Methods
-   function new(string name="<template>");
+   function new(string name="<name>");
       super.new(name);
    endfunction : new
 
@@ -26,7 +26,7 @@ class <template>_c extends uvm_sequence_item;
       return "TBD";
    endfunction : convert2string
 
-endclass : <template>_c
+endclass : <class_name>
 
 `endif // __<FILENAME>_SV__
 

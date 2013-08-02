@@ -3,9 +3,9 @@
 // (`includes of macros may go here)
 `include "uvm_macros.svh"
 
-// package: <pkg_name>_<template>
+// package: <class_name>
 // (Describe me)
-package <pkg_name>_<template>;
+package <class_name>;
 
 <@section_border>
    // Group: Imports
@@ -14,7 +14,7 @@ package <pkg_name>_<template>;
 <@section_border>
    // Group: Includes
    // (`include package member files here, alphabetically.)
-   
-endpackage : <pkg_name>_<template>
-   
+
+endpackage : <class_name>
+
 

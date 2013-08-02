@@ -1,12 +1,12 @@
 <@header>
 <@ifndef>
-   
+
 // (`includes go here)
 
-// class: <template>_c
+// class: <class_name>
 // (Describe me)
-class <template>_c extends uvm_<template>;
-   `uvm_component_utils_begin(<pkg_name>_pkg::<template>_c)
+class <class_name> extends uvm_<template>;
+   `uvm_component_utils_begin(<vkit_name>_pkg::<class_name>)
    `uvm_component_utils_end
 
 <@section_border>
@@ -14,12 +14,11 @@ class <template>_c extends uvm_<template>;
 
 <@section_border>
    // Group: TLM Ports
-   
+
 <@section_border>
    // Group: Fields
 
 <@phases>
-endclass : <template>_c
-   
+endclass : <class_name>
+
 <@endif>
-   

@@ -1,6 +1,6 @@
 <@header>
 <@ifndef>
-   
+
 // (`includes go here)
 
 // class: base_test_c
@@ -23,12 +23,12 @@ class base_test_c extends uvm_test;
 
    // var: reg_block
    // The register block (reference to the one in cfg)
-   <name>_csr_pkg::<name>_ncb_reg_block_c reg_block;
+   <name>_csr_pkg::reg_block_c reg_block;
 
    // var: env
    // The <name> environment
    <name>_pkg::env_c env;
-   
+
    // var: tb_clk_drv
    // The testbench clock driver
    cn_pkg::clk_drv_c tb_clk_drv;
@@ -39,18 +39,18 @@ class base_test_c extends uvm_test;
 
 <@section_border>
    // Group: Methods
-  
+
 <@phases>
 <$build_phase>
-      // Create the global environment        
+      // Create the global environment
       global_pkg::env = global_pkg::env_c::type_id::create("global_env", this);
 
       // create the random configurations
       cfg = <name>_pkg::cfg_c::type_id::create("cfg");
-   
+
       // create reg_block
       if(reg_block == null) begin
-         reg_block = <name>_csr_pkg::<name>_ncb_reg_block_c::type_id::create("reg_block", this);
+         reg_block = <name>_csr_pkg::reg_block_c::type_id::create("reg_block", this);
          reg_block.build();
          reg_block.lock_model();
       end
@@ -60,7 +60,7 @@ class base_test_c extends uvm_test;
 
       // randomize the cfg and CSR fields
       randomize_cfg();
-      
+
       uvm_config_db#(uvm_object)::set(this, "*", "reg_block", reg_block);
       uvm_config_db#(uvm_object)::set(this, "*", "cfg",       cfg      );
 
@@ -83,13 +83,13 @@ class base_test_c extends uvm_test;
       uvm_status_e status;
 
       phase.raise_objection(this);
-      
+
       reg_block.update(status);
       // (alternatively, start a configuration sequence)
 
       // ensure that all transactions complete
       #(100ns);
-      
+
       phase.drop_objection(this);
    endtask : configure_phase
 
@@ -97,8 +97,7 @@ class base_test_c extends uvm_test;
    virtual function void randomize_cfg();
       randomize(cfg);
    endfunction : randomize_cfg
-   
+
 endclass : base_test_c
-   
+
 <@endif>
-   

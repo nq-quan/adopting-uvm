@@ -2,11 +2,11 @@
 <@ifndef>
 
 // (`includes go here)
-   
-// class: <template>_c
+
+// class: <class_name>
 // (Description)
-class <template>_c extends uvm_<template>;
-   `uvm_object_utils(<pkg_name>_pkg::<template>_c)
+class <class_name> extends uvm_<template>;
+   `uvm_object_utils(<vkit_name>_pkg::<class_name>)
 
 <@section_border>
    // Group: Methods
@@ -22,10 +22,10 @@ class <template>_c extends uvm_<template>;
 
    ////////////////////////////////////////////
    // func: bus2reg
-   virtual function void bus2reg(uvm_sequence_item bus_item, 
+   virtual function void bus2reg(uvm_sequence_item bus_item,
                                  ref uvm_reg_bus_op rw);
    endfunction : bus2reg
-      
-endclass : <template>_c
-   
+
+endclass : <class_name>
+
 <@endif>

@@ -1,6 +1,6 @@
 <@section_border>
    // Group: Methods
-   function new(string name="<template>",
+   function new(string name="<name>",
                 uvm_component parent=null);
       super.new(name, parent);
 <new_function?>
