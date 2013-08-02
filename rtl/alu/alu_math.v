@@ -6,13 +6,11 @@
 // *  Copyright 2013
 // ************************************************************************
 
-module alu_math
-   (/*AUTOARG*/
-   // Outputs
-   result, ready,
-   // Inputs
-   clk, rst_n, ctl, dat, k_val, c_val
-   );
+module alu_math(// Outputs
+                result, ready,
+                // Inputs
+                clk, rst_n, ctl, dat, k_val, c_val
+                );
 
    input clk;
    input rst_n;
@@ -23,8 +21,6 @@ module alu_math
 
    output [31:0] result;
    output        ready;
-
-   /*AUTOWIRE*/
 
    // states
    parameter IDLE       = 4'h0;
@@ -81,7 +77,7 @@ module alu_math
          state <= nxt_state;
    end
 
-   always @(/*AS*/ctl_r or dat_r or operation or state) begin
+   always @(ctl_r or dat_r or operation or state) begin
       nxt_state = state;
       case(state)
          IDLE: begin
@@ -175,9 +171,3 @@ module alu_math
       end
    end
 endmodule
-
-
-// Local Variables:
-// verilog-library-directories:("." )
-// End:
-

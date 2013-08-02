@@ -6,8 +6,7 @@
 // *  Copyright 2013
 // ************************************************************************
 
-module alu_framer(/*AUTOARG*/
-                  // Outputs
+module alu_framer(// Outputs
                   frame, frame_data, frame_bp,
                   // Inputs
                   clk, rst_n, frame_len, frame_len_val, alu_data, alu_ready
@@ -31,14 +30,9 @@ module alu_framer(/*AUTOARG*/
    parameter PENDING = 1;
    parameter FRAMING = 2;
 
-   /*AUTOWIRE*/
-
-   /*AUTOREG*/
-   // Beginning of automatic regs (for this module's undeclared outputs)
    reg           frame;
    reg           frame_bp;
    reg [31:0]    frame_data;
-   // End of automatics
 
    reg [31:0]    fifo[32];
    reg [4:0]     rptr;
@@ -74,8 +68,8 @@ module alu_framer(/*AUTOARG*/
       state <= (~rst_n)? IDLE : nxt_state;
    end
 
-   always @(/*AS*/fifo_cnt or frame_len_r or frame_len_val_r or frame_length
-	           or state) begin
+   always @(fifo_cnt or frame_len_r or frame_len_val_r or frame_length
+	         or state) begin
       nxt_state = state;
       case(state)
          IDLE: begin
@@ -111,17 +105,5 @@ module alu_framer(/*AUTOARG*/
          frame_data <= fifo[rptr];
       end
    end
-
-`ifdef FRAMER_ASSERTIONS
-   assert property(@(posedge clk)
-                   !(fifo_cnt == 'd31 && alu_ready_r)
-                   ) else
-      `cn_fatal_hdl(("FIFO Overflow."))
-
-   assert property(@(posedge clk)
-                   !(fifo_cnt == 'd0 && state == FRAMING && frame_length)
-                   ) else
-      `cn_fatal_hdl(("FIFO Underflow."))
-`endif
 
 endmodule

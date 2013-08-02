@@ -5,8 +5,7 @@
 // *  Copyright 2013
 // ************************************************************************
 
-module alu_csr(/*AUTOARG*/
-               // Outputs
+module alu_csr(// Outputs
                ctx_out, k_val, c_val,
                // Inputs
                clk, rst_n, ctx_val, ctx_in, alu_ready, alu_result
@@ -25,8 +24,6 @@ module alu_csr(/*AUTOARG*/
    output reg [7:0] ctx_out;
    output [7:0]     k_val;
    output [7:0]     c_val;
-
-   /*AUTOWIRE*/
 
    // reg inputs
    reg          ctx_val_r;
@@ -173,8 +170,4 @@ module alu_csr(/*AUTOARG*/
          ctx_out <= ctx_out_r;
    end
 endmodule
-
-// Local Variables:
-// verilog-library-directories:("." )
-// End:
 
