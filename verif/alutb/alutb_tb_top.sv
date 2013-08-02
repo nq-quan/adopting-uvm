@@ -33,6 +33,10 @@ module alutb_tb_top;
    // CTX Interface
    ctx_intf ctx_i(.clk(tb_clk), .rst_n(tb_rst_n));
 
+   // obj: res_i
+   // Results interface
+   res_intf res_i(.clk(tb_clk), .rst_n(tb_rst_n));
+
    //----------------------------------------------------------------------------------------
    // Group: DUT
 
@@ -40,6 +44,7 @@ module alutb_tb_top;
    alu_wrapper alu_wrapper(/*AUTOINST*/
                            // Interfaces
                            .ctx_i               (ctx_i),
+                           .res_i               (res_i),
                            // Inputs
                            .tb_clk              (tb_clk),
                            .tb_rst_n            (tb_rst_n));
@@ -53,15 +58,10 @@ module alutb_tb_top;
    function void pre_run_test();
       `cn_set_intf(virtual cn_clk_intf    , "cn_pkg::clk_intf"  , "tb_clk_vi", tb_clk_i);
       `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i);
-      `cn_set_intf(virtual ctx_intf.drv_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp);
-      `cn_set_intf(virtual ctx_intf.mon_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp);
+      `cn_set_intf(virtual ctx_intf.drv_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp);
+      `cn_set_intf(virtual ctx_intf.mon_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp);
+      `cn_set_intf(virtual res_intf.mon_mp, "res_pkg::intf"     , "res_vi"   , res_i.mon_mp);
    endfunction : pre_run_test
 
    `include "tb_common.v"
 endmodule : alutb_tb_top
-
-// Local Variables:
-// verilog-library-extensions:(".v" ".sv")
-// verilog-library-directories:("." "../../verif/hdl" "../../rtl/alu")
-// verilog-auto-ignore-concat:t
-// End:

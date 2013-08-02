@@ -13,51 +13,37 @@
 
 module alu_wrapper(input logic tb_clk,
                    tb_rst_n,
-                   ctx_intf ctx_i);
+                   ctx_intf ctx_i,
+                   res_intf res_i);
 
-   /*AUTOREGINPUT*/
-   // Beginning of automatic reg inputs (for undeclared instantiated-module inputs)
-   reg                  alu_ctl;                // To dut of alu.v
-   reg [7:0]            alu_dat;                // To dut of alu.v
-   reg [4:0]            frame_len;              // To dut of alu.v
-   reg                  frame_len_val;          // To dut of alu.v
-   // End of automatics
-   /*AUTOWIRE*/
-   // Beginning of automatic wires (for undeclared instantiated-module outputs)
-   wire                 alu_ready;              // From dut of alu.v
-   wire [31:0]          alu_result;             // From dut of alu.v
-   wire                 frame;                  // From dut of alu.v
-   wire                 frame_bp;               // From dut of alu.v
-   wire [31:0]          frame_data;             // From dut of alu.v
-   // End of automatics
+   reg                  alu_ctl;
+   reg [7:0]            alu_dat;
+   reg [4:0]            frame_len;
+   reg                  frame_len_val;
+
+   wire                 alu_ready;
+   wire [31:0]          alu_result;
+   wire                 frame;
+   wire                 frame_bp;
+   wire [31:0]          frame_data;
 
    // obj: alu
-   /*
-    alu AUTO_TEMPLATE (
-
-    .ctx_\(.*\)   (ctx_i.\1[]),
-    .clk          (tb_clk),
-    .rst_n        (tb_rst_n),
-    .\(.*\) (\1[]),
-    ); */
-   alu dut(/*AUTOINST*/
-           // Outputs
-           .ctx_out                     (ctx_i.out[7:0]),        // Templated
-           .frame                       (frame),                 // Templated
-           .frame_bp                    (frame_bp),              // Templated
-           .frame_data                  (frame_data[31:0]),      // Templated
-           .alu_ready                   (alu_ready),             // Templated
-           .alu_result                  (alu_result[31:0]),      // Templated
+   alu dut(// Outputs
+           .ctx_out                     (ctx_i.out[7:0]),
+           .frame                       (frame),
+           .frame_bp                    (frame_bp),
+           .frame_data                  (frame_data[31:0]),
+           .alu_ready                   (res_i.ready),
+           .alu_result                  (res_i.result[31:0]),
            // Inputs
-           .alu_ctl                     (alu_ctl),               // Templated
-           .alu_dat                     (alu_dat[7:0]),          // Templated
-           .clk                         (tb_clk),                // Templated
-           .ctx_in                      (ctx_i.in[7:0]),         // Templated
-           .ctx_val                     (ctx_i.val),             // Templated
-           .frame_len                   (frame_len[4:0]),        // Templated
-           .frame_len_val               (frame_len_val),         // Templated
-           .rst_n                       (tb_rst_n));              // Templated
-
+           .alu_ctl                     (alu_ctl),
+           .alu_dat                     (alu_dat[7:0]),
+           .clk                         (tb_clk),
+           .ctx_in                      (ctx_i.in[7:0]),
+           .ctx_val                     (ctx_i.val),
+           .frame_len                   (frame_len[4:0]),
+           .frame_len_val               (frame_len_val),
+           .rst_n                       (tb_rst_n));
 
    // proc: initial
    // Clear out the unimportant signals
@@ -67,11 +53,4 @@ module alu_wrapper(input logic tb_clk,
 
       @(posedge tb_rst_n);
    end
-
 endmodule
-
-// Local Variables:
-// verilog-library-directories:  ("." "../../verif/hdl" "../../rtl/alu")
-// verilog-library-extensions:  (".v" ".sv" ".svh")
-// End:
-
