@@ -18,9 +18,6 @@
 // class: cfg_c
 // ALUTB Configuration Class
 class cfg_c extends uvm_object;
-   //----------------------------------------------------------------------------------------
-   // Group: Types
-
    `uvm_object_utils_begin(alutb_pkg::cfg_c)
       `uvm_field_object(reg_block, UVM_REFERENCE)
    `uvm_object_utils_end
@@ -44,16 +41,11 @@ class cfg_c extends uvm_object;
    // Group: Methods
    function new(string name="cfg");
       super.new(name);
-      cg = new();
    endfunction : new
 
    //----------------------------------------------------------------------------------------
    // Group: Functional Coverage
-
-   // var: cg
-   // Functional coverage group (TODO)
-   covergroup cg;
-   endgroup : cg
+   // there is no functional coverage in this cfg
 
 endclass : cfg_c
 
