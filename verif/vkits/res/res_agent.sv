@@ -3,77 +3,71 @@
 // *
 // * legal mumbo jumbo
 // *
-// * (c) 2011
-// * (utg v0.3.3)
+// * (c) 2013
+// * (utg v0.10)
 // ***********************************************************************
-// File:   alutb_env.sv
+// File:   res_agent.sv
 // Author: bhunter
-/* About:  ALUTB Environment
+/* About:  Only holds the monitor for now.
  *************************************************************************/
 
+`ifndef __RES_AGENT_SV__
+   `define __RES_AGENT_SV__
 
-`ifndef __ALUTB_ENV_SV__
-   `define __ALUTB_ENV_SV__
+`include "res_types.sv"
+`include "res_mon.sv"
 
-   `include "alutb_cfg.sv"
-
-// class: env_c
-// ALUTB Environment class
-class env_c extends uvm_env;
-   `uvm_component_utils_begin(alutb_pkg::env_c)
-      `uvm_field_object(cfg,       UVM_REFERENCE)
-      `uvm_field_object(reg_block, UVM_REFERENCE)
+// class: agent_c
+// (Description)
+class agent_c extends uvm_agent;
+   `uvm_component_utils_begin(res_pkg::agent_c)
+      `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_ALL_ON)
    `uvm_component_utils_end
 
    //----------------------------------------------------------------------------------------
    // Group: Configuration Fields
 
-   // var: cfg
-   // environment configurations
-   cfg_c cfg;
+   // var: is_active
+   // Someday maybe this agent will be active, but it's only passive for now
+   uvm_active_passive_enum is_active = UVM_PASSIVE;
 
-   // var: reg_block
-   // alu register block (reference to the one in cfg)
-   alu_csr_pkg::reg_block_c reg_block;
+   //----------------------------------------------------------------------------------------
+   // Group: TLM Ports
+
+   // var: result_port
+   // Monitored results go out here
+   uvm_analysis_port#(result_t) result_port;
 
    //----------------------------------------------------------------------------------------
    // Group: Fields
 
-   // field: Drives the CTX traffic
-   ctx_pkg::agent_c ctx_agent;
-
-   // var: res_agent;
-   // Results agent
-   res_pkg::agent_c res_agent;
+   // var: mon
+   // Monitor instance
+   mon_c mon;
 
    //----------------------------------------------------------------------------------------
    // Group: Methods
-   function new(string name="env",
+   function new(string name="[name]",
                 uvm_component parent=null);
       super.new(name, parent);
    endfunction : new
 
    ////////////////////////////////////////////
    // func: build_phase
-   // Build all the agents
    virtual function void build_phase(uvm_phase phase);
       super.build_phase(phase);
 
-      // build ctx agent
-      if(ctx_agent == null)
-         ctx_agent = ctx_pkg::agent_c::type_id::create("ctx_agent", this);
-
-      // build results monitor
-      if(res_agent == null)
-         res_agent = res_pkg::agent_c::type_id::create("res_agent", this);
+      mon = mon_c::type_id::create("mon", this);
+      result_port = new("result_port", this);
    endfunction : build_phase
 
    ////////////////////////////////////////////
    // func: connect_phase
    virtual function void connect_phase(uvm_phase phase);
       super.connect_phase(phase);
+      mon.result_port.connect(result_port);
    endfunction : connect_phase
 
-endclass : env_c
+endclass : agent_c
 
-`endif // __ALUTB_ENV_SV__
+`endif // __RES_AGENT_SV__

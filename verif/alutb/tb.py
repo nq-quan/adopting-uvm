@@ -1,5 +1,5 @@
 # Add vkit dependencies *in order*
-VKITS = ['cn', 'global', 'csr', 'ctx', 'alutb']
+VKITS = ['cn', 'global', 'csr', 'ctx', 'res', 'alutb']
 
 # Add testbench flists
 FLISTS = ['alutb.flist', 'rtl.flist']
