@@ -1,7 +1,44 @@
 #!/usr/bin/env python2.7
 
 """
-A lightweight compile and simulate script.
+
+A lightweight compile and simulate script, meant to be used if you have no
+other scripts of your own.
+
+USING GOGO AT YOUR COMPANY
+==========================
+
+If you already have a suitable compile and build script at your company, you
+more than likely will be just as happy to use that one rather than this one.
+However, if you want a quick start or just can't be bothered with porting your
+own scripts, gogo may work well for you.
+
+First and foremost, ensure that you have python 2.7, and that your PYTHONPATH
+has the current working directory ('.'). Also ensure that the dvtools
+directory is in your PATH variable.
+
+If you type:
+    % gogo -h
+And something bad happens, stop what you're doing and seek help.
+
+Open the file dvtools/project.py. Here, you must set up a variety of variables
+that gogo uses for all testbenches. As shipped, this project.py works
+wonderfully with VCS here at Cavium. Your company's needs will undoubtedly be
+different. Using all the Python syntax you wish (this file will, after all, be
+executable code) set up the variables the way you need them. All of the
+variables are described below in the declaration of Keys.
+
+The tb.py file lives in each testbench directory, and is read AFTER the
+project.py file. The variables defined here override any that have been set in
+project.py and help to define testbench-specific needs.
+
+If gogo works-for-you-but-not-quite, then you may have to modify the source
+code to suit your needs. No (as in none, zilch, zero) help can be offered on
+this.
+
+However, if you find bugs, feel free to report them to me at the __email__
+address below. If you have complaints, tell them to somebody else. :)
+
 """
 
 ########################################################################################
@@ -10,12 +47,6 @@ A lightweight compile and simulate script.
 __version__       = '0.0'
 __author__        = "Brian Hunter"
 __email__         = 'brian.hunter@cavium.com'
-
-# The names of all the library files that will be imported
-Libraries = ('project', 'tb')
-
-# A dictionary of all the global variables imported from the libraries
-GVars = None
 
 # All of the global variables in the GVars dictionary
 Keys = (
@@ -47,6 +78,13 @@ Keys = (
         'CLEAN_FILES',       # (list of strings) Names of files to delete
 )
 
+# The names of all the library files that will be imported
+Libraries = ('project', 'tb')
+
+# A dictionary of all the global variables imported from the libraries
+GVars = None
+
+# These keys do NOT need to be specified, if you don't want to
 OPTIONAL = ('SIMOPTS', 'PLI_FILES', 'LSF_SIM_LICS', 'LSF_BUILD_LICS')
 
 # Command-line Options

@@ -10,7 +10,7 @@ PLI_FILES = ['/nfs/cacadtools/springsoft/Verdi-201307/share/PLI/VCS/LINUX/novas.
 
 ###############
 # How to build with VCS
-VCS_VERSION = 'H-2013.06'  # G-2012.09-SP1-1
+VCS_VERSION = 'H-2013.06'
 BUILD_TOOL = 'runmod -m synopsys-vcs_mx/%s vcs' % VCS_VERSION
 VCOMP_DIR  = 'sim/.vcomp'
 
@@ -36,4 +36,4 @@ LSF_SIM_LICS = '-l lic_sim_vcs'
 ################
 # How to Clean Up
 CLEAN_DIRS = ('sim', 'csrc')
-CLEAN_FILES = ('ucli.key', 'vc_hdrs.h')
+CLEAN_FILES = ('ucli.key', 'vc_hdrs.h', 'novas_dump.log')
