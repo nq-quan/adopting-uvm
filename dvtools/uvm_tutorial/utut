@@ -199,6 +199,9 @@ if __name__ == '__main__':
         except ValueError:
             print e
             exit(1)
+    except KeyboardInterrupt:
+        Log.info("Exiting due to Ctrl-C.")
+        sys.exit(0)
     except:
         # import email_utils
         # email_utils.mail_traceback('webmaster@cavium.com', __email__,
