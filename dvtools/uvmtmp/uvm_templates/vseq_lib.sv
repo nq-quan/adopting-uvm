@@ -1,6 +1,6 @@
 <@header>
 <@ifndef>
-   
+
 // (`includes go here)
 
 // (your first sequence!)

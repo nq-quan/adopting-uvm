@@ -3,10 +3,10 @@ class <name>_vseq_c extends uvm_sequence;
    `uvm_object_utils_end
 
 <@section_border>
-   // Fields
+   // Group: Fields
 
 <@section_border>
-   // Methods
+   // Group: Methods
 
    function new(string name="<name>_vseq");
       super.new(name);

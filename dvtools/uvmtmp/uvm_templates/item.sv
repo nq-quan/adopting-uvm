@@ -1,7 +1,6 @@
 <@header>
-`ifndef __<FILENAME>_SV__
-   `define __<FILENAME>_SV__
-
+<@ifndef>
+   
 // (`includes go here)
 
 // class: <class_name>
@@ -28,5 +27,5 @@ class <class_name> extends uvm_sequence_item;
 
 endclass : <class_name>
 
-`endif // __<FILENAME>_SV__
+<@endif>
 

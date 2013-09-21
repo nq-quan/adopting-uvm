@@ -545,10 +545,6 @@ Prints out the standard component phases to the screen.
     if Options.filename:
         Options.file = True
 
-    if Options.classonly:
-        Log.critical("--classonly may not be used at the same time.")
-        sys.exit(1)
-
     # create all of the substitution variables
     create_substitutions()
 

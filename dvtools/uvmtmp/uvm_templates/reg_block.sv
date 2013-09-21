@@ -22,7 +22,7 @@ class <class_name> extends uvm_<template>;
 <@section_border>
    // Group: Methods
 
-   function new(name="<name>");
+   function new(string name="<name>");
       super.new(name, .has_coverage(UVM_NO_COVERAGE));
    endfunction : new
 
