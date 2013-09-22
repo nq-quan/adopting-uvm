@@ -165,7 +165,7 @@ def parse_args():
         version=("%(prog)s v"+__version__),
         description=__doc__)
 
-    p.add_argument('actions',        action='store', nargs='*')
+    p.add_argument('actions',        action='store', nargs='*',  help="Any one of (b)uild, (s)imulate, or (c)lean")
 
     p.add_argument('--test', '-t',   action='store',             default='basic', help="Specify UVM test name [default:basic]")
     p.add_argument('--dir',  '-d',   action='store',             default=None,    help="Specify alternate directory for results.")
