@@ -99,9 +99,6 @@ class base_test_c extends uvm_test;
       uvm_config_db#(string)::set(this, "tb_rst_drv", "intf_name",     "tb_rst_vi");
       uvm_config_db#(int   )::set(this, "tb_rst_drv", "reset_time_ps", 20000);
       tb_rst_drv = cn_pkg::rst_drv_c::type_id::create("tb_rst_drv", this);
-
-      // Set the name of the results interface
-      uvm_config_db#(string)::set(this, "alutb_env.res_agent.mon", "intf_name", "res_vi");
    endfunction : build_phase
 
    ////////////////////////////////////////////

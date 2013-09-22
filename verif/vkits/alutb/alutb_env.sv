@@ -42,10 +42,6 @@ class env_c extends uvm_env;
    // field: Drives the CTX traffic
    ctx_pkg::agent_c ctx_agent;
 
-   // var: res_agent;
-   // Results agent
-   res_pkg::agent_c res_agent;
-
    //----------------------------------------------------------------------------------------
    // Group: Methods
    function new(string name="env",
@@ -62,10 +58,6 @@ class env_c extends uvm_env;
       // build ctx agent
       if(ctx_agent == null)
          ctx_agent = ctx_pkg::agent_c::type_id::create("ctx_agent", this);
-
-      // build results monitor
-      if(res_agent == null)
-         res_agent = res_pkg::agent_c::type_id::create("res_agent", this);
    endfunction : build_phase
 
    ////////////////////////////////////////////

@@ -13,8 +13,7 @@
 
 module alu_wrapper(input logic tb_clk,
                    tb_rst_n,
-                   ctx_intf ctx_i,
-                   res_intf res_i);
+                   ctx_intf ctx_i);
 
    reg                  alu_ctl;
    reg [7:0]            alu_dat;
@@ -33,8 +32,8 @@ module alu_wrapper(input logic tb_clk,
            .frame                       (frame),
            .frame_bp                    (frame_bp),
            .frame_data                  (frame_data[31:0]),
-           .alu_ready                   (res_i.ready),
-           .alu_result                  (res_i.result[31:0]),
+           .alu_ready                   (alu_ready),
+           .alu_result                  (alu_result[31:0]),
            // Inputs
            .alu_ctl                     (alu_ctl),
            .alu_dat                     (alu_dat[7:0]),
@@ -50,7 +49,5 @@ module alu_wrapper(input logic tb_clk,
    initial begin
       frame_len_val = 0;
       frame_len = 0;
-
-      @(posedge tb_rst_n);
    end
 endmodule
