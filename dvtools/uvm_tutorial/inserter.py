@@ -27,7 +27,7 @@ def unpickle(fileName):
     return codes
 
 ########################################################################################
-def fetchCode(items, u_revision):
+def fetch_code(items, u_revision):
     pklDir  = os.path.join(os.path.dirname(os.path.realpath(__file__)), u_revision)
     pklFile = os.path.join(pklDir, PKL_FILENAME)
 

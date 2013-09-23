@@ -33,7 +33,7 @@ import utils
 ########################################################################################
 # Constants
 
-COMMANDS    = ('code', 'chapter', 'fix',)
+COMMANDS    = ('code', 'chapter', 'fix', 'clean',)
 DEFAULT_REVISION  = 'v1.0'
 UTUT_DIR    = os.path.dirname(os.path.realpath(__file__))
 
@@ -65,6 +65,7 @@ def parseArgs():
     level = {True: logging.DEBUG,
              False: logging.INFO}[Options.dbg]
     Log = utils.get_logger('utut_log', level)
+    utils.Log = Log
 
     # Ensure that code option has at least 1 argument
     if Options.cmd == 'code' and len(Options.extras) == 0:
@@ -183,6 +184,9 @@ def main():
 
     elif Options.cmd == 'fix':
         fetch_fix(int(Options.extras[0]))
+
+    elif Options.cmd == 'clean':
+        utils.gitscrub()
 
 #######################################################################################
 if __name__ == '__main__':
