@@ -116,7 +116,7 @@ def fetchChapter(chapter_num):
     fetcher.Log = utils.Log = Log
 
     # first, ensure that this is a legal chapter number
-    if chapter_num not in fetcher.availablePatches(fetcher.CHAPTERS, Options.revision):
+    if chapter_num not in fetcher.available_patches(fetcher.CHAPTERS, Options.revision):
         Log.critical("Chapter #%0d is not an available patch." % chapter_num)
 
     # now get the root directory
@@ -148,14 +148,14 @@ def fetchChapter(chapter_num):
     os.chdir(root_dir)
 
     # apply the patch
-    fetcher.fetchPatch(fetcher.CHAPTERS, chapter_num, Options.revision)
+    fetcher.fetch_patch(fetcher.CHAPTERS, chapter_num, Options.revision)
 
 ########################################################################################
 def fetchFix(fixNum):
     import fetcher
     fetcher.Log = Log
 
-    fetcher.fetchPatch(fetcher.FIXES, fixNum, Options.revision)
+    fetcher.fetch_patch(fetcher.FIXES, fixNum, Options.revision)
 
 #######################################################################################
 def main():
