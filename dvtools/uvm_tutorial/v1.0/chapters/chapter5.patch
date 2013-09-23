@@ -95,18 +95,16 @@ index 0000000..937e0f6
 +
 +`endif // __CLK_DUTY_CYCLE_SV__
 diff --git a/verif/alutb/tb.py b/verif/alutb/tb.py
-index 3adcb12..78054b1 100755
+index 3adcb12..113627f 100755
 --- a/verif/alutb/tb.py
 +++ b/verif/alutb/tb.py
-@@ -2,7 +2,7 @@
- VKITS = ['cn', 'global', 'csr', 'ctx', 'alutb']
+@@ -1,5 +1,5 @@
+ # Add vkit dependencies *in order*
+-VKITS = ['cn', 'global', 'csr', 'ctx', 'alutb']
++VKITS = ['cn', 'global', 'csr', 'ctx', 'alu', 'alutb']
  
  # Add testbench flists
--FLISTS = ['alutb.flist', 'rtl.flist']
-+FLISTS = ['../../verif/vkits/alu/alu.flist', 'alutb.flist', 'rtl.flist']
- 
- # Testbench Top-level
- TB_TOP = 'alutb_tb_top'
+ FLISTS = ['alutb.flist', 'rtl.flist']
 diff --git a/verif/alutb/tests/basic.sv b/verif/alutb/tests/basic.sv
 index ab5848d..1fd1471 100755
 --- a/verif/alutb/tests/basic.sv
