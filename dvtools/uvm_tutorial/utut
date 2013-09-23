@@ -87,7 +87,7 @@ def parseArgs():
         Log.critical("Revision %s not available.\nSelect from: %s" % (Options.revision, ','.join(availableRevisions)))
 
 ########################################################################################
-def printCodes(codeNums):
+def print_codes(code_nums):
     """
     Fetch the code dictionary from inserter and print out each code
     """
@@ -95,11 +95,11 @@ def printCodes(codeNums):
     import inserter
     inserter.Log = Log
 
-    codes = inserter.fetchCode(codeNums, Options.revision)
-    for codeNum in codeNums:
-        (fName, snippet) = codes[codeNum]
+    codes = inserter.fetch_code(code_nums, Options.revision)
+    for code_num in code_nums:
+        (fName, snippet) = codes[code_num]
         print "###################"
-        print "# CODE:", codeNum
+        print "# CODE:", code_num
         if Options.revision != DEFAULT_REVISION:
             print "# REV:", Options.revision
         if fName:
@@ -109,7 +109,7 @@ def printCodes(codeNums):
         print
 
 ########################################################################################
-def fetchChapter(chapter_num):
+def fetch_chapter(chapter_num):
     import fetcher
     import utils
 
@@ -151,11 +151,11 @@ def fetchChapter(chapter_num):
     fetcher.fetch_patch(fetcher.CHAPTERS, chapter_num, Options.revision)
 
 ########################################################################################
-def fetchFix(fixNum):
+def fetch_fix(fix_num):
     import fetcher
     fetcher.Log = Log
 
-    fetcher.fetch_patch(fetcher.FIXES, fixNum, Options.revision)
+    fetcher.fetch_patch(fetcher.FIXES, fix_num, Options.revision)
 
 #######################################################################################
 def main():
@@ -176,13 +176,13 @@ def main():
             raise
             Log.critical("Invalid code. usage: utut code <N1> [<N2> <N3> ...]")
 
-        printCodes([int(it) for it in items])
+        print_codes([int(it) for it in items])
 
     elif Options.cmd == 'chapter':
-        fetchChapter(int(Options.extras[0]))
+        fetch_chapter(int(Options.extras[0]))
 
     elif Options.cmd == 'fix':
-        fetchFix(int(Options.extras[0]))
+        fetch_fix(int(Options.extras[0]))
 
 #######################################################################################
 if __name__ == '__main__':
