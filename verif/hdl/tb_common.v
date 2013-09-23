@@ -1,15 +1,10 @@
 
 import uvm_pkg::*;
 
-   initial begin
-      reg [1000:0] fsdb_string;
-      if($test$plusargs("fsdb_trace")) begin
-         if ($value$plusargs("fsdb_outfile=%s", fsdb_string))
-            $fsdbDumpfile(fsdb_string);
-         if($value$plusargs("fsdb_siglist=%s", fsdb_string))
-            $fsdbDumpvars("+all");
-      end
-   end
+   initial begin : vpd_dumping
+   	if($test$plusargs("vpdon"))
+   		$vcdpluson(0);
+   end : vpd_dumping
 
    /////////////////////////////////////////////////////////////////////////////
    // 1. replace the UVM report server with ours

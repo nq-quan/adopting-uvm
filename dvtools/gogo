@@ -70,7 +70,6 @@ Keys = (
         'SIM_MODS',          # (list of string) Added to runmod for all sims
         'SIM_GUI',           # (string) Add this to simulation command-line when you want to run in GUI mode
         'SIMOPTS',           # (string) Added to the simulation command-line (not overridden by --simopts)
-        'SIM_WAVE_MODS',     # (list of strings) Added to runmod
         'SIM_WAVE_OPTIONS',  # (string) Run-time options
 
         # LSF-related
@@ -183,7 +182,7 @@ def parse_args():
     p.add_argument('--topo',         action='store', type=int,   default=None,    help="Print UVM topology at this depth.")
     p.add_argument('--wdog',         action='store', type=int,   default=None,    help="Time (in ns) at which the testbench will watchdog timeout.")
     p.add_argument('--gui',  '-g',   action='store_true',        default=False,   help="Run DVE in GUI mode.")
-    p.add_argument('--wave', '-w',   action='store_true',        default=False,   help="Run with wave dumping.")
+    p.add_argument('--wave', '-w',   action='store_true',        default=False,   help="Dump waves to VPD file.")
     p.add_argument('--svfcov',       action='store_true',        default=False,   help="Run with SV Functional Coverage")
 
     Options = p.parse_args()
@@ -298,8 +297,6 @@ def simulate(test_name):
 
 
     mods = GVars['SIM_MODS']
-    if Options.wave:
-        mods.extend(GVars['SIM_WAVE_MODS'])
     runmod_cmd = get_runmod_cmd(mods)
 
     sim_cmd = os.path.join(GVars['VCOMP_DIR'], 'sim.exe')
@@ -333,14 +330,8 @@ def simulate(test_name):
     if Options.gui:
         sim_cmd += GVars['SIM_GUI']
 
-    elif Options.wave:
-        # make .signal_list file
-        sig_list = os.path.join(sim_dir, '.signal_list')
-        with open(sig_list, 'w') as f:
-            print >>f, "0 %s" % GVars['TB_TOP']
-
-        sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb"), sig_list)
-        sim_cmd += ' ' + GVars['SIM_WAVE_OPTIONS']
+    if Options.wave:
+        sim_cmd += " +vpdon +vpdfile+%s/waves.vpd " % (sim_dir)
 
     if Options.svfcov:
         sim_cmd += " +svfcov"

@@ -5,8 +5,7 @@
 UVM_REV   = '1_1d'
 
 # Special PLI files
-PLI_FILES = ['/nfs/cacadtools/springsoft/Verdi-201307/share/PLI/VCS/LINUX/novas.tab',
-             '/nfs/cacadtools/springsoft/Verdi-201307/share/PLI/VCS/LINUX/pli.a']
+PLI_FILES = []
 
 ###############
 # Use runmod? (Cavium only)
@@ -31,8 +30,6 @@ SIM_MODS = ['synopsys-vcs_mx/%s' % VCS_VERSION]
 
 ###############
 # Simulation options
-SIM_WAVE_MODS = ["springsoft-verdi/201307"]
-# Verdi requires file names
 SIM_WAVE_OPTIONS = ''
 
 ###############
@@ -47,5 +44,5 @@ LSF_SIM_LICS = '-l lic_sim_vcs'
 
 ################
 # How to Clean Up
-CLEAN_DIRS = ('sim', 'csrc')
-CLEAN_FILES = ('ucli.key', 'vc_hdrs.h', 'novas_dump.log')
+CLEAN_DIRS = ('sim', 'csrc', 'DVEfiles')
+CLEAN_FILES = ('ucli.key', 'vc_hdrs.h')
