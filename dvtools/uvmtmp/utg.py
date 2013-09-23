@@ -28,7 +28,7 @@ FILENAMES = {
     'sqr'           : "vkit_name_temp.sv",
     'subscriber'    : "vkit_name_temp.sv",
     'tb_top'        : "name_temp.sv",
-    'test'          : "name_temp.sv",
+    'test'          : "name.sv",
     'vseq'          : "vkit_name_temp.sv",
     'vseq_lib'      : "vkit_name_temp.sv",
     'vsqr'          : "vkit_name_temp.sv",
