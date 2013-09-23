@@ -9,9 +9,14 @@ PLI_FILES = ['/nfs/cacadtools/springsoft/Verdi-201307/share/PLI/VCS/LINUX/novas.
              '/nfs/cacadtools/springsoft/Verdi-201307/share/PLI/VCS/LINUX/pli.a']
 
 ###############
+# Use runmod? (Cavium only)
+USE_RUNMOD = 1
+
+###############
 # How to build with VCS
 VCS_VERSION = 'H-2013.06'
-BUILD_TOOL = 'runmod -m synopsys-vcs_mx/%s vcs' % VCS_VERSION
+BUILD_MODS = ["synopsys-vcs_mx/%s" % VCS_VERSION]
+BUILD_TOOL = 'vcs'
 VCOMP_DIR  = 'sim/.vcomp'
 
 # VCS Build Options
@@ -22,6 +27,13 @@ BUILD_OPTIONS += '  -CFLAGS -DVCS'
 ###############
 # Various VCS Flags
 SIM_GUI = ' -gui'
+SIM_MODS = ['synopsys-vcs_mx/%s' % VCS_VERSION]
+
+###############
+# Simulation options
+SIM_WAVE_MODS = ["springsoft-verdi/201307"]
+# Verdi requires file names
+SIM_WAVE_OPTIONS = ''
 
 ###############
 # LSF Command

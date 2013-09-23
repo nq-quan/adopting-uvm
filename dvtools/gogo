@@ -52,6 +52,7 @@ __email__         = 'brian.hunter@cavium.com'
 Keys = (
         # Global variables
         'UVM_REV',           # (string) UVM Revision to use
+        'USE_RUNMOD',        # (bool) When set, build/sim commands will be launched with runmod
 
         # Testbench-related variables
         'VKITS',             # (list of strings) Vkits that this testbench relies upon, in order
@@ -60,13 +61,17 @@ Keys = (
 
         # Build-related
         'BUILD_TOOL',        # (string) Command needed to run a build
+        'BUILD_MODS',        # (list of strings) Added to runmod for all builds
         'BUILD_OPTIONS',     # (string) Additional build options
         'PLI_FILES',         # (list of strings) PLI files that should also be added to the build command-line
         'VCOMP_DIR',         # (string) The name of the compile directory
 
         # Simulation-related
+        'SIM_MODS',          # (list of string) Added to runmod for all sims
         'SIM_GUI',           # (string) Add this to simulation command-line when you want to run in GUI mode
         'SIMOPTS',           # (string) Added to the simulation command-line (not overridden by --simopts)
+        'SIM_WAVE_MODS',     # (list of strings) Added to runmod
+        'SIM_WAVE_OPTIONS',  # (string) Run-time options
 
         # LSF-related
         'LSF_SUBMIT_TOOL',   # (string) The LSF tool to call
@@ -236,6 +241,13 @@ def clean():
             pass
 
 ########################################################################################
+def get_runmod_cmd(mods):
+    if GVars['USE_RUNMOD']:
+        return "runmod -m %s" % (' -m '.join(mods))
+    else:
+        return ''
+
+########################################################################################
 def build():
     """
     Build the simulation executable
@@ -267,10 +279,13 @@ def build():
     if Options.cmpopts:
         build_cmd += " " + Options.cmpopts
 
-    cmd_line = "%s -N build" % GVars['LSF_SUBMIT_TOOL']
+    runmod_cmd = get_runmod_cmd(GVars['BUILD_MODS'])
+
+    sge_cmd = "%s -N build" % GVars['LSF_SUBMIT_TOOL']
     if GVars['LSF_BUILD_LICS']:
-        cmd_line += " %s=1" % GVars['LSF_BUILD_LICS']
-    cmd_line += ' "%s"' % (build_cmd)
+        sge_cmd += " %s=1" % GVars['LSF_BUILD_LICS']
+
+    cmd_line = '%s "%s %s"' % (sge_cmd, runmod_cmd, build_cmd)
     run_cmd(cmd_line)
 
 ########################################################################################
@@ -280,6 +295,12 @@ def simulate(test_name):
     """
 
     Log.info("> Simulating...")
+
+
+    mods = GVars['SIM_MODS']
+    if Options.wave:
+        mods.extend(GVars['SIM_WAVE_MODS'])
+    runmod_cmd = get_runmod_cmd(mods)
 
     sim_cmd = os.path.join(GVars['VCOMP_DIR'], 'sim.exe')
     sim_cmd += " +UVM_TESTNAME=%s_test_c" % test_name
@@ -319,6 +340,7 @@ def simulate(test_name):
             print >>f, "0 %s" % GVars['TB_TOP']
 
         sim_cmd += " +fsdb_trace +fsdb_outfile=%s +fsdb_siglist=%s" % (os.path.join(sim_dir, "waves.fsdb"), sig_list)
+        sim_cmd += ' ' + GVars['SIM_WAVE_OPTIONS']
 
     if Options.svfcov:
         sim_cmd += " +svfcov"
@@ -329,11 +351,11 @@ def simulate(test_name):
     if Options.simopts:
         sim_cmd += " " + Options.simopts
 
-    cmd_line = '%s -N %s' % (GVars['LSF_SUBMIT_TOOL'], test_name)
+    sge_cmd = '%s -N %s' % (GVars['LSF_SUBMIT_TOOL'], test_name)
     if GVars['LSF_SIM_LICS']:
-        cmd_line += " %s=1" % GVars['LSF_SIM_LICS']
+        sge_cmd += " %s=1" % GVars['LSF_SIM_LICS']
 
-    cmd_line += ' "%s"' % (sim_cmd)
+    cmd_line = '%s "%s %s"' % (sge_cmd, runmod_cmd, sim_cmd)
     run_cmd(cmd_line)
 
 ########################################################################################
