@@ -125,6 +125,7 @@ def setup_globals():
             lib = __import__(mod_name)
         except ImportError:
             Log.critical("%s.py file not found! Ensure that your PYTHONPATH variable includes '.'" % mod_name)
+            sys.exit(253)
 
         lib_dict = lib.__dict__
         for key in GVars:
@@ -190,6 +191,7 @@ def parse_args():
     for action in Options.actions:
         if action not in Actions.keys():
             Log.critical("Unknown action: %s" % action)
+            sys.exit(252)
 
     if Options.actions == []:
         Options.actions = ['bld', 'sim']
