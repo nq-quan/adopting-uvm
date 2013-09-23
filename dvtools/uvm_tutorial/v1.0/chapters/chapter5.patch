@@ -1,34 +1,94 @@
 diff --git a/verif/alutb/alutb.flist b/verif/alutb/alutb.flist
-index 59fb1e8..9d89e57 100755
+index 59fb1e8..271cb09 100755
 --- a/verif/alutb/alutb.flist
 +++ b/verif/alutb/alutb.flist
-@@ -6,7 +6,9 @@
- +incdir+../../rtl/include
- ../../verif/alutb/alutb_tb_top.sv
+@@ -8,5 +8,7 @@
  ../../verif/alutb/alu_wrapper.sv
-+../../verif/alutb/clk_duty_cycle.sv
  ../../verif/alutb/tests/basic.sv
  ../../verif/alutb/tests/base_test.sv
 +../../verif/alutb/tests/fast_clk.sv
 +../../verif/alutb/tests/duty_cycle.sv
  -f ../../verif/alutb/rtl.flist
--
+ 
+diff --git a/verif/alutb/clk_duty_cycle.sv b/verif/alutb/clk_duty_cycle.sv
+new file mode 100644
+index 0000000..937e0f6
+--- /dev/null
++++ b/verif/alutb/clk_duty_cycle.sv
+@@ -0,0 +1,49 @@
++
++// **********************************************************************
++// *
++// * legal mumbo jumbo
++// *
++// * (c) 2013
++// * (utg v1.0)
++// ***********************************************************************
++// File:   clk_duty_cycle.sv
++// Author: bhunter
++/* About:  <description>
++ *************************************************************************/
++
++`ifndef __CLK_DUTY_CYCLE_SV__
++   `define __CLK_DUTY_CYCLE_SV__
++
++// class: clk_duty_cycle_c
++// A clock with a duty cycle of 75/25.
++class clk_duty_cycle_c extends cn_pkg::clk_drv_c;
++   `uvm_component_utils(clk_duty_cycle_c)
++
++   //----------------------------------------------------------------------------------------
++   // Group: Methods
++   function new(string name="clk_duty_cycle",
++                uvm_component parent=null);
++      super.new(name, parent);
++   endfunction : new
++
++   ////////////////////////////////////////////
++   // func: run_phase
++   virtual task run_phase(uvm_phase phase);
++      int uptime = 3*period_ps / 4;
++      int downtime = period_ps - uptime;
++
++      // set to initial value
++      clk_vi.clk = (init_x)? 'bx : init_value;
++      #(init_delay_ps * 1ps);
++
++      forever begin
++         clk_vi.clk = 1;
++         #(uptime * 1ps);
++         clk_vi.clk = 0;
++         #(downtime * 1ps);
++      end
++   endtask : run_phase
++
++endclass : clk_duty_cycle_c
++
++`endif // __CLK_DUTY_CYCLE_SV__
 diff --git a/verif/alutb/tb.py b/verif/alutb/tb.py
-index 3adcb12..113627f 100755
+index 3adcb12..78054b1 100755
 --- a/verif/alutb/tb.py
 +++ b/verif/alutb/tb.py
-@@ -1,5 +1,5 @@
- # Add vkit dependencies *in order*
--VKITS = ['cn', 'global', 'csr', 'ctx', 'alutb']
-+VKITS = ['cn', 'global', 'csr', 'ctx', 'alu', 'alutb']
+@@ -2,7 +2,7 @@
+ VKITS = ['cn', 'global', 'csr', 'ctx', 'alutb']
  
  # Add testbench flists
- FLISTS = ['alutb.flist', 'rtl.flist']
+-FLISTS = ['alutb.flist', 'rtl.flist']
++FLISTS = ['../../verif/vkits/alu/alu.flist', 'alutb.flist', 'rtl.flist']
+ 
+ # Testbench Top-level
+ TB_TOP = 'alutb_tb_top'
 diff --git a/verif/alutb/tests/basic.sv b/verif/alutb/tests/basic.sv
-index a6fcbf3..3e058d7 100755
+index ab5848d..1fd1471 100755
 --- a/verif/alutb/tests/basic.sv
 +++ b/verif/alutb/tests/basic.sv
-@@ -23,17 +23,35 @@ class basic_test_c extends base_test_c;
+@@ -16,23 +16,39 @@
+ 
+    `include "base_test.sv"
+ 
+-// class: basic_test_c
+-// A basic ALU test
+ class basic_test_c extends base_test_c;
     `uvm_component_utils(basic_test_c)
  
     //----------------------------------------------------------------------------------------
@@ -69,82 +129,19 @@ index a6fcbf3..3e058d7 100755
  
  endclass : basic_test_c
  
-diff --git a/verif/alutb/clk_duty_cycle.sv b/verif/alutb/clk_duty_cycle.sv
-new file mode 100755
-index 0000000..73d60ed
---- /dev/null
-+++ b/verif/alutb/clk_duty_cycle.sv
-@@ -0,0 +1,54 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// *
-+// * legal mumbo jumbo
-+// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   clk_duty_cycle.sv
-+// Author: bhunter
-+/* About:  <description>
-+ *************************************************************************/
-+
-+`ifndef __CLK_DUTY_CYCLE_SV__
-+   `define __CLK_DUTY_CYCLE_SV__
-+
-+
-+// (`includes go here)
-+
-+// class: clk_duty_cycle_c
-+// A clock with a duty cycle of 75/25.
-+class clk_duty_cycle_c extends cn_pkg::clk_drv_c;
-+   `uvm_component_utils(clk_duty_cycle_c)
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="clk_duty_cycle",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      int uptime = 3*period_ps / 4;
-+      int downtime = period_ps - uptime;
-+
-+      // set to initial value
-+      clk_vi.clk = (init_x)? 'bx : init_value;
-+      #(init_delay_ps * 1ps);
-+
-+      forever begin
-+         clk_vi.clk = 1;
-+         #(uptime * 1ps);
-+         clk_vi.clk = 0;
-+         #(downtime * 1ps);
-+      end
-+   endtask : run_phase
-+
-+endclass : clk_duty_cycle_c
-+
-+`endif // __CLK_DUTY_CYCLE_SV__
-+
 diff --git a/verif/alutb/tests/duty_cycle.sv b/verif/alutb/tests/duty_cycle.sv
-new file mode 100755
-index 0000000..0940097
+new file mode 100644
+index 0000000..b6bd0c6
 --- /dev/null
 +++ b/verif/alutb/tests/duty_cycle.sv
-@@ -0,0 +1,43 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,42 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   duty_cycle.sv
 +// Author: bhunter
@@ -181,31 +178,28 @@ index 0000000..0940097
 +
 +`endif // __DUTY_CYCLE_SV__
 diff --git a/verif/alutb/tests/fast_clk.sv b/verif/alutb/tests/fast_clk.sv
-new file mode 100755
-index 0000000..7cd5536
+new file mode 100644
+index 0000000..d226acd
 --- /dev/null
 +++ b/verif/alutb/tests/fast_clk.sv
-@@ -0,0 +1,72 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,69 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   fast_clk.sv
 +// Author: bhunter
-+/* About:  A test that makes the clock go super fast!
++/* About:  <description>
 + *************************************************************************/
 +
 +`ifndef __FAST_CLK_SV__
 +   `define __FAST_CLK_SV__
 +
-+
-+   `include "base_test.sv"
++   `include "basic.sv"
 +// (`includes go here)
 +
 +// class: fast_clk_test_c
@@ -222,7 +216,7 @@ index 0000000..7cd5536
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Methods
-+   function new(string name="test",
++   function new(string name="fast_clk",
 +                uvm_component parent=null);
 +      super.new(name, parent);
 +   endfunction : new
@@ -258,9 +252,8 @@ index 0000000..7cd5536
 +endclass : fast_clk_test_c
 +
 +`endif // __FAST_CLK_SV__
-+
 diff --git a/verif/vkits/alu/alu.flist b/verif/vkits/alu/alu.flist
-new file mode 100755
+new file mode 100644
 index 0000000..5551dfe
 --- /dev/null
 +++ b/verif/vkits/alu/alu.flist
@@ -268,20 +261,18 @@ index 0000000..5551dfe
 ++incdir+../../verif/vkits/alu
 +../../verif/vkits/alu/alu_pkg.sv
 diff --git a/verif/vkits/alu/alu_item.sv b/verif/vkits/alu/alu_item.sv
-new file mode 100755
-index 0000000..a4976df
+new file mode 100644
+index 0000000..261082c
 --- /dev/null
 +++ b/verif/vkits/alu/alu_item.sv
-@@ -0,0 +1,119 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,118 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013,
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_item.sv
 +// Author: bhunter
@@ -318,13 +309,13 @@ index 0000000..a4976df
 +   //----------------------------------------------------------------------------------------
 +   // Group: Fields
 +
-+   // var: operation
++   // field: operation
 +   rand operation_e operation;
 +
-+   // var: A variable
++   // field: A variable
 +   rand bit [15:0] alpha;
 +
-+   // var: B variable
++   // field: B variable
 +   rand bit [15:0] beta;
 +
 +   // ensure that all operands have legal values
@@ -335,7 +326,7 @@ index 0000000..a4976df
 +      (operation == SUB_B_A) -> beta > alpha;
 +   }
 +
-+   // var: result
++   // field: result
 +   // This is the result of the operation, filled in by the driver and sent back with the response
 +   result_t result;
 +
@@ -349,7 +340,7 @@ index 0000000..a4976df
 +   // func: convert2string
 +   // Single-line printing
 +   virtual function string convert2string();
-+      convert2string = $psprintf("%s A:%04X B:%04X", operation, alpha, beta);
++      convert2string = $sformatf("%s A:%04X B:%04X", operation, alpha, beta);
 +   endfunction : convert2string
 +
 +   ////////////////////////////////////////////
@@ -390,36 +381,31 @@ index 0000000..a4976df
 +endclass : item_c
 +
 +
++
 +`endif // __ALU_ITEM_SV__
 +
-+
 diff --git a/verif/vkits/alu/alu_pkg.sv b/verif/vkits/alu/alu_pkg.sv
-new file mode 100755
-index 0000000..ad91b42
+new file mode 100644
+index 0000000..41de7f3
 --- /dev/null
 +++ b/verif/vkits/alu/alu_pkg.sv
-@@ -0,0 +1,38 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,36 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013,
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_pkg.sv
 +// Author: bhunter
 +/* About:  alu package
 + *************************************************************************/
 +
-+
-+// (`includes of macros may go here)
 +`include "uvm_macros.svh"
 +
 +// package: alu_pkg
-+// (Describe me)
 +package alu_pkg;
 +
 +   //----------------------------------------------------------------------------------------
@@ -428,11 +414,13 @@ index 0000000..ad91b42
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Types
-+   typedef logic [31:0] result_t;
-+   
++
++   // type: result_t
++   // All ALU results are of this type
++	typedef logic [31:0] result_t;
++
 +   //----------------------------------------------------------------------------------------
 +   // Group: Includes
-+
 +`include "alu_item.sv"
 +
 +endpackage : alu_pkg
