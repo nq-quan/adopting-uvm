@@ -244,7 +244,10 @@ def handle_match(re_results, line, answered_subs, new_lines, temp_name):
                     answered_subs.append(sub)
 
             # make the substitution:  either just a simple string replacement, or a list of lines
-            if type(Substitutions[sub]) == str:
+            if Substitutions[sub] == "[name]":
+                Log.debug("Removing [name]_")
+                newLine = newLine.replace('<name>_', '', 1)
+            elif type(Substitutions[sub]) == str:
                 Log.debug("Replacing %s with %s on line %s" % (sub, Substitutions[sub], newLine))
                 newLine = newLine.replace(sub, Substitutions[sub])
             else:
