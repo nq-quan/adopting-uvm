@@ -5,6 +5,7 @@ __email__  = "brian.hunter@cavium.com"
 
 import utils
 import os
+import sys
 
 ########################################################################################
 # Constants
@@ -43,6 +44,7 @@ def available_patches(my_type, revision):
         cwd = os.getcwd()
     except:
         Log.critical("Unable to get current working directory.")
+        sys.exit(248)
 
     dir = get_dir(revision, my_type)
 
@@ -73,7 +75,8 @@ def fetch_patch(my_type, num, revision, root_dir=None):
     # ensure that num is valid
     avail = available_patches(my_type, revision)
     if num not in avail:
-        Log.critical("%s #%d is not a valid patch.  Available patches are: %s" % (printed_typename, num, avail))
+        Log.critical("%s #%d is not a valid patch.  Available patches are: %s" % (printed_typename, num, sorted(avail)))
+        sys.exit(251)
 
     # change to the root directory
     if not root_dir:
@@ -81,6 +84,7 @@ def fetch_patch(my_type, num, revision, root_dir=None):
             root_dir = utils.calc_root_dir()
         except utils.AreaError:
             Log.critical("%s command must be run from within the project tree." % printed_typename)
+            sys.exit(250)
 
     patch_file = os.path.join(dir, "%s%d.patch" % (typename, num))
     cmd = "git apply %s" % patch_file
@@ -89,6 +93,7 @@ def fetch_patch(my_type, num, revision, root_dir=None):
         cwd = os.getcwd()
     except:
         Log.critical("Unable to get current working directory.")
+        sys.exit(249)
 
     os.chdir(root_dir)
 
