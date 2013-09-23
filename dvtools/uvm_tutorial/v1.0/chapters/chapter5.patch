@@ -10,6 +10,35 @@ index 59fb1e8..271cb09 100755
 +../../verif/alutb/tests/duty_cycle.sv
  -f ../../verif/alutb/rtl.flist
  
+diff --git a/verif/alutb/alutb_tb_top.sv b/verif/alutb/alutb_tb_top.sv
+index a9a5bfb..526b688 100755
+--- a/verif/alutb/alutb_tb_top.sv
++++ b/verif/alutb/alutb_tb_top.sv
+@@ -37,8 +37,7 @@ module alutb_tb_top;
+    // Group: DUT
+ 
+    // obj: dut_wrapper
+-   alu_wrapper alu_wrapper(/*AUTOINST*/
+-                           // Interfaces
++   alu_wrapper alu_wrapper(// Interfaces
+                            .ctx_i               (ctx_i),
+                            // Inputs
+                            .tb_clk              (tb_clk),
+@@ -51,10 +50,10 @@ module alutb_tb_top;
+    // func: pre_run_test
+    // Set interface names before run_test is called
+    function void pre_run_test();
+-      `cn_set_intf(virtual cn_clk_intf    , "cn_pkg::clk_intf"  , "tb_clk_vi", tb_clk_i);
+-      `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i);
+-      `cn_set_intf(virtual ctx_intf.drv_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp);
+-      `cn_set_intf(virtual ctx_intf.mon_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp);
++      `cn_set_intf(virtual cn_clk_intf    , "cn_pkg::clk_intf"  , "tb_clk_vi", tb_clk_i)
++      `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i)
++      `cn_set_intf(virtual ctx_intf.drv_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp)
++      `cn_set_intf(virtual ctx_intf.mon_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp)
+    endfunction : pre_run_test
+ 
+    `include "tb_common.v"
 diff --git a/verif/alutb/clk_duty_cycle.sv b/verif/alutb/clk_duty_cycle.sv
 new file mode 100644
 index 0000000..937e0f6
