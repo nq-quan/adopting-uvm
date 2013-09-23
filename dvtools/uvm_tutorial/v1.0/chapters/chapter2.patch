@@ -1,40 +1,37 @@
 diff --git a/verif/alutb/alutb.flist b/verif/alutb/alutb.flist
-index 59fb1e8..334220e 100755
+index 59fb1e8..824cbc2 100755
 --- a/verif/alutb/alutb.flist
 +++ b/verif/alutb/alutb.flist
-@@ -8,5 +8,5 @@
+@@ -8,5 +8,6 @@
  ../../verif/alutb/alu_wrapper.sv
  ../../verif/alutb/tests/basic.sv
  ../../verif/alutb/tests/base_test.sv
 +../../verif/alutb/tests/fast_clk.sv
  -f ../../verif/alutb/rtl.flist
--
+ 
 diff --git a/verif/alutb/tests/fast_clk.sv b/verif/alutb/tests/fast_clk.sv
 new file mode 100644
-index 0000000..613ae79
+index 0000000..d226acd
 --- /dev/null
 +++ b/verif/alutb/tests/fast_clk.sv
-@@ -0,0 +1,72 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,69 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013,
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   fast_clk.sv
 +// Author: bhunter
-+/* About:  A test that makes the clock go super fast!
++/* About:  <description>
 + *************************************************************************/
 +
 +`ifndef __FAST_CLK_SV__
 +   `define __FAST_CLK_SV__
 +
-+
-+   `include "base_test.sv"
++   `include "basic.sv"
 +// (`includes go here)
 +
 +// class: fast_clk_test_c
@@ -51,7 +48,7 @@ index 0000000..613ae79
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Methods
-+   function new(string name="test",
++   function new(string name="fast_clk",
 +                uvm_component parent=null);
 +      super.new(name, parent);
 +   endfunction : new
@@ -87,4 +84,3 @@ index 0000000..613ae79
 +endclass : fast_clk_test_c
 +
 +`endif // __FAST_CLK_SV__
-+
