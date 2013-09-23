@@ -1,33 +1,28 @@
 diff --git a/verif/alutb/alutb.flist b/verif/alutb/alutb.flist
-index 59fb1e8..9d89e57 100755
+index 59fb1e8..271cb09 100755
 --- a/verif/alutb/alutb.flist
 +++ b/verif/alutb/alutb.flist
-@@ -6,7 +6,9 @@
- +incdir+../../rtl/include
- ../../verif/alutb/alutb_tb_top.sv
+@@ -8,5 +8,7 @@
  ../../verif/alutb/alu_wrapper.sv
-+../../verif/alutb/clk_duty_cycle.sv
  ../../verif/alutb/tests/basic.sv
  ../../verif/alutb/tests/base_test.sv
 +../../verif/alutb/tests/fast_clk.sv
 +../../verif/alutb/tests/duty_cycle.sv
  -f ../../verif/alutb/rtl.flist
--
+ 
 diff --git a/verif/alutb/clk_duty_cycle.sv b/verif/alutb/clk_duty_cycle.sv
-new file mode 100755
-index 0000000..73d60ed
+new file mode 100644
+index 0000000..937e0f6
 --- /dev/null
 +++ b/verif/alutb/clk_duty_cycle.sv
-@@ -0,0 +1,54 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,49 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   clk_duty_cycle.sv
 +// Author: bhunter
@@ -36,9 +31,6 @@ index 0000000..73d60ed
 +
 +`ifndef __CLK_DUTY_CYCLE_SV__
 +   `define __CLK_DUTY_CYCLE_SV__
-+
-+
-+// (`includes go here)
 +
 +// class: clk_duty_cycle_c
 +// A clock with a duty cycle of 75/25.
@@ -73,22 +65,19 @@ index 0000000..73d60ed
 +endclass : clk_duty_cycle_c
 +
 +`endif // __CLK_DUTY_CYCLE_SV__
-+
 diff --git a/verif/alutb/tests/duty_cycle.sv b/verif/alutb/tests/duty_cycle.sv
-new file mode 100755
-index 0000000..0940097
+new file mode 100644
+index 0000000..b6bd0c6
 --- /dev/null
 +++ b/verif/alutb/tests/duty_cycle.sv
-@@ -0,0 +1,43 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,42 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   duty_cycle.sv
 +// Author: bhunter
@@ -125,31 +114,28 @@ index 0000000..0940097
 +
 +`endif // __DUTY_CYCLE_SV__
 diff --git a/verif/alutb/tests/fast_clk.sv b/verif/alutb/tests/fast_clk.sv
-new file mode 100755
-index 0000000..68c168e
+new file mode 100644
+index 0000000..d226acd
 --- /dev/null
 +++ b/verif/alutb/tests/fast_clk.sv
-@@ -0,0 +1,144 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,69 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013,
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   fast_clk.sv
 +// Author: bhunter
-+/* About:  A test that makes the clock go super fast!
++/* About:  <description>
 + *************************************************************************/
 +
 +`ifndef __FAST_CLK_SV__
 +   `define __FAST_CLK_SV__
 +
-+
-+   `include "base_test.sv"
++   `include "basic.sv"
 +// (`includes go here)
 +
 +// class: fast_clk_test_c
@@ -166,7 +152,7 @@ index 0000000..68c168e
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Methods
-+   function new(string name="test",
++   function new(string name="fast_clk",
 +                uvm_component parent=null);
 +      super.new(name, parent);
 +   endfunction : new
@@ -202,77 +188,3 @@ index 0000000..68c168e
 +endclass : fast_clk_test_c
 +
 +`endif // __FAST_CLK_SV__
-+
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
-+
-+// **********************************************************************
-+// *
-+// * legal mumbo jumbo
-+// *
-+// * Copyright 2013,
-+// * (utg v0.8.2)
-+// ***********************************************************************
-+// File:   fast_clk.sv
-+// Author: bhunter
-+/* About:  A test that makes the clock go super fast!
-+ *************************************************************************/
-+
-+`ifndef __FAST_CLK_SV__
-+   `define __FAST_CLK_SV__
-+
-+
-+   `include "base_test.sv"
-+// (`includes go here)
-+
-+// class: fast_clk_test_c
-+// (Describe me)
-+class fast_clk_test_c extends base_test_c;
-+   `uvm_component_utils_begin(fast_clk_test_c)
-+   `uvm_component_utils_end
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Configuration Fields
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Fields
-+
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="test",
-+                uvm_component parent=null);
-+      super.new(name, parent);
-+   endfunction : new
-+
-+   ////////////////////////////////////////////
-+   // func: build_phase
-+   virtual function void build_phase(uvm_phase phase);
-+      super.build_phase(phase);
-+   endfunction : build_phase
-+
-+   ////////////////////////////////////////////
-+   // func: connect_phase
-+   virtual function void connect_phase(uvm_phase phase);
-+      super.connect_phase(phase);
-+   endfunction : connect_phase
-+
-+   ////////////////////////////////////////////
-+   // func: end_of_elaboration_phase
-+   virtual function void end_of_elaboration_phase(uvm_phase phase);
-+      super.end_of_elaboration_phase(phase);
-+      tb_clk_drv.randomize(period_ps) with {
-+         period_ps inside {[1800:1999]};
-+      };
-+      `cn_info(("Selected a period of %0dps", tb_clk_drv.period_ps))
-+   endfunction : end_of_elaboration_phase
-+
-+   ////////////////////////////////////////////
-+   // func: run_phase
-+   virtual task run_phase(uvm_phase phase);
-+      super.run_phase(phase);
-+   endtask : run_phase
-+
-+endclass : fast_clk_test_c
-+
-+`endif // __FAST_CLK_SV__
-+
