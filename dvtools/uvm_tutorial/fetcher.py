@@ -73,7 +73,7 @@ def fetch_patch(my_type, num, revision, root_dir=None):
     # ensure that num is valid
     avail = available_patches(my_type, revision)
     if num not in avail:
-        Log.critical("%s #%d is not a valid patch.  Available %s patches are: %s" % (printed_typename, num, avail))
+        Log.critical("%s #%d is not a valid patch.  Available patches are: %s" % (printed_typename, num, avail))
 
     # change to the root directory
     if not root_dir:
