@@ -12,23 +12,23 @@ module alu_framer(// Outputs
                   clk, rst_n, frame_len, frame_len_val, alu_data, alu_ready
                   );
 
-   input clk;
-   input rst_n;
+	input        clk;
+	input        rst_n;
 
-   input [4:0] frame_len;
-   input       frame_len_val;
+	input [4:0]  frame_len;
+	input        frame_len_val;
 
-   input [31:0] alu_data;
-   input        alu_ready;
+	input [31:0] alu_data;
+	input        alu_ready;
 
-   output       frame;
-   output [31:0] frame_data;
+	output       frame;
+	output [31:0]frame_data;
 
-   output        frame_bp;
+	output       frame_bp;
 
-   parameter IDLE = 0;
-   parameter PENDING = 1;
-   parameter FRAMING = 2;
+	parameter IDLE    = 0;
+	parameter PENDING = 1;
+	parameter FRAMING = 2;
 
    reg           frame;
    reg           frame_bp;
