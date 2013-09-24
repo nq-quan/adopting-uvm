@@ -1,16 +1,3 @@
-diff --git a/dvtools/project.py b/dvtools/project.py
-index 78f5ff4..bb6322c 100755
---- a/dvtools/project.py
-+++ b/dvtools/project.py
-@@ -13,7 +13,7 @@ USE_RUNMOD = 1
- 
- ###############
- # How to build with VCS
--VCS_VERSION = 'H-2013.06'
-+VCS_VERSION = 'H-2013.06-2'
- BUILD_MODS = ["synopsys-vcs_mx/%s" % VCS_VERSION]
- BUILD_TOOL = 'vcs'
- VCOMP_DIR  = 'sim/.vcomp'
 diff --git a/rtl/alu/alu_math.v b/rtl/alu/alu_math.v
 index 3697871..2db3611 100755
 --- a/rtl/alu/alu_math.v
