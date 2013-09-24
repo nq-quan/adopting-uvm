@@ -1,115 +1,101 @@
 diff --git a/verif/alutb/alu_wrapper.sv b/verif/alutb/alu_wrapper.sv
-index 2ed57bf..904b542 100755
+index 14950c1..994a9e4 100755
 --- a/verif/alutb/alu_wrapper.sv
 +++ b/verif/alutb/alu_wrapper.sv
-@@ -14,19 +14,16 @@
+@@ -13,7 +13,8 @@
  
  module alu_wrapper(input logic tb_clk,
                     tb_rst_n,
 -                   ctx_intf ctx_i);
 +                   ctx_intf ctx_i,
-+                   alu_intf alu_i);
++						 alu_intf alu_i);
  
-    /*AUTOREGINPUT*/
-    // Beginning of automatic reg inputs (for undeclared instantiated-module inputs)
--   reg                  alu_ctl;                // To dut of alu.v
--   reg [7:0]            alu_dat;                // To dut of alu.v
-    reg [4:0]            frame_len;              // To dut of alu.v
-    reg                  frame_len_val;          // To dut of alu.v
-    // End of automatics
-    /*AUTOWIRE*/
-    // Beginning of automatic wires (for undeclared instantiated-module outputs)
--   wire                 alu_ready;              // From dut of alu.v
--   wire [31:0]          alu_result;             // From dut of alu.v
-    wire                 frame;                  // From dut of alu.v
-    wire                 frame_bp;               // From dut of alu.v
-    wire [31:0]          frame_data;             // From dut of alu.v
-@@ -39,6 +36,7 @@ module alu_wrapper(input logic tb_clk,
-     .ctx_\(.*\)   (ctx_i.\1[]),
-     .clk          (tb_clk),
-     .rst_n        (tb_rst_n),
-+    .alu_\(.*\)   (alu_i.\1[]),
-     .\(.*\) (\1[]),
-     ); */
-    alu dut(/*AUTOINST*/
-@@ -47,11 +45,11 @@ module alu_wrapper(input logic tb_clk,
-            .frame                       (frame),                 // Templated
-            .frame_bp                    (frame_bp),              // Templated
-            .frame_data                  (frame_data[31:0]),      // Templated
--           .alu_ready                   (alu_ready),             // Templated
--           .alu_result                  (alu_result[31:0]),      // Templated
-+           .alu_ready                   (alu_i.ready),           // Templated
-+           .alu_result                  (alu_i.result[31:0]),    // Templated
+    reg                  alu_ctl;
+    reg [7:0]            alu_dat;
+@@ -32,11 +33,11 @@ module alu_wrapper(input logic tb_clk,
+            .frame                       (frame),
+            .frame_bp                    (frame_bp),
+            .frame_data                  (frame_data[31:0]),
+-           .alu_ready                   (alu_ready),
+-           .alu_result                  (alu_result[31:0]),
++           .alu_ready                   (alu_i.ready),
++           .alu_result                  (alu_i.result[31:0]),
             // Inputs
--           .alu_ctl                     (alu_ctl),               // Templated
--           .alu_dat                     (alu_dat[7:0]),          // Templated
-+           .alu_ctl                     (alu_i.ctl),             // Templated
-+           .alu_dat                     (alu_i.dat[7:0]),        // Templated
-            .clk                         (tb_clk),                // Templated
-            .ctx_in                      (ctx_i.in[7:0]),         // Templated
-            .ctx_val                     (ctx_i.val),             // Templated
+-           .alu_ctl                     (alu_ctl),
+-           .alu_dat                     (alu_dat[7:0]),
++           .alu_ctl                     (alu_i.ctl),
++           .alu_dat                     (alu_i.dat[7:0]),
+            .clk                         (tb_clk),
+            .ctx_in                      (ctx_i.in[7:0]),
+            .ctx_val                     (ctx_i.val),
 diff --git a/verif/alutb/alutb.flist b/verif/alutb/alutb.flist
-index 59fb1e8..9d89e57 100755
+index 59fb1e8..271cb09 100755
 --- a/verif/alutb/alutb.flist
 +++ b/verif/alutb/alutb.flist
-@@ -6,7 +6,9 @@
- +incdir+../../rtl/include
- ../../verif/alutb/alutb_tb_top.sv
+@@ -8,5 +8,7 @@
  ../../verif/alutb/alu_wrapper.sv
-+../../verif/alutb/clk_duty_cycle.sv
  ../../verif/alutb/tests/basic.sv
  ../../verif/alutb/tests/base_test.sv
 +../../verif/alutb/tests/fast_clk.sv
 +../../verif/alutb/tests/duty_cycle.sv
  -f ../../verif/alutb/rtl.flist
--
+ 
 diff --git a/verif/alutb/alutb_tb_top.sv b/verif/alutb/alutb_tb_top.sv
-index e789596..9e77305 100755
+index a9a5bfb..e3a80d9 100755
 --- a/verif/alutb/alutb_tb_top.sv
 +++ b/verif/alutb/alutb_tb_top.sv
-@@ -34,6 +34,10 @@ module alutb_tb_top;
+@@ -33,13 +33,19 @@ module alutb_tb_top;
     // CTX Interface
     ctx_intf ctx_i(.clk(tb_clk), .rst_n(tb_rst_n));
  
-+   // obj: alu_i
++   // field: alu_i
 +   // The <alu_intf> instance
 +   alu_intf alu_i(.clk(tb_clk), .rst_n(tb_rst_n));
++   initial
++      alu_i.reset();
 +
     //----------------------------------------------------------------------------------------
     // Group: DUT
  
-@@ -41,6 +45,7 @@ module alutb_tb_top;
-    alu_wrapper alu_wrapper(/*AUTOINST*/
-                            // Interfaces
+    // obj: dut_wrapper
+-   alu_wrapper alu_wrapper(/*AUTOINST*/
+-                           // Interfaces
++   alu_wrapper alu_wrapper(// Interfaces
                             .ctx_i               (ctx_i),
 +                           .alu_i               (alu_i),
                             // Inputs
                             .tb_clk              (tb_clk),
                             .tb_rst_n            (tb_rst_n));
-@@ -56,6 +61,8 @@ module alutb_tb_top;
-       `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i);
-       `cn_set_intf(virtual ctx_intf.drv_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp);
-       `cn_set_intf(virtual ctx_intf.mon_mp , "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp);
-+      `cn_set_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf", "drv_vi", alu_i.drv_mp)
-+      `cn_set_intf(virtual alu_intf.mon_mp, "alu_pkg::alu_intf", "mon_vi", alu_i.mon_mp)
+@@ -51,10 +57,12 @@ module alutb_tb_top;
+    // func: pre_run_test
+    // Set interface names before run_test is called
+    function void pre_run_test();
+-      `cn_set_intf(virtual cn_clk_intf    , "cn_pkg::clk_intf"  , "tb_clk_vi", tb_clk_i);
+-      `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i);
+-      `cn_set_intf(virtual ctx_intf.drv_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp);
+-      `cn_set_intf(virtual ctx_intf.mon_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp);
++      `cn_set_intf(virtual cn_clk_intf    , "cn_pkg::clk_intf"  , "tb_clk_vi", tb_clk_i)
++      `cn_set_intf(virtual cn_rst_intf    , "cn_pkg::rst_intf"  , "tb_rst_vi", tb_rst_i)
++      `cn_set_intf(virtual ctx_intf.drv_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.drv_mp)
++      `cn_set_intf(virtual ctx_intf.mon_mp, "ctx_pkg::ctx_intf" , "ctx_vi"   , ctx_i.mon_mp)
++      `cn_set_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf" , "drv_vi"   , alu_i.drv_mp)
++      `cn_set_intf(virtual alu_intf.mon_mp, "alu_pkg::alu_intf" , "mon_vi"   , alu_i.mon_mp)
     endfunction : pre_run_test
  
     `include "tb_common.v"
 diff --git a/verif/alutb/clk_duty_cycle.sv b/verif/alutb/clk_duty_cycle.sv
-new file mode 100755
-index 0000000..73d60ed
+new file mode 100644
+index 0000000..937e0f6
 --- /dev/null
 +++ b/verif/alutb/clk_duty_cycle.sv
-@@ -0,0 +1,54 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,49 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   clk_duty_cycle.sv
 +// Author: bhunter
@@ -118,9 +104,6 @@ index 0000000..73d60ed
 +
 +`ifndef __CLK_DUTY_CYCLE_SV__
 +   `define __CLK_DUTY_CYCLE_SV__
-+
-+
-+// (`includes go here)
 +
 +// class: clk_duty_cycle_c
 +// A clock with a duty cycle of 75/25.
@@ -155,7 +138,6 @@ index 0000000..73d60ed
 +endclass : clk_duty_cycle_c
 +
 +`endif // __CLK_DUTY_CYCLE_SV__
-+
 diff --git a/verif/alutb/tb.py b/verif/alutb/tb.py
 index 3adcb12..113627f 100755
 --- a/verif/alutb/tb.py
@@ -168,14 +150,31 @@ index 3adcb12..113627f 100755
  # Add testbench flists
  FLISTS = ['alutb.flist', 'rtl.flist']
 diff --git a/verif/alutb/tests/basic.sv b/verif/alutb/tests/basic.sv
-index a6fcbf3..fd3ff0a 100755
+index ab5848d..327e01e 100755
 --- a/verif/alutb/tests/basic.sv
 +++ b/verif/alutb/tests/basic.sv
-@@ -35,6 +35,40 @@ class basic_test_c extends base_test_c;
-       super.build_phase(phase);
-    endfunction : build_phase
+@@ -16,23 +16,49 @@
  
-+   ////////////////////////////////////////////
+    `include "base_test.sv"
+ 
+-// class: basic_test_c
+-// A basic ALU test
+ class basic_test_c extends base_test_c;
+    `uvm_component_utils(basic_test_c)
+ 
+    //----------------------------------------------------------------------------------------
+-   // Methods
++   // Group: Methods
+    function new(string name="test",
+                 uvm_component parent=null);
+       super.new(name, parent);
+    endfunction : new
+ 
+    ////////////////////////////////////////////
+-   // func: build_phase
+-   virtual function void build_phase(uvm_phase phase);
+-      super.build_phase(phase);
+-   endfunction : build_phase
 +   // func: main_phase
 +   virtual task main_phase(uvm_phase phase);
 +      alu_pkg::sum_of_factorials_seq_c sof_seq = new("sof");
@@ -208,25 +207,22 @@ index a6fcbf3..fd3ff0a 100755
 +
 +      phase.drop_objection(this);
 +   endtask : main_phase
-+
+ 
  endclass : basic_test_c
  
- `endif // __BASIC_SV__
 diff --git a/verif/alutb/tests/duty_cycle.sv b/verif/alutb/tests/duty_cycle.sv
-new file mode 100755
-index 0000000..0940097
+new file mode 100644
+index 0000000..b6bd0c6
 --- /dev/null
 +++ b/verif/alutb/tests/duty_cycle.sv
-@@ -0,0 +1,43 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,42 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   duty_cycle.sv
 +// Author: bhunter
@@ -263,31 +259,28 @@ index 0000000..0940097
 +
 +`endif // __DUTY_CYCLE_SV__
 diff --git a/verif/alutb/tests/fast_clk.sv b/verif/alutb/tests/fast_clk.sv
-new file mode 100755
-index 0000000..7cd5536
+new file mode 100644
+index 0000000..d226acd
 --- /dev/null
 +++ b/verif/alutb/tests/fast_clk.sv
-@@ -0,0 +1,72 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,69 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   fast_clk.sv
 +// Author: bhunter
-+/* About:  A test that makes the clock go super fast!
++/* About:  <description>
 + *************************************************************************/
 +
 +`ifndef __FAST_CLK_SV__
 +   `define __FAST_CLK_SV__
 +
-+
-+   `include "base_test.sv"
++   `include "basic.sv"
 +// (`includes go here)
 +
 +// class: fast_clk_test_c
@@ -304,7 +297,7 @@ index 0000000..7cd5536
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Methods
-+   function new(string name="test",
++   function new(string name="fast_clk",
 +                uvm_component parent=null);
 +      super.new(name, parent);
 +   endfunction : new
@@ -340,32 +333,28 @@ index 0000000..7cd5536
 +endclass : fast_clk_test_c
 +
 +`endif // __FAST_CLK_SV__
-+
 diff --git a/verif/vkits/alu/alu.flist b/verif/vkits/alu/alu.flist
-new file mode 100755
-index 0000000..6d7328f
+new file mode 100644
+index 0000000..a67307d
 --- /dev/null
 +++ b/verif/vkits/alu/alu.flist
-@@ -0,0 +1,4 @@
+@@ -0,0 +1,3 @@
 ++incdir+../../verif/vkits/alu
 +../../verif/vkits/alu/alu_intf.sv
 +../../verif/vkits/alu/alu_pkg.sv
-+
 diff --git a/verif/vkits/alu/alu_agent.sv b/verif/vkits/alu/alu_agent.sv
-new file mode 100755
-index 0000000..01dadea
+new file mode 100644
+index 0000000..7aad9bf
 --- /dev/null
 +++ b/verif/vkits/alu/alu_agent.sv
-@@ -0,0 +1,108 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,105 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_agent.sv
 +// Author: bhunter
@@ -375,11 +364,10 @@ index 0000000..01dadea
 +`ifndef __ALU_AGENT_SV__
 +   `define __ALU_AGENT_SV__
 +
-+
 +`include "alu_drv.sv"
 +`include "alu_mon.sv"
 +`include "alu_sqr.sv"
-+// (`includes go here)
++`include "alu_item.sv"
 +
 +// class: agent_c
 +// (Description)
@@ -391,7 +379,7 @@ index 0000000..01dadea
 +   //----------------------------------------------------------------------------------------
 +   // Group: Configuration Fields
 +
-+   // field: is_active
++   // var: is_active
 +   // When set to UVM_ACTIVE, the sqr and drv will be present.
 +   uvm_active_passive_enum is_active = UVM_ACTIVE;
 +
@@ -409,7 +397,7 @@ index 0000000..01dadea
 +   //----------------------------------------------------------------------------------------
 +   // Group: Fields
 +
-+   // fields: drv, mon, sqr
++   // vars: Driver, monitor, and sequencer
 +   // Driver, monitor, and sequencer found in most agents
 +   sqr_c sqr;
 +   drv_c drv;
@@ -417,7 +405,7 @@ index 0000000..01dadea
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Methods
-+   function new(string name="agent",
++   function new(string name="[name]",
 +                uvm_component parent=null);
 +      super.new(name, parent);
 +   endfunction : new
@@ -428,13 +416,13 @@ index 0000000..01dadea
 +      super.build_phase(phase);
 +
 +      mon = mon_c::type_id::create("mon", this);
-+      monitored_item_port = new("monitored_item_port", this);
-+      monitored_result_port = new("monitored_result_port", this);
-+
 +      if(is_active) begin
 +         drv = drv_c::type_id::create("drv", this);
 +         sqr = sqr_c::type_id::create("sqr", this);
 +      end
++
++      monitored_item_port = new("monitored_item_port", this);
++      monitored_result_port = new("monitored_result_port", this);
 +   endfunction : build_phase
 +
 +   ////////////////////////////////////////////
@@ -442,12 +430,12 @@ index 0000000..01dadea
 +   virtual function void connect_phase(uvm_phase phase);
 +      super.connect_phase(phase);
 +
++      if(is_active)
++         drv.seq_item_port.connect(sqr.seq_item_export);
++
 +      // connect to the monitor's analysis ports
 +      mon.monitored_item_port.connect(monitored_item_port);
 +      mon.monitored_result_port.connect(monitored_result_port);
-+
-+     if(is_active)
-+         drv.seq_item_port.connect(sqr.seq_item_export);
 +   endfunction : connect_phase
 +
 +   ////////////////////////////////////////////
@@ -465,22 +453,19 @@ index 0000000..01dadea
 +endclass : agent_c
 +
 +`endif // __ALU_AGENT_SV__
-+
 diff --git a/verif/vkits/alu/alu_drv.sv b/verif/vkits/alu/alu_drv.sv
-new file mode 100755
-index 0000000..fc21dac
+new file mode 100644
+index 0000000..d5b4245
 --- /dev/null
 +++ b/verif/vkits/alu/alu_drv.sv
-@@ -0,0 +1,111 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,110 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_drv.sv
 +// Author: bhunter
@@ -518,7 +503,7 @@ index 0000000..fc21dac
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Methods
-+   function new(string name="drv",
++   function new(string name="[name]",
 +                uvm_component parent=null);
 +      super.new(name, parent);
 +   endfunction : new
@@ -527,7 +512,6 @@ index 0000000..fc21dac
 +   // func: build_phase
 +   virtual function void build_phase(uvm_phase phase);
 +      super.build_phase(phase);
-+      // get the interface
 +      `cn_get_intf(virtual alu_intf.drv_mp, "alu_pkg::alu_intf", intf_name, drv_vi)
 +   endfunction : build_phase
 +
@@ -546,6 +530,8 @@ index 0000000..fc21dac
 +   ////////////////////////////////////////////
 +   // func: run_phase
 +   virtual task run_phase(uvm_phase phase);
++      result_t prev_result;
++
 +      drv_vi.reset();
 +      driver();
 +   endtask : run_phase
@@ -583,22 +569,19 @@ index 0000000..fc21dac
 +endclass : drv_c
 +
 +`endif // __ALU_DRV_SV__
-+
 diff --git a/verif/vkits/alu/alu_intf.sv b/verif/vkits/alu/alu_intf.sv
-new file mode 100755
-index 0000000..42f6821
+new file mode 100644
+index 0000000..e9301f8
 --- /dev/null
 +++ b/verif/vkits/alu/alu_intf.sv
-@@ -0,0 +1,114 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,109 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_intf.sv
 +// Author: bhunter
@@ -608,12 +591,10 @@ index 0000000..42f6821
 +`ifndef __ALU_INTF_SV__
 +   `define __ALU_INTF_SV__
 +
-+// class: alu_intf
 +interface alu_intf(input logic clk,
 +                   input logic rst_n);
-+
 +   import uvm_pkg::*;
-+   
++
 +   //----------------------------------------------------------------------------------------
 +   // Group: Signals
 +
@@ -682,44 +663,40 @@ index 0000000..42f6821
 +                      (!$isunknown(ctl))) else
 +         `cn_err_intf(("ctl signal is an X"))
 +
-+   dat_not_x :       
++   dat_not_x :
 +      assert property(@(posedge clk)
 +                      disable iff (~rst_n || rst_n === 1'bx)
 +                      (!$isunknown(dat))) else
 +         `cn_err_intf(("dat signal is an X"))
 +
-+   ready_not_x : 
++   ready_not_x :
 +      assert property(@(posedge clk)
 +                      disable iff (~rst_n || rst_n === 1'bx)
 +                      (!$isunknown(ready))) else
 +         `cn_err_intf(("ready signal is an X"))
 +
-+   result_not_x : 
++   result_not_x :
 +      assert property(@(posedge clk)
 +                      disable iff (~rst_n || rst_n === 1'bx || ready == 0)
 +                      (!$isunknown(result))) else
 +         `cn_err_intf(("result signal is an X"))
-+         
++
 +endinterface : alu_intf
 +
-+
 +`endif // __ALU_INTF_SV__
-+
 diff --git a/verif/vkits/alu/alu_item.sv b/verif/vkits/alu/alu_item.sv
-new file mode 100755
-index 0000000..49d3caa
+new file mode 100644
+index 0000000..261082c
 --- /dev/null
 +++ b/verif/vkits/alu/alu_item.sv
-@@ -0,0 +1,119 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,118 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_item.sv
 +// Author: bhunter
@@ -756,13 +733,13 @@ index 0000000..49d3caa
 +   //----------------------------------------------------------------------------------------
 +   // Group: Fields
 +
-+   // var: operation
++   // field: operation
 +   rand operation_e operation;
 +
-+   // var: A variable
++   // field: A variable
 +   rand bit [15:0] alpha;
 +
-+   // var: B variable
++   // field: B variable
 +   rand bit [15:0] beta;
 +
 +   // ensure that all operands have legal values
@@ -773,7 +750,7 @@ index 0000000..49d3caa
 +      (operation == SUB_B_A) -> beta > alpha;
 +   }
 +
-+   // var: result
++   // field: result
 +   // This is the result of the operation, filled in by the driver and sent back with the response
 +   result_t result;
 +
@@ -787,7 +764,7 @@ index 0000000..49d3caa
 +   // func: convert2string
 +   // Single-line printing
 +   virtual function string convert2string();
-+      convert2string = $psprintf("%s A:%04X B:%04X", operation, alpha, beta);
++      convert2string = $sformatf("%s A:%04X B:%04X", operation, alpha, beta);
 +   endfunction : convert2string
 +
 +   ////////////////////////////////////////////
@@ -828,24 +805,22 @@ index 0000000..49d3caa
 +endclass : item_c
 +
 +
++
 +`endif // __ALU_ITEM_SV__
 +
-+
 diff --git a/verif/vkits/alu/alu_mon.sv b/verif/vkits/alu/alu_mon.sv
-new file mode 100755
-index 0000000..5bb1016
+new file mode 100644
+index 0000000..87cb5f6
 --- /dev/null
 +++ b/verif/vkits/alu/alu_mon.sv
-@@ -0,0 +1,151 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,150 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_mon.sv
 +// Author: bhunter
@@ -990,32 +965,27 @@ index 0000000..5bb1016
 +`endif // __ALU_MON_SV__
 +
 diff --git a/verif/vkits/alu/alu_pkg.sv b/verif/vkits/alu/alu_pkg.sv
-new file mode 100755
-index 0000000..da06086
+new file mode 100644
+index 0000000..fde5e3c
 --- /dev/null
 +++ b/verif/vkits/alu/alu_pkg.sv
-@@ -0,0 +1,43 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,42 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_pkg.sv
 +// Author: bhunter
 +/* About:  alu package
 + *************************************************************************/
 +
-+
-+// (`includes of macros may go here)
 +`include "uvm_macros.svh"
 +
 +// package: alu_pkg
-+// (Describe me)
 +package alu_pkg;
 +
 +   //----------------------------------------------------------------------------------------
@@ -1024,8 +994,11 @@ index 0000000..da06086
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Types
-+   typedef logic [31:0] result_t;
-+   
++
++   // type: result_t
++   // All ALU results are of this type
++	typedef logic [31:0] result_t;
++
 +   //----------------------------------------------------------------------------------------
 +   // Group: Includes
 +
@@ -1040,20 +1013,18 @@ index 0000000..da06086
 +
 +
 diff --git a/verif/vkits/alu/alu_seq_lib.sv b/verif/vkits/alu/alu_seq_lib.sv
-new file mode 100755
-index 0000000..3e75572
+new file mode 100644
+index 0000000..9463a81
 --- /dev/null
 +++ b/verif/vkits/alu/alu_seq_lib.sv
-@@ -0,0 +1,239 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,228 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_seq_lib.sv
 +// Author: bhunter
@@ -1063,12 +1034,10 @@ index 0000000..3e75572
 +`ifndef __ALU_SEQ_LIB_SV__
 +   `define __ALU_SEQ_LIB_SV__
 +
-+   `include "alu_item.sv"
++`include "alu_item.sv"
 +
 +// Forward declaration of library sequence
-+/* -----\/----- EXCLUDED -----\/-----
-+typedef class lib_seq_c;
-+ -----/\----- EXCLUDED -----/\----- */
++// typedef class lib_seq_c;
 +
 +//****************************************************************************************
 +// class: exer_seq_c
@@ -1107,8 +1076,6 @@ index 0000000..3e75572
 +endclass : exer_seq_c
 +
 +//****************************************************************************************
-+// class: factorial_seq_c
-+// Calculates the factorial of the operand value
 +class factorial_seq_c extends uvm_sequence #(item_c, item_c);
 +   `uvm_object_utils_begin(alu_pkg::factorial_seq_c)
 +      `uvm_field_int(operand, UVM_ALL_ON)
@@ -1151,8 +1118,6 @@ index 0000000..3e75572
 +endclass : factorial_seq_c
 +
 +//****************************************************************************************
-+// class: sum_array_seq_c
-+// Creates a randomly-sized array and adds up their values
 +class sum_array_seq_c extends uvm_sequence #(item_c, item_c);
 +   `uvm_object_utils_begin(alu_pkg::sum_array_seq_c)
 +      `uvm_field_array_int(data, UVM_ALL_ON | UVM_DEC)
@@ -1168,7 +1133,7 @@ index 0000000..3e75572
 +   // constraint: data_cnstr
 +   // keep it to a reasonable size
 +   // and use small numbers only
-+   constraint data_cnstr { 
++   constraint data_cnstr {
 +      data.size() inside {[1:50]};
 +      foreach(data[x]) {
 +         data[x] inside {[0:100]};
@@ -1176,7 +1141,7 @@ index 0000000..3e75572
 +   }
 +
 +   // field: result
-+   // The final answer
++   // The final result
 +   result_t result;
 +
 +   //----------------------------------------------------------------------------------------
@@ -1202,11 +1167,10 @@ index 0000000..3e75572
 +      result = rsp.result;
 +      `cn_info(("Sum of this array = %0x:", result))
 +   endtask : body
++
 +endclass : sum_array_seq_c
 +
 +//****************************************************************************************
-+// class: sum_of_factorials_seq_c
-+// Sum the factorials between op_x and op_y
 +class sum_of_factorials_seq_c extends uvm_sequence #(item_c);
 +   `uvm_object_utils_begin(alu_pkg::sum_of_factorials_seq_c)
 +      `uvm_field_int(op_x, UVM_ALL_ON | UVM_DEC)
@@ -1267,39 +1231,34 @@ index 0000000..3e75572
 +endclass : sum_of_factorials_seq_c
 +
 +//****************************************************************************************
-+/* -----\/----- EXCLUDED -----\/-----
-+class lib_seq_c extends uvm_sequence_library #(item_c);
-+   `uvm_object_utils(alu_pkg::lib_seq_c)
-+   `uvm_sequence_library_utils(lib_seq_c)
++// class lib_seq_c extends uvm_sequence_library #(item_c);
++//    `uvm_object_utils(alu_pkg::lib_seq_c)
++//    `uvm_sequence_library_utils(lib_seq_c)
 +
-+   //----------------------------------------------------------------------------------------
-+   // Group: Methods
-+   function new(string name="lib_seq");
-+      super.new(name);
-+      init_sequence_library();
-+   endfunction : new
++//    //----------------------------------------------------------------------------------------
++//    // Group: Methods
++//    function new(string name="lib_seq");
++//       super.new(name);
++//       init_sequence_library();
++//    endfunction : new
 +
-+endclass : lib_seq_c
-+ -----/\----- EXCLUDED -----/\----- */
-+
++// endclass : lib_seq_c
 +
 +`endif // __ALU_SEQ_LIB_SV__
 +
 diff --git a/verif/vkits/alu/alu_sqr.sv b/verif/vkits/alu/alu_sqr.sv
-new file mode 100755
-index 0000000..35e7e85
+new file mode 100644
+index 0000000..83738fc
 --- /dev/null
 +++ b/verif/vkits/alu/alu_sqr.sv
-@@ -0,0 +1,69 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,67 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alu_sqr.sv
 +// Author: bhunter
@@ -1328,7 +1287,7 @@ index 0000000..35e7e85
 +
 +   //----------------------------------------------------------------------------------------
 +   // Group: Methods
-+   function new(string name="sqr",
++   function new(string name="[name]",
 +                uvm_component parent=null);
 +      super.new(name, parent);
 +   endfunction : new
@@ -1360,26 +1319,23 @@ index 0000000..35e7e85
 +endclass : sqr_c
 +
 +`endif // __ALU_SQR_SV__
-+
 diff --git a/verif/vkits/alutb/alutb_alu_item_subscriber.sv b/verif/vkits/alutb/alutb_alu_item_subscriber.sv
-new file mode 100755
-index 0000000..6b3b417
+new file mode 100644
+index 0000000..3c21323
 --- /dev/null
 +++ b/verif/vkits/alutb/alutb_alu_item_subscriber.sv
-@@ -0,0 +1,39 @@
-+//-*- 
- verilog-indent-level: 3; indent-tabs-mode: nil; tab-width: 1 -*-
+@@ -0,0 +1,37 @@
 +
 +// **********************************************************************
 +// *
 +// * legal mumbo jumbo
 +// *
-+// * Copyright 2013
-+// * (utg v0.8.2)
++// * (c) 2013
++// * (utg v1.0)
 +// ***********************************************************************
 +// File:   alutb_alu_item_subscriber.sv
 +// Author: bhunter
-+/* About:   Listens for all monitored ALU transactions.
++/* About:  Listens for all monitored ALU transactions.
 + *************************************************************************/
 +
 +`ifndef __ALUTB_ALU_ITEM_SUBSCRIBER_SV__
@@ -1406,12 +1362,11 @@ index 0000000..6b3b417
 +endclass : alu_item_subscriber_c
 +
 +`endif // __ALUTB_ALU_ITEM_SUBSCRIBER_SV__
-+
 diff --git a/verif/vkits/alutb/alutb_env.sv b/verif/vkits/alutb/alutb_env.sv
-index 667f35f..f60ed7b 100755
+index 460d334..47e8ba5 100755
 --- a/verif/vkits/alutb/alutb_env.sv
 +++ b/verif/vkits/alutb/alutb_env.sv
-@@ -17,6 +17,7 @@
+@@ -16,6 +16,7 @@
     `define __ALUTB_ENV_SV__
  
     `include "alutb_cfg.sv"
@@ -1419,33 +1374,30 @@ index 667f35f..f60ed7b 100755
  
  // class: env_c
  // ALUTB Environment class
-@@ -44,9 +45,17 @@ class env_c extends uvm_env;
-    //----------------------------------------------------------------------------------------
-    // Group: Fields
- 
--   // field: Drives the CTX traffic
-+   // field: ctx_agent
-+   // Drives the CTX traffic
-    ctx_pkg::agent_c ctx_agent;
+@@ -36,6 +37,14 @@ class env_c extends uvm_env;
+    // alu register block (reference to the one in cfg)
+    alu_csr_pkg::reg_block_c reg_block;
  
 +   // field: alu_agent
 +   // The ALU agent
 +   alu_pkg::agent_c alu_agent;
 +
-+   // field: alu_item_subscriber
++   // var: alu_item_subscriber
++   // Prints all monitored alu items
 +   alu_item_subscriber_c alu_item_subscriber;
 +
     //----------------------------------------------------------------------------------------
-    // Group: Methods
-    function new(string name="env",
-@@ -62,12 +71,18 @@ class env_c extends uvm_env;
+    // Group: Fields
  
+@@ -58,12 +67,19 @@ class env_c extends uvm_env;
        // build ctx agent
-       ctx_agent = ctx_pkg::agent_c::type_id::create("ctx_agent", this);
+       if(ctx_agent == null)
+          ctx_agent = ctx_pkg::agent_c::type_id::create("ctx_agent", this);
 +
 +      // create the ALU agent
-+      uvm_config_db#(int)::set(this, "alu_agent", "is_active", is_active);
++      uvm_config_db#(int)::set(this, "alu_agent", "is_active", UVM_ACTIVE);
 +      alu_agent = alu_pkg::agent_c::type_id::create("alu_agent", this);
++
 +      alu_item_subscriber = alu_item_subscriber_c::type_id::create("alu_item_subscriber", this);
     endfunction : build_phase
  
@@ -1456,20 +1408,16 @@ index 667f35f..f60ed7b 100755
 +      alu_agent.monitored_item_port.connect(alu_item_subscriber.analysis_export);
     endfunction : connect_phase
  
-    ////////////////////////////////////////////
+ endclass : env_c
 diff --git a/verif/vkits/alutb/alutb_pkg.sv b/verif/vkits/alutb/alutb_pkg.sv
-index 1997758..70fbedd 100755
+index 0d7aa97..7f2422e 100755
 --- a/verif/vkits/alutb/alutb_pkg.sv
 +++ b/verif/vkits/alutb/alutb_pkg.sv
-@@ -25,9 +25,10 @@ package alutb_pkg;
- 
-    //----------------------------------------------------------------------------------------
+@@ -26,6 +26,7 @@ package alutb_pkg;
     // Group: Includes
-+`include "alutb_alu_item_subscriber.sv"
  `include "alutb_cfg.sv"
  `include "alutb_env.sv"
--
-+   
- endpackage : alutb_pkg
++`include "alutb_alu_item_subscriber.sv"
  
+ endpackage : alutb_pkg
  
