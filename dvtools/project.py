@@ -13,7 +13,7 @@ USE_RUNMOD = 1
 
 ###############
 # How to build with VCS
-VCS_VERSION = 'H-2013.06'
+VCS_VERSION = 'H-2013.06-2'
 BUILD_MODS = ["synopsys-vcs_mx/%s" % VCS_VERSION]
 BUILD_TOOL = 'vcs'
 VCOMP_DIR  = 'sim/.vcomp'
