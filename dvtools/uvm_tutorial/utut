@@ -70,22 +70,26 @@ def parseArgs():
     # Ensure that code option has at least 1 argument
     if Options.cmd == 'code' and len(Options.extras) == 0:
         Log.critical("usage: utut code n0 [n1 n2 ...]")
+        sys.exit(255)
 
     # Ensure that chapter number is valid
     if Options.cmd in ('chapter', 'fix'):
         if len(Options.extras) != 1:
             Log.critical("usage: utut [chapter|fix] <LNUM>")
+            sys.exit(255)
 
     # Modify revision to comply
     rexp = re.compile("v\d\.\d+")
     rexp_results = rexp.match(Options.revision)
     if not rexp_results:
         Log.critical("usage: revision must be similar to 'v0.4'")
+        sys.exit(255)
 
     # Ensure that specified revision is available for fixes and chapter
     availableRevisions = [it for it in os.listdir(UTUT_DIR) if it.startswith('v')]
     if Options.revision not in availableRevisions:
         Log.critical("Revision %s not available.\nSelect from: %s" % (Options.revision, ','.join(availableRevisions)))
+        sys.exit(255)
 
 ########################################################################################
 def print_codes(code_nums):
@@ -119,12 +123,14 @@ def fetch_chapter(chapter_num):
     # first, ensure that this is a legal chapter number
     if chapter_num not in fetcher.available_patches(fetcher.CHAPTERS, Options.revision):
         Log.critical("Chapter #%0d is not an available patch." % chapter_num)
+        sys.exit(255)
 
     # now get the root directory
     try:
         root_dir = utils.calc_root_dir()
     except utils.AreaError:
         Log.critical("command must be run from within the project tree.")
+        sys.exit(255)
 
     # check status of given area. If it has modifications, then make sure user
     # is ok with scrubbing them clean
@@ -144,6 +150,7 @@ def fetch_chapter(chapter_num):
         utils.gitscrub()
     except KeyboardInterrupt:
         Log.critical("\nCTRL-C detected.  Exiting.")
+        sys.exit(255)
 
     # the cwd may have been removed during the scrub command, so change to the root directory
     os.chdir(root_dir)
@@ -174,8 +181,8 @@ def main():
                 else:
                     items.append(int(extra))
         except ValueError:
-            raise
             Log.critical("Invalid code. usage: utut code <N1> [<N2> <N3> ...]")
+            sys.exit(255)
 
         print_codes([int(it) for it in items])
 
