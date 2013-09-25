@@ -19,7 +19,7 @@
 // UNCOMMENT THE FOLLOWING FOR PROBLEM 16-1:
 //
 
-/* -----\/----- EXCLUDED -----\/-----
+/*
 `include "frm_vsqr.sv"
 
 //-****************************************************************************************
@@ -56,6 +56,6 @@ class basic_vseq_c extends uvm_sequence;
    endtask : body
 
 endclass : basic_vseq_c
- -----/\----- EXCLUDED -----/\----- */
+*/
 
 `endif // __FRM_VSEQ_LIB_SV__
