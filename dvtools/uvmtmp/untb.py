@@ -56,6 +56,7 @@ def setup():
         RootDir = utils.calc_root_dir()
     except utils.AreaError:
         Log.critical("CWD is not in an Octeon Tree.")
+        sys.exit(255)
 
     VerifDir = os.path.join(RootDir, "verif")
 
@@ -74,12 +75,18 @@ def create_tb(path, tb_name):
         shutil.copytree(newtb_path, path)
     except OSError, err:
         Log.critical("Unable to create new directory: %s" % err)
+        sys.exit(255)
 
     # replace all instances of <TB> in all the files
     os.chdir(path)
 
     # replace any <TB> found in any file
     for (dirpath, dirnames, filenames) in os.walk('.'):
+        # remove the .gitignore in the tests directory, it is only there to ensure
+        # that the directory can be added to git
+        if filenames[0] == '.gitignore':
+            os.remove(os.path.join(path, dirpath, filenames[0]))
+            continue
         for filename in filenames:
             file = open(filename)
             lines = file.readlines()
@@ -106,6 +113,7 @@ def use_utg(tb_name):
     utg.main(arguments)
 
     # create tests/base_test.sv
+    print os.getcwd()
     os.chdir('tests')
     arguments = ("base_test -n %s -f -q" % tb_name).split()
     utg.main(arguments)
