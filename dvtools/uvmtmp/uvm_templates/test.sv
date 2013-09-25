@@ -1,7 +1,7 @@
 <@header>
 <@ifndef>
 
-   `include "basic.sv"
+   `include "base_test.sv"
 // (`includes go here)
 
 // class: <class_name>

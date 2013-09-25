@@ -5,7 +5,7 @@
 import uvm_pkg::*;
 // (other imports go here)
 
-`include "cn_defines.vh"
+`include "cn_msg_hdl.vh"
 
 // package: <name>_tb_top
 // Top-level testbench
@@ -45,5 +45,5 @@ module <name>_tb_top;
       `cn_set_intf(virtual cn_rst_intf,  "cn_pkg::rst_intf", "tb_rst_vi",  tb_rst_i)
    endfunction : pre_run_test
 
-   `include "tbv_common.v"
+   `include "tb_common.v"
 endmodule : <name>_tb_top
